@@ -1,0 +1,2538 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residentie HELIX - Financieel Dashboard 2024/2025</title>
+    
+    <!-- Chart.js vanaf jsdelivr CDN (betrouwbaarder) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .dashboard-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #3498db;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        
+        .meeting-info {
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .overview-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transition: all 0.5s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card:hover::before {
+            top: -100%;
+            right: -100%;
+        }
+        
+        .card.income {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .card.expense {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+        
+        .card.balance {
+            background: linear-gradient(135deg, #21D4FD 0%, #B721FF 100%);
+        }
+        
+        .card.warning {
+            background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%);
+        }
+        
+        .card-title {
+            font-size: 1em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .card-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .card-subtitle {
+            font-size: 0.9em;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+        
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .chart-container {
+  will-change: transform;
+  transform: translateZ(0);
+
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            min-height: 300px;
+        }
+        
+        .chart-container:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .chart-title {
+            font-size: 1.3em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .chart-fallback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #999;
+            display: none;
+        }
+        
+        .tab-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ecf0f1;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1em;
+            color: #7f8c8d;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .tab:hover {
+            color: #3498db;
+        }
+        
+        .tab.active {
+            color: #3498db;
+            border-bottom: 3px solid #3498db;
+            margin-bottom: -2px;
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .table th {
+            background: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .table tr.total-row {
+            font-weight: bold;
+            background: #ecf0f1;
+        }
+        
+        .table tr.subtotal-row {
+            font-weight: 600;
+            background: #f8f9fa;
+        }
+        
+        .amount {
+            text-align: right;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .negative {
+            color: #e74c3c;
+        }
+        
+        .positive {
+            color: #27ae60;
+        }
+        
+        .balance-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .balance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .balance-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .balance-label {
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 5px;
+        }
+        
+        .balance-value {
+            font-size: 1.3em;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        
+        .detail-table {
+            font-size: 0.95em;
+        }
+        
+        .detail-table th {
+            background: #34495e;
+            font-size: 0.9em;
+        }
+        
+        .section-header {
+            background: #ecf0f1;
+            padding: 10px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .owner-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .status-debt {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .status-ok {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .scroll-container {
+            max-height: 600px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .overview-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .card-value {
+                font-size: 1.5em;
+            }
+            
+            .tabs {
+                font-size: 0.9em;
+            }
+            
+            .tab {
+                padding: 10px 15px;
+            }
+            
+            .table {
+                font-size: 0.9em;
+            }
+            
+            .table td, .table th {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <h1>Residentie HELIX</h1>
+            <p class="subtitle">Volledig Financieel Overzicht - Dienstjaar 2024/2025</p>
+            <p class="subtitle">Zeedijk 286, B-8430 Middelkerke</p>
+        </header>
+        
+        <div class="meeting-info">
+            <h3>Raad van Mede-eigendom</h3>
+            <p>Vergadering voorzien op zaterdag 02/08/2025</p>
+            <p>Voorschot budget 2025/2026: € 255.000,00 (opgevraagd per 17/03/2025)</p>
+        </div>
+        
+        <!-- Overview Cards -->
+        <div class="overview-cards">
+            <div class="card balance" onclick="showDetails('balance')">
+                <div class="card-title">Beschikbaar Saldo</div>
+                <div class="card-value">€ 8.609,84</div>
+                <div class="card-subtitle">L/R KBC: € 8.609,84</div>
+            </div>
+            <div class="card income" onclick="showDetails('income')">
+                <div class="card-title">Gevraagde Voorschotten</div>
+                <div class="card-value">€ 510.000,00</div>
+                <div class="card-subtitle">Budget 2024/2025</div>
+            </div>
+            <div class="card expense" onclick="showDetails('expenses')">
+                <div class="card-title">Totale Kosten</div>
+                <div class="card-value">€ 486.086,20</div>
+                <div class="card-subtitle">Gemeensch. + TECHEM + Privatief</div>
+            </div>
+            <div class="card warning" onclick="showDetails('owners')">
+                <div class="card-title">Vorderingen Eigenaars</div>
+                <div class="card-value">€ 72.686,04</div>
+                <div class="card-subtitle">Te innen bedragen</div>
+            </div>
+            <div class="card" onclick="showDetails('balance')">
+                <div class="card-title">Te Betalen Eindfactuur</div>
+                <div class="card-value">€ -16.798,17</div>
+                <div class="card-subtitle">Saldo eigenaars</div>
+            </div>
+            <div class="card balance" onclick="showDetails('balance')">
+                <div class="card-title">Eindsaldo</div>
+                <div class="card-value">€ 55.887,87</div>
+                <div class="card-subtitle">Vorderingen - Te betalen</div>
+            </div>
+        </div>
+        
+        <!-- Balance Section -->
+        <div class="balance-section">
+            <h3 class="chart-title">Balans per 14 maart 2025</h3>
+            <div class="balance-grid">
+                <div>
+                    <h4 style="color: #3498db; margin-bottom: 15px;">ACTIEF</h4>
+                    <div class="balance-item">
+                        <div class="balance-label">Over te dragen kosten</div>
+                        <div class="balance-value">€ 19.234,30</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="balance-label">Betaald na afsluiting</div>
+                        <div class="balance-value">€ 11.215,80</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="balance-label">Vorderingen op eigenaars</div>
+                        <div class="balance-value">€ 55.887,87</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="balance-label">Beschikbaar</div>
+                        <div class="balance-value">€ 8.609,84</div>
+                    </div>
+                    <div class="balance-item" style="background: #3498db; color: white;">
+                        <div class="balance-label">TOTAAL ACTIEF</div>
+                        <div class="balance-value">€ 94.947,81</div>
+                    </div>
+                </div>
+                <div>
+                    <h4 style="color: #e74c3c; margin-bottom: 15px;">PASSIEF</h4>
+                    <div class="balance-item">
+                        <div class="balance-label">Leveranciers</div>
+                        <div class="balance-value">€ 66.656,88</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="balance-label">Te ontvangen facturen</div>
+                        <div class="balance-value">€ 10.927,70</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="balance-label">Te betalen na afsluiting</div>
+                        <div class="balance-value">€ 15.868,20</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="balance-label">Te betalen kosten</div>
+                        <div class="balance-value">€ 875,30</div>
+                    </div>
+                    <div class="balance-item">
+                        <div class="balance-label">Ontvangen provisie</div>
+                        <div class="balance-value">€ 619,73</div>
+                    </div>
+                    <div class="balance-item" style="background: #e74c3c; color: white;">
+                        <div class="balance-label">TOTAAL PASSIEF</div>
+                        <div class="balance-value">€ 94.947,81</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <div class="chart-container">
+                <h3 class="chart-title">Kostenverdeling Hoofdcategorieën</h3>
+                <canvas id="mainExpenseChart"></canvas>
+                <div class="chart-fallback">Grafiek wordt geladen...</div>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">Budget vs Werkelijke Kosten</h3>
+                <canvas id="budgetChart"></canvas>
+                <div class="chart-fallback">Grafiek wordt geladen...</div>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">TECHEM Kosten Breakdown</h3>
+                <canvas id="techemChart"></canvas>
+                <div class="chart-fallback">Grafiek wordt geladen...</div>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">Gemeenschappelijke Kosten Detail</h3>
+                <canvas id="commonChart"></canvas>
+                <div class="chart-fallback">Grafiek wordt geladen...</div>
+            </div>
+        </div>
+        
+        <!-- Detailed Tabs -->
+        <div class="tab-container">
+            <div class="tabs">
+                <button class="tab active" onclick="openTab(event, 'overview')">Overzicht</button>
+                <button class="tab" onclick="openTab(event, 'techem')">TECHEM Detail</button>
+                <button class="tab" onclick="openTab(event, 'gemeenschappelijk')">Gemeenschappelijke Kosten</button>
+                <button class="tab" onclick="openTab(event, 'privatief')">Privatieve Kosten</button>
+                <button class="tab" onclick="openTab(event, 'eigenaars')">Vorderingen Eigenaars</button>
+                <button class="tab" onclick="openTab(event, 'leveranciers')">Leveranciers</button>
+                <button class="tab" onclick="openTab(event, 'liften')">Liften Detail</button>
+                <button class="tab" onclick="openTab(event, 'onderhoud')">Onderhoud CV/Zwembad</button>
+                <button class="tab" onclick="openTab(event, 'concierge')">Concierge Detail</button>
+                <button class="tab" onclick="openTab(event, 'verzekeringen')">Verzekeringen</button>
+                <button class="tab" onclick="openTab(event, 'budget')">Budget Vergelijking</button>
+            </div>
+            
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-content active">
+                <h3>Samenvatting Kosten</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Categorie</th>
+                            <th class="amount">Budget</th>
+                            <th class="amount">Werkelijk</th>
+                            <th class="amount">Verschil</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Gemeenschappelijke kosten</td>
+                            <td class="amount">€ 268.000,00</td>
+                            <td class="amount">€ 277.313,96</td>
+                            <td class="amount negative">€ -9.313,96</td>
+                        </tr>
+                        <tr>
+                            <td>TECHEM kosten</td>
+                            <td class="amount">€ 145.500,00</td>
+                            <td class="amount">€ 153.590,28</td>
+                            <td class="amount negative">€ -8.090,28</td>
+                        </tr>
+                        <tr>
+                            <td>Privatieve kosten</td>
+                            <td class="amount">€ 67.000,00</td>
+                            <td class="amount">€ 55.181,95</td>
+                            <td class="amount positive">€ 11.818,05</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL</td>
+                            <td class="amount">€ 480.500,00</td>
+                            <td class="amount">€ 486.086,19</td>
+                            <td class="amount negative">€ -5.586,19</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 40px; padding: 20px; background: #e3f2fd; border-radius: 10px; border-left: 4px solid #2196f3;">
+                    <h3 style="margin-top: 0; color: #1976d2;">Over te dragen kosten naar volgend dienstjaar</h3>
+                    <p style="margin-bottom: 15px; color: #666;">Deze kosten zijn reeds betaald maar betreffen (deels) het volgende dienstjaar:</p>
+                    <table class="table detail-table">
+                        <thead>
+                            <tr>
+                                <th>Omschrijving</th>
+                                <th>Periode</th>
+                                <th class="amount">Bedrag</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Telenet</td>
+                                <td>15/03/2025 - 31/07/2025</td>
+                                <td class="amount">€ 2.738,04</td>
+                            </tr>
+                            <tr>
+                                <td>AXA - arbeidsongevallen</td>
+                                <td>15/03/2025 - 31/12/2025</td>
+                                <td class="amount">€ 1.478,21</td>
+                            </tr>
+                            <tr>
+                                <td>Vivium - BA leden RVM</td>
+                                <td>15/03/2025 - 31/12/2025</td>
+                                <td class="amount">€ 144,80</td>
+                            </tr>
+                            <tr>
+                                <td>Techem warm watertellers</td>
+                                <td>15/03/2025 - 14/03/2026</td>
+                                <td class="amount">€ 2.609,92</td>
+                            </tr>
+                            <tr>
+                                <td>Techem koud watertellers</td>
+                                <td>15/03/2025 - 14/03/2026</td>
+                                <td class="amount">€ 2.395,20</td>
+                            </tr>
+                            <tr>
+                                <td>Mensura</td>
+                                <td>15/03/2025 - 31/12/2025</td>
+                                <td class="amount">€ 183,84</td>
+                            </tr>
+                            <tr>
+                                <td>Farys</td>
+                                <td>15/03/2025 - 31/08/2025</td>
+                                <td class="amount">€ 9.684,29</td>
+                            </tr>
+                            <tr class="total-row">
+                                <td colspan="2">TOTAAL OVER TE DRAGEN</td>
+                                <td class="amount">€ 19.234,30</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- TECHEM Tab -->
+            <div id="techem" class="tab-content">
+                <h3>TECHEM Kostenafrekening</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th>Rekening</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-header">
+                            <td colspan="3">GASVERBRUIK</td>
+                        </tr>
+                        <tr>
+                            <td>Gasverbruik 100%</td>
+                            <td>6122</td>
+                            <td class="amount">€ 66.099,87</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 30px;">→ Voor warm water via calorimeters</td>
+                            <td></td>
+                            <td class="amount">€ 51.929,86</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 50px;">• 23% privatief warm water</td>
+                            <td></td>
+                            <td class="amount">€ 11.943,87</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 50px;">• 77% warm water zwembad</td>
+                            <td></td>
+                            <td class="amount">€ 39.985,99</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 30px;">→ Voor verwarming</td>
+                            <td></td>
+                            <td class="amount">€ 14.170,01</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="3">WATERVERBRUIK</td>
+                        </tr>
+                        <tr>
+                            <td>Waterverbruik 100%</td>
+                            <td>612000</td>
+                            <td class="amount">€ 18.210,02</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 30px;">• Privatief verbruik</td>
+                            <td></td>
+                            <td class="amount">€ 13.079,52</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 30px;">• Water zwembad en douches</td>
+                            <td></td>
+                            <td class="amount">€ 5.130,50</td>
+                        </tr>
+                        <tr>
+                            <td>Abonnement watertellers</td>
+                            <td>612004</td>
+                            <td class="amount">€ 11.188,27</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="3">DRIJFKRACHT VERWARMING</td>
+                        </tr>
+                        <tr>
+                            <td>Drijfkracht verwarming</td>
+                            <td>612110</td>
+                            <td class="amount">€ 13.460,56</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 30px;">• 60% gemeenschappelijk</td>
+                            <td></td>
+                            <td class="amount">€ 8.076,34</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 30px;">• 40% privatief</td>
+                            <td></td>
+                            <td class="amount">€ 5.384,22</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="3">CENTRALE VERWARMING</td>
+                        </tr>
+                        <tr>
+                            <td>Onderhoudscontract</td>
+                            <td>610310</td>
+                            <td class="amount">€ 7.419,35</td>
+                        </tr>
+                        <tr>
+                            <td>Herstellingen</td>
+                            <td>610320</td>
+                            <td class="amount">€ 17.009,58</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td colspan="2">Subtotaal CV</td>
+                            <td class="amount">€ 24.428,93</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="3">ZWEMBAD</td>
+                        </tr>
+                        <tr>
+                            <td>Onderhoudscontract</td>
+                            <td>610811</td>
+                            <td class="amount">€ 8.625,37</td>
+                        </tr>
+                        <tr>
+                            <td>Produkten</td>
+                            <td>610812</td>
+                            <td class="amount">€ 1.080,38</td>
+                        </tr>
+                        <tr>
+                            <td>Herstellingen</td>
+                            <td>610813</td>
+                            <td class="amount">€ 685,29</td>
+                        </tr>
+                        <tr>
+                            <td>Klein materiaal</td>
+                            <td>610816</td>
+                            <td class="amount">€ 272,25</td>
+                        </tr>
+                        <tr>
+                            <td>Diversen</td>
+                            <td>610816</td>
+                            <td class="amount">€ 288,68</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td colspan="2">Subtotaal zwembad</td>
+                            <td class="amount">€ 10.951,97</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="3">TECHEM CONTRACTEN</td>
+                        </tr>
+                        <tr>
+                            <td>Waarde contract</td>
+                            <td>613104</td>
+                            <td class="amount">€ 2.303,27</td>
+                        </tr>
+                        <tr>
+                            <td>Waarde contract</td>
+                            <td>613104</td>
+                            <td class="amount">€ 2.509,25</td>
+                        </tr>
+                        <tr>
+                            <td>Kosten opname verdelers TOF</td>
+                            <td>613104</td>
+                            <td class="amount">€ 4.438,14</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td colspan="2">Subtotaal TECHEM</td>
+                            <td class="amount">€ 9.250,66</td>
+                        </tr>
+                        
+                        <tr class="total-row">
+                            <td colspan="2">TOTAAL TECHEM</td>
+                            <td class="amount">€ 153.590,28</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Gemeenschappelijke Kosten Tab -->
+            <div id="gemeenschappelijk" class="tab-content">
+                <h3>Gemeenschappelijke Kosten Detail</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th class="amount">Art. 8</th>
+                            <th class="amount">Art. 9</th>
+                            <th class="amount">Totaal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-header">
+                            <td colspan="4">ELEKTRICITEIT GEMENE DELEN</td>
+                        </tr>
+                        <tr>
+                            <td>15% van totaal (€ 16.442,56)</td>
+                            <td class="amount">€ 2.466,38</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 2.466,38</td>
+                        </tr>
+                        <tr>
+                            <td>85% van totaal (€ 16.442,56)</td>
+                            <td class="amount">€ 13.976,18</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 13.976,18</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal elektriciteit</td>
+                            <td class="amount">€ 16.442,56</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 16.442,56</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="4">LIFTEN</td>
+                        </tr>
+                        <tr>
+                            <td>Linker lift</td>
+                            <td class="amount">€ 5.703,86</td>
+                            <td class="amount">€ 886,89</td>
+                            <td class="amount">€ 6.590,75</td>
+                        </tr>
+                        <tr>
+                            <td>Midden lift</td>
+                            <td class="amount">€ 5.416,57</td>
+                            <td class="amount">€ 886,89</td>
+                            <td class="amount">€ 6.303,46</td>
+                        </tr>
+                        <tr>
+                            <td>Rechter lift</td>
+                            <td class="amount">€ 5.412,47</td>
+                            <td class="amount">€ 886,90</td>
+                            <td class="amount">€ 6.299,37</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal liften</td>
+                            <td class="amount">€ 16.532,90</td>
+                            <td class="amount">€ 2.660,68</td>
+                            <td class="amount">€ 20.193,58</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="4">KLEIN ONDERHOUD & HERSTELLINGEN</td>
+                        </tr>
+                        <tr>
+                            <td>Algemene mede-eigendom</td>
+                            <td class="amount">€ 19.843,45</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 19.843,45</td>
+                        </tr>
+                        <tr>
+                            <td>Bijzondere gemeenschap</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 18.076,67</td>
+                            <td class="amount">€ 18.076,67</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal onderhoud</td>
+                            <td class="amount">€ 19.843,45</td>
+                            <td class="amount">€ 18.076,67</td>
+                            <td class="amount">€ 37.920,12</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="4">BUITENGEWOON ONDERHOUD</td>
+                        </tr>
+                        <tr>
+                            <td>Vervangen alle dakventilatoren</td>
+                            <td class="amount">€ 8.725,97</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 8.725,97</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="4">KANTOORKOSTEN</td>
+                        </tr>
+                        <tr>
+                            <td>Telefoon/WiFi/Camerabewaking</td>
+                            <td class="amount">€ 5.810,83</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 5.810,83</td>
+                        </tr>
+                        <tr>
+                            <td>Kosten vergadering</td>
+                            <td class="amount">€ 13.572,35</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 13.572,35</td>
+                        </tr>
+                        <tr>
+                            <td>Huur kantoor</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 6.931,01</td>
+                            <td class="amount">€ 6.931,01</td>
+                        </tr>
+                        <tr>
+                            <td>Ereloon advocaat Parmentier</td>
+                            <td class="amount">€ 2.075,95</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 2.075,95</td>
+                        </tr>
+                        <tr>
+                            <td>Overige kantoorkosten</td>
+                            <td class="amount">€ 1.649,97</td>
+                            <td class="amount">€ 1.649,99</td>
+                            <td class="amount">€ 3.299,96</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal kantoor</td>
+                            <td class="amount">€ 23.109,10</td>
+                            <td class="amount">€ 8.581,00</td>
+                            <td class="amount">€ 30.140,10</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="4">VERZEKERINGEN</td>
+                        </tr>
+                        <tr>
+                            <td>Polis burgelijke aansprakelijkheid</td>
+                            <td class="amount">€ 177,47</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 177,47</td>
+                        </tr>
+                        <tr>
+                            <td>Verzekering leden RVM</td>
+                            <td class="amount">€ 72,50</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 72,50</td>
+                        </tr>
+                        <tr>
+                            <td>Polis brand - inboedel</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 5.434,94</td>
+                            <td class="amount">€ 5.434,94</td>
+                        </tr>
+                        <tr>
+                            <td>Polis brand 90%</td>
+                            <td class="amount">€ 23.946,10</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 23.946,10</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal verzekeringen</td>
+                            <td class="amount">€ 24.196,07</td>
+                            <td class="amount">€ 5.434,94</td>
+                            <td class="amount">€ 29.631,01</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="4">CONCIERGE</td>
+                        </tr>
+                        <tr>
+                            <td>Brutoloon + bedrijfsvoorheffing</td>
+                            <td class="amount">€ 26.589,38</td>
+                            <td class="amount">€ 26.589,37</td>
+                            <td class="amount">€ 53.178,75</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="4">OPBRENGSTEN</td>
+                        </tr>
+                        <tr>
+                            <td>Verkoop goederen/intresten</td>
+                            <td class="amount negative">€ -390,92</td>
+                            <td class="amount negative">€ -1.336,81</td>
+                            <td class="amount negative">€ -1.727,73</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="4">ERELOON BEHEER</td>
+                        </tr>
+                        <tr>
+                            <td>Beheer co-eigendom</td>
+                            <td class="amount">€ 36.754,92</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 36.754,92</td>
+                        </tr>
+                        <tr>
+                            <td>Beheer pluri-eigendom</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 46.054,68</td>
+                            <td class="amount">€ 46.054,68</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal ereloon</td>
+                            <td class="amount">€ 36.754,92</td>
+                            <td class="amount">€ 46.054,68</td>
+                            <td class="amount">€ 82.809,60</td>
+                        </tr>
+                        
+                        <tr class="total-row">
+                            <td>TOTAAL GEMEENSCHAPPELIJK</td>
+                            <td class="amount">€ 182.213,67</td>
+                            <td class="amount">€ 95.100,29</td>
+                            <td class="amount">€ 277.313,96</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Privatieve Kosten Tab -->
+            <div id="privatief" class="tab-content">
+                <h3>Privatieve Kosten</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th class="amount">Bedrag</th>
+                            <th class="amount">Per eenheid</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Teledistributie (225 eenheden)</td>
+                            <td class="amount">€ 10.451,31</td>
+                            <td class="amount">€ 46,45</td>
+                        </tr>
+                        <tr>
+                            <td>Huur digiboxen (35 eenheden)</td>
+                            <td class="amount">€ 2.940,20</td>
+                            <td class="amount">€ 84,01</td>
+                        </tr>
+                        <tr>
+                            <td>Elektriciteit</td>
+                            <td class="amount">€ 25.847,59</td>
+                            <td class="amount">-</td>
+                        </tr>
+                        <tr>
+                            <td>Onderhoud</td>
+                            <td class="amount">€ 5.172,00</td>
+                            <td class="amount">-</td>
+                        </tr>
+                        <tr>
+                            <td>Riool en huisvuilbelasting</td>
+                            <td class="amount">€ 1.500,00</td>
+                            <td class="amount">-</td>
+                        </tr>
+                        <tr>
+                            <td>Diversen</td>
+                            <td class="amount">€ 9.270,85</td>
+                            <td class="amount">-</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL PRIVATIEF</td>
+                            <td class="amount">€ 55.181,95</td>
+                            <td class="amount">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Eigenaars Tab -->
+            <div id="eigenaars" class="tab-content">
+                <h3>Vorderingen op Eigenaars (Geanonimiseerd)</h3>
+                <div class="scroll-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Eigenaar ID</th>
+                                <th>Appartement</th>
+                                <th class="amount">Eindfactuur 2023/24</th>
+                                <th class="amount">1e voorschot</th>
+                                <th class="amount">2e voorschot</th>
+                                <th class="amount">Totaal</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Eigenaar-001</td>
+                                <td>B0507/XX</td>
+                                <td class="amount">-</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 375,00</td>
+                                <td class="amount">€ 375,00</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-002</td>
+                                <td>B0305/XX</td>
+                                <td class="amount">€ 1.755,43</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 375,00</td>
+                                <td class="amount">€ 2.130,43</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-003</td>
+                                <td>A0904</td>
+                                <td class="amount">€ 12.788,81</td>
+                                <td class="amount">€ 2.475,00</td>
+                                <td class="amount">€ 2.475,00</td>
+                                <td class="amount">€ 17.738,81</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-004</td>
+                                <td>A0304/XX</td>
+                                <td class="amount">-</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 712,50</td>
+                                <td class="amount">€ 712,50</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-005</td>
+                                <td>C0406</td>
+                                <td class="amount">€ 8.039,53</td>
+                                <td class="amount">€ 1.500,00</td>
+                                <td class="amount">€ 1.500,00</td>
+                                <td class="amount">€ 11.039,53</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-006</td>
+                                <td>A0308</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 630,00</td>
+                                <td class="amount">€ 630,00</td>
+                                <td class="amount">€ 1.260,00</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-007</td>
+                                <td>A0504/XX</td>
+                                <td class="amount">€ 1.618,38</td>
+                                <td class="amount">-</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 1.618,38</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-008</td>
+                                <td>B0605/XX</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 675,00</td>
+                                <td class="amount">€ 675,00</td>
+                                <td class="amount">€ 1.350,00</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-009</td>
+                                <td>B0501/XX</td>
+                                <td class="amount">€ 6.984,37</td>
+                                <td class="amount">-</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 6.984,37</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-010</td>
+                                <td>B0505/XX</td>
+                                <td class="amount">-</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 300,00</td>
+                                <td class="amount">€ 300,00</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-011</td>
+                                <td>B0311/XX</td>
+                                <td class="amount">-</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 847,50</td>
+                                <td class="amount">€ 847,50</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-012</td>
+                                <td>B0311/XX</td>
+                                <td class="amount">€ 299,15</td>
+                                <td class="amount">€ 56,47</td>
+                                <td class="amount">€ 480,00</td>
+                                <td class="amount">€ 835,62</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-013</td>
+                                <td>A0208/XX</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 615,00</td>
+                                <td class="amount">€ 615,00</td>
+                                <td class="amount">€ 1.230,00</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-014</td>
+                                <td>B0905</td>
+                                <td class="amount">€ 907,39</td>
+                                <td class="amount">€ 1.950,00</td>
+                                <td class="amount">€ 1.950,00</td>
+                                <td class="amount">€ 4.807,39</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-015</td>
+                                <td>B0805</td>
+                                <td class="amount">€ 1.705,48</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 2.295,00</td>
+                                <td class="amount">€ 4.000,48</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-016</td>
+                                <td>C0702</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 1.500,00</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 1.500,00</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-017</td>
+                                <td>B0505/XX</td>
+                                <td class="amount">-</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 375,00</td>
+                                <td class="amount">€ 375,00</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-018</td>
+                                <td>B0607/XX</td>
+                                <td class="amount">-</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 525,00</td>
+                                <td class="amount">€ 525,00</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-019</td>
+                                <td>B0607/XX</td>
+                                <td class="amount">€ 1.995,00</td>
+                                <td class="amount">-</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 1.995,00</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-020</td>
+                                <td>A0604</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 3.000,00</td>
+                                <td class="amount">€ 3.000,00</td>
+                                <td class="amount">€ 6.000,00</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-021</td>
+                                <td>B0101</td>
+                                <td class="amount">€ 449,35</td>
+                                <td class="amount">-</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 449,35</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-022</td>
+                                <td>C003</td>
+                                <td class="amount">-</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 1.500,00</td>
+                                <td class="amount">€ 1.500,00</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-023</td>
+                                <td>A0504/XX</td>
+                                <td class="amount">-</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 615,00</td>
+                                <td class="amount">€ 615,00</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-024</td>
+                                <td>A0808/XX</td>
+                                <td class="amount">-</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 712,50</td>
+                                <td class="amount">€ 712,50</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-025</td>
+                                <td>B0105</td>
+                                <td class="amount">€ 1.294,38</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 2.295,00</td>
+                                <td class="amount">€ 3.589,38</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Gemeenschap</td>
+                                <td>P14-P03-K124</td>
+                                <td class="amount">€ 194,80</td>
+                                <td class="amount">-</td>
+                                <td class="amount">-</td>
+                                <td class="amount">€ 194,80</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr class="total-row">
+                                <td colspan="2">TOTAAL VORDERINGEN</td>
+                                <td class="amount">€ 38.032,07</td>
+                                <td class="amount">€ 12.401,47</td>
+                                <td class="amount">€ 22.252,50</td>
+                                <td class="amount">€ 72.686,04</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Leveranciers Tab -->
+            <div id="leveranciers" class="tab-content">
+                <h3>Leveranciers - Gemeenschappelijke Kosten</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Leverancier</th>
+                            <th>Omschrijving</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>De Lift</td>
+                            <td>Onderhoud liften</td>
+                            <td class="amount">€ 5.296,39</td>
+                        </tr>
+                        <tr>
+                            <td>Elektro Power</td>
+                            <td>Kleine herstellingen</td>
+                            <td class="amount">€ 1.648,46</td>
+                        </tr>
+                        <tr>
+                            <td>Equans</td>
+                            <td>Onderhoud CV/zwembad</td>
+                            <td class="amount negative">€ -608,03</td>
+                        </tr>
+                        <tr>
+                            <td>Gemeente Middelkerke</td>
+                            <td>Leegstand</td>
+                            <td class="amount">€ 2.500,00</td>
+                        </tr>
+                        <tr>
+                            <td>Groep S</td>
+                            <td>Sociaal bureau</td>
+                            <td class="amount">€ 2.739,51</td>
+                        </tr>
+                        <tr>
+                            <td>Immo Beach</td>
+                            <td>Beheer</td>
+                            <td class="amount">€ 35.112,70</td>
+                        </tr>
+                        <tr>
+                            <td>Kleine uitgaven</td>
+                            <td>Kleine herstellingen</td>
+                            <td class="amount">€ 1.318,00</td>
+                        </tr>
+                        <tr>
+                            <td>Lefevre</td>
+                            <td>Kleine herstellingen</td>
+                            <td class="amount">€ 685,29</td>
+                        </tr>
+                        <tr>
+                            <td>Luminus</td>
+                            <td>Gas</td>
+                            <td class="amount">€ 6.746,46</td>
+                        </tr>
+                        <tr>
+                            <td>Mensura</td>
+                            <td>Geneeskundige dienst</td>
+                            <td class="amount">€ 65,31</td>
+                        </tr>
+                        <tr>
+                            <td>Notas</td>
+                            <td>Opmaken nieuwe basisakte</td>
+                            <td class="amount">€ 3.025,00</td>
+                        </tr>
+                        <tr>
+                            <td>Post</td>
+                            <td>-</td>
+                            <td class="amount">€ 555,68</td>
+                        </tr>
+                        <tr>
+                            <td>Seacom</td>
+                            <td>Camera beveiliging</td>
+                            <td class="amount">€ 1.403,00</td>
+                        </tr>
+                        <tr>
+                            <td>Veolia</td>
+                            <td>Ophalen huisvuil</td>
+                            <td class="amount">€ 894,24</td>
+                        </tr>
+                        <tr>
+                            <td>Vivium</td>
+                            <td>Verzekeringen</td>
+                            <td class="amount negative">€ -3.561,84</td>
+                        </tr>
+                        <tr>
+                            <td>Weemaes</td>
+                            <td>Leveren glas</td>
+                            <td class="amount">€ 1.905,70</td>
+                        </tr>
+                        <tr>
+                            <td>West Coast Investments</td>
+                            <td>Huur kantoor</td>
+                            <td class="amount">€ 6.931,01</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="2">TOTAAL LEVERANCIERS</td>
+                            <td class="amount">€ 66.656,88</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3 style="margin-top: 30px;">Te Ontvangen Facturen</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Luminus linker lift</td>
+                            <td class="amount">€ 595,00</td>
+                        </tr>
+                        <tr>
+                            <td>Luminus midden lift</td>
+                            <td class="amount">€ 540,00</td>
+                        </tr>
+                        <tr>
+                            <td>Luminus rechterlift</td>
+                            <td class="amount">€ 313,02</td>
+                        </tr>
+                        <tr>
+                            <td>Luminus gemene delen</td>
+                            <td class="amount">€ 432,00</td>
+                        </tr>
+                        <tr>
+                            <td>Luminus verwarming</td>
+                            <td class="amount">€ 4.547,68</td>
+                        </tr>
+                        <tr>
+                            <td>Techem opmaken afrekening 2024/2025</td>
+                            <td class="amount">€ 4.500,00</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL TE ONTVANGEN</td>
+                            <td class="amount">€ 10.927,70</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3 style="margin-top: 30px;">Nog te Betalen in 2025/2026</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Leverancier</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Woonsfeer</td>
+                            <td class="amount">€ 8.050,70</td>
+                        </tr>
+                        <tr>
+                            <td>Orona</td>
+                            <td class="amount">€ 7.817,50</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL NOG TE BETALEN</td>
+                            <td class="amount">€ 15.868,20</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Liften Detail Tab -->
+            <div id="liften" class="tab-content">
+                <h3>Onderhoud Liften - Gedetailleerd Overzicht</h3>
+                
+                <h4 style="margin-top: 20px; color: #3498db;">A. Gemeenschap Linker Vleugel</h4>
+                <table class="table detail-table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Onderhoudskontrakt</td>
+                            <td class="amount">€ 1.276,36</td>
+                        </tr>
+                        <tr>
+                            <td>Nazicht Vinçotte</td>
+                            <td class="amount">€ 404,48</td>
+                        </tr>
+                        <tr>
+                            <td>Elektriciteit</td>
+                            <td class="amount">€ 1.326,56</td>
+                        </tr>
+                        <tr>
+                            <td>30% Herstellingen na risicoanalyse</td>
+                            <td class="amount">€ 2.005,48</td>
+                        </tr>
+                        <tr>
+                            <td>Diversen</td>
+                            <td class="amount">€ 690,98</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal</td>
+                            <td class="amount">€ 5.703,86</td>
+                        </tr>
+                        <tr>
+                            <td>Verzekering</td>
+                            <td class="amount">€ 886,89</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL LINKER LIFT</td>
+                            <td class="amount">€ 6.590,75</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h4 style="margin-top: 20px; color: #3498db;">B. Gemeenschap Midden Vleugel</h4>
+                <table class="table detail-table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Onderhoudskontrakt</td>
+                            <td class="amount">€ 1.366,46</td>
+                        </tr>
+                        <tr>
+                            <td>Nazicht Vinçotte</td>
+                            <td class="amount">€ 404,48</td>
+                        </tr>
+                        <tr>
+                            <td>Elektriciteit</td>
+                            <td class="amount">€ 1.347,98</td>
+                        </tr>
+                        <tr>
+                            <td>30% Herstellingen na risicoanalyse</td>
+                            <td class="amount">€ 1.586,64</td>
+                        </tr>
+                        <tr>
+                            <td>Diversen</td>
+                            <td class="amount">€ 711,01</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal</td>
+                            <td class="amount">€ 5.416,57</td>
+                        </tr>
+                        <tr>
+                            <td>Verzekering</td>
+                            <td class="amount">€ 886,89</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL MIDDEN LIFT</td>
+                            <td class="amount">€ 6.303,46</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h4 style="margin-top: 20px; color: #3498db;">C. Gemeenschap Rechter Vleugel</h4>
+                <table class="table detail-table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Onderhoudskontrakt</td>
+                            <td class="amount">€ 1.276,36</td>
+                        </tr>
+                        <tr>
+                            <td>Nazicht Vinçotte</td>
+                            <td class="amount">€ 404,49</td>
+                        </tr>
+                        <tr>
+                            <td>Vervangen tandriem en deurkabel</td>
+                            <td class="amount">€ 1.073,05</td>
+                        </tr>
+                        <tr>
+                            <td>Elektriciteit</td>
+                            <td class="amount">€ 1.224,86</td>
+                        </tr>
+                        <tr>
+                            <td>30% Herstellingen na risicoanalyse</td>
+                            <td class="amount">€ 1.704,27</td>
+                        </tr>
+                        <tr>
+                            <td>Diversen</td>
+                            <td class="amount">€ 729,44</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal</td>
+                            <td class="amount">€ 6.412,47</td>
+                        </tr>
+                        <tr>
+                            <td>Verzekering</td>
+                            <td class="amount">€ 886,90</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL RECHTER LIFT</td>
+                            <td class="amount">€ 7.299,37</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3 style="margin-top: 30px;">Samenvatting Liften</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Lift</th>
+                            <th class="amount">Art. 8 (R)</th>
+                            <th class="amount">Art. 9 (O)</th>
+                            <th class="amount">Totaal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Linker lift</td>
+                            <td class="amount">€ 5.703,86</td>
+                            <td class="amount">€ 886,89</td>
+                            <td class="amount">€ 6.590,75</td>
+                        </tr>
+                        <tr>
+                            <td>Midden lift</td>
+                            <td class="amount">€ 5.416,57</td>
+                            <td class="amount">€ 886,89</td>
+                            <td class="amount">€ 6.303,46</td>
+                        </tr>
+                        <tr>
+                            <td>Rechter lift</td>
+                            <td class="amount">€ 6.412,47</td>
+                            <td class="amount">€ 886,90</td>
+                            <td class="amount">€ 7.299,37</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL</td>
+                            <td class="amount">€ 17.532,90</td>
+                            <td class="amount">€ 2.660,68</td>
+                            <td class="amount">€ 20.193,58</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3 style="margin-top: 30px;">Nieuwe Liften - Kostprijsopgave</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Lift</th>
+                            <th class="amount">Kostprijs</th>
+                            <th class="amount">Opgevraagd</th>
+                            <th class="amount">Verschil</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Linker lift</td>
+                            <td class="amount">€ 91.422,04</td>
+                            <td class="amount">€ 95.000,00</td>
+                            <td class="amount negative">€ -3.577,96</td>
+                        </tr>
+                        <tr>
+                            <td>Midden lift</td>
+                            <td class="amount">€ 91.422,04</td>
+                            <td class="amount">€ 95.000,00</td>
+                            <td class="amount negative">€ -3.577,96</td>
+                        </tr>
+                        <tr>
+                            <td>Rechterlift</td>
+                            <td class="amount">€ 89.578,08</td>
+                            <td class="amount">€ 95.000,00</td>
+                            <td class="amount negative">€ -5.421,92</td>
+                        </tr>
+                        <tr>
+                            <td>Supplement rechterlift (50% privatief)</td>
+                            <td class="amount">€ 4.259,04</td>
+                            <td class="amount">€ 2.129,52</td>
+                            <td class="amount">-</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL</td>
+                            <td class="amount">€ 276.681,20</td>
+                            <td class="amount">€ 285.000,00</td>
+                            <td class="amount negative">€ -12.577,84</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Onderhoud CV/Zwembad Tab -->
+            <div id="onderhoud" class="tab-content">
+                <h3>Detailopgave Onderhoud C.V. en Zwembad</h3>
+                
+                <h4 style="margin-top: 20px; color: #3498db;">A. Centrale Verwarming</h4>
+                <table class="table detail-table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Onderhoudskontract</td>
+                            <td class="amount">€ 7.419,35</td>
+                        </tr>
+                        <tr>
+                            <td>Vervanging stookketelboven</td>
+                            <td class="amount">€ 17.009,58</td>
+                        </tr>
+                        <tr>
+                            <td>Aankoop datalogger</td>
+                            <td class="amount">-</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL CENTRALE VERWARMING</td>
+                            <td class="amount">€ 24.428,93</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h4 style="margin-top: 20px; color: #3498db;">B. Zwembad</h4>
+                <table class="table detail-table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Onderhoudskontract</td>
+                            <td class="amount">€ 8.625,37</td>
+                        </tr>
+                        <tr>
+                            <td>Produkten</td>
+                            <td class="amount">€ 1.080,38</td>
+                        </tr>
+                        <tr>
+                            <td>Planten in kunstmateriaal</td>
+                            <td class="amount">€ 288,68</td>
+                        </tr>
+                        <tr>
+                            <td>Vervangen toilet</td>
+                            <td class="amount">€ 685,29</td>
+                        </tr>
+                        <tr>
+                            <td>Klein materiaal (ontgeurdes/toiletpapier/geur javel)</td>
+                            <td class="amount">€ 272,25</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL ZWEMBAD</td>
+                            <td class="amount">€ 10.951,97</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3 style="margin-top: 30px;">Totaal Onderhoud C.V. en Zwembad</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Categorie</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Centrale Verwarming</td>
+                            <td class="amount">€ 24.428,93</td>
+                        </tr>
+                        <tr>
+                            <td>Zwembad</td>
+                            <td class="amount">€ 10.951,97</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL</td>
+                            <td class="amount">€ 35.380,90</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Concierge Detail Tab -->
+            <div id="concierge" class="tab-content">
+                <h3>Detailopgave Concierge</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th class="amount">Art. 8</th>
+                            <th class="amount">Art. 9</th>
+                            <th class="amount">Totaal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-header">
+                            <td colspan="4">BRUTOLOON + BEDRIJFSVOORHEFFING</td>
+                        </tr>
+                        <tr>
+                            <td>Werkman</td>
+                            <td class="amount">€ 8.518,39</td>
+                            <td class="amount">€ 8.518,38</td>
+                            <td class="amount">€ 17.036,77</td>
+                        </tr>
+                        <tr>
+                            <td>Bijkomende ploeg</td>
+                            <td class="amount">€ 10.123,49</td>
+                            <td class="amount">€ 10.123,48</td>
+                            <td class="amount">€ 20.246,97</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal brutoloon</td>
+                            <td class="amount">€ 18.641,88</td>
+                            <td class="amount">€ 18.641,86</td>
+                            <td class="amount">€ 37.283,74</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="4">BIJDRAGE RSZ</td>
+                        </tr>
+                        <tr>
+                            <td>Werkman</td>
+                            <td class="amount">€ 4.950,50</td>
+                            <td class="amount">€ 4.950,49</td>
+                            <td class="amount">€ 9.900,99</td>
+                        </tr>
+                        <tr>
+                            <td>Jaarlijks verlof</td>
+                            <td class="amount">€ 970,07</td>
+                            <td class="amount">€ 970,07</td>
+                            <td class="amount">€ 1.940,14</td>
+                        </tr>
+                        <tr>
+                            <td>Strukturele vermindering/oudere werknemers</td>
+                            <td class="amount negative">€ -413,54</td>
+                            <td class="amount negative">€ -413,54</td>
+                            <td class="amount negative">€ -827,08</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal RSZ</td>
+                            <td class="amount">€ 5.507,03</td>
+                            <td class="amount">€ 5.507,02</td>
+                            <td class="amount">€ 11.014,05</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="4">OVERIGE KOSTEN</td>
+                        </tr>
+                        <tr>
+                            <td>Electriciteit en andere kosten</td>
+                            <td class="amount">€ 132,37</td>
+                            <td class="amount">€ 132,37</td>
+                            <td class="amount">€ 264,74</td>
+                        </tr>
+                        <tr>
+                            <td>Gemeentebelastingen/leegstand</td>
+                            <td class="amount">€ 1.250,00</td>
+                            <td class="amount">€ 1.250,00</td>
+                            <td class="amount">€ 2.500,00</td>
+                        </tr>
+                        <tr>
+                            <td>Verzekering arbeidsongevallen</td>
+                            <td class="amount">€ 1.004,56</td>
+                            <td class="amount">€ 1.004,57</td>
+                            <td class="amount">€ 2.009,13</td>
+                        </tr>
+                        <tr>
+                            <td>Tussenkomst vervoerkosten</td>
+                            <td class="amount">€ 166,04</td>
+                            <td class="amount">€ 166,05</td>
+                            <td class="amount">€ 332,09</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal overige kosten</td>
+                            <td class="amount">€ 2.552,97</td>
+                            <td class="amount">€ 2.552,99</td>
+                            <td class="amount">€ 5.105,96</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="4">PRIVATE WERKEN</td>
+                        </tr>
+                        <tr>
+                            <td>Private werken door concierge en werkman</td>
+                            <td class="amount negative">€ -112,50</td>
+                            <td class="amount negative">€ -112,50</td>
+                            <td class="amount negative">€ -225,00</td>
+                        </tr>
+                        
+                        <tr class="total-row">
+                            <td>TOTAAL CONCIERGE</td>
+                            <td class="amount">€ 26.589,38</td>
+                            <td class="amount">€ 26.589,37</td>
+                            <td class="amount">€ 53.178,75</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Verzekeringen Tab -->
+            <div id="verzekeringen" class="tab-content">
+                <h3>Verzekeringen - Periode 15/03/2024 tot 14/03/2025</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Polis</th>
+                            <th>Omschrijving</th>
+                            <th class="amount">Bedrag</th>
+                            <th class="amount">Verdeling</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>R/614001</td>
+                            <td>Polis burgelijke aansprakelijkheid</td>
+                            <td class="amount">€ 177,47</td>
+                            <td class="amount">Art. 8</td>
+                        </tr>
+                        <tr>
+                            <td>R/614005</td>
+                            <td>Verzekering leden RVM en commissaris</td>
+                            <td class="amount">€ 72,50</td>
+                            <td class="amount">Art. 8</td>
+                        </tr>
+                        <tr>
+                            <td>R/614004</td>
+                            <td>Polis brand - inboedel</td>
+                            <td class="amount">€ 5.434,94</td>
+                            <td class="amount">Art. 9A</td>
+                        </tr>
+                        <tr>
+                            <td>R/614000</td>
+                            <td>Polis brand (€ 26.606,78 x 90%)</td>
+                            <td class="amount">€ 23.946,10</td>
+                            <td class="amount">Art. 8</td>
+                        </tr>
+                        <tr>
+                            <td>-</td>
+                            <td>Verzekering liften (€ 26.606,78 x 10%)</td>
+                            <td class="amount">€ 2.660,68</td>
+                            <td class="amount">Liften O</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="2">TOTAAL VERZEKERINGEN</td>
+                            <td class="amount">€ 32.291,69</td>
+                            <td class="amount">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3 style="margin-top: 30px;">Verdeling per Artikel</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Artikel</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Art. 8 - O</td>
+                            <td class="amount">€ 23.946,10</td>
+                        </tr>
+                        <tr>
+                            <td>Art. 8A - R</td>
+                            <td class="amount">€ 249,97</td>
+                        </tr>
+                        <tr>
+                            <td>Art. 9A - R</td>
+                            <td class="amount">€ 5.434,94</td>
+                        </tr>
+                        <tr>
+                            <td>Links - O</td>
+                            <td class="amount">€ 886,89</td>
+                        </tr>
+                        <tr>
+                            <td>Midden - O</td>
+                            <td class="amount">€ 886,89</td>
+                        </tr>
+                        <tr>
+                            <td>Rechts - O</td>
+                            <td class="amount">€ 886,90</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL</td>
+                            <td class="amount">€ 32.291,69</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Budget Vergelijking Tab -->
+            <div id="budget" class="tab-content">
+                <h3>Vergelijking Gebudgetteerde en Werkelijke Uitgaven</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th class="amount">Budget</th>
+                            <th class="amount">Werkelijk</th>
+                            <th class="amount">Verschil</th>
+                            <th>%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-header">
+                            <td colspan="5">A. KOSTEN VIA AFREKENING TECHEM</td>
+                        </tr>
+                        <tr>
+                            <td>Gas</td>
+                            <td class="amount">€ 75.000,00</td>
+                            <td class="amount">€ 66.099,37</td>
+                            <td class="amount positive">€ 8.900,63</td>
+                            <td>88,1%</td>
+                        </tr>
+                        <tr>
+                            <td>Water</td>
+                            <td class="amount">€ 14.170,00</td>
+                            <td class="amount">€ 18.210,02</td>
+                            <td class="amount negative">€ -4.040,02</td>
+                            <td>128,5%</td>
+                        </tr>
+                        <tr>
+                            <td>Drijfkracht verwarming</td>
+                            <td class="amount">€ 13.460,00</td>
+                            <td class="amount">€ 13.460,56</td>
+                            <td class="amount negative">€ -0,56</td>
+                            <td>100,0%</td>
+                        </tr>
+                        <tr>
+                            <td>Onderhoud centrale verwarming</td>
+                            <td class="amount">€ 24.430,00</td>
+                            <td class="amount">€ 24.428,93</td>
+                            <td class="amount positive">€ 1,07</td>
+                            <td>100,0%</td>
+                        </tr>
+                        <tr>
+                            <td>Kosten zwembad</td>
+                            <td class="amount">€ 10.950,00</td>
+                            <td class="amount">€ 10.951,97</td>
+                            <td class="amount negative">€ -1,97</td>
+                            <td>100,0%</td>
+                        </tr>
+                        <tr>
+                            <td>Abonnement watertellers</td>
+                            <td class="amount">€ 11.190,00</td>
+                            <td class="amount">€ 11.188,27</td>
+                            <td class="amount positive">€ 1,73</td>
+                            <td>100,0%</td>
+                        </tr>
+                        <tr>
+                            <td>Huur koud/warm watertellers TECHEM</td>
+                            <td class="amount">€ 9.500,00</td>
+                            <td class="amount">€ 9.250,66</td>
+                            <td class="amount positive">€ 249,34</td>
+                            <td>97,4%</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal TECHEM</td>
+                            <td class="amount">€ 158.700,00</td>
+                            <td class="amount">€ 153.589,78</td>
+                            <td class="amount positive">€ 5.110,22</td>
+                            <td>96,8%</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="5">B. GEMEENSCHAPPELIJKE KOSTEN</td>
+                        </tr>
+                        <tr>
+                            <td>Elektriciteit gemene delen</td>
+                            <td class="amount">€ 16.440,00</td>
+                            <td class="amount">€ 16.442,56</td>
+                            <td class="amount negative">€ -2,56</td>
+                            <td>100,0%</td>
+                        </tr>
+                        <tr>
+                            <td>Liftkosten</td>
+                            <td class="amount">€ 20.190,00</td>
+                            <td class="amount">€ 20.193,59</td>
+                            <td class="amount negative">€ -3,59</td>
+                            <td>100,0%</td>
+                        </tr>
+                        <tr>
+                            <td>Klein onderhoud, herstellingen, materieel</td>
+                            <td class="amount">€ 37.920,00</td>
+                            <td class="amount">€ 37.920,12</td>
+                            <td class="amount negative">€ -0,12</td>
+                            <td>100,0%</td>
+                        </tr>
+                        <tr>
+                            <td>Buitengewoon onderhoud</td>
+                            <td class="amount">€ 8.730,00</td>
+                            <td class="amount">€ 8.725,97</td>
+                            <td class="amount positive">€ 4,03</td>
+                            <td>100,0%</td>
+                        </tr>
+                        <tr>
+                            <td>Kantoorkosten</td>
+                            <td class="amount">€ 30.140,00</td>
+                            <td class="amount">€ 30.140,10</td>
+                            <td class="amount negative">€ -0,10</td>
+                            <td>100,0%</td>
+                        </tr>
+                        <tr>
+                            <td>Verzekeringen</td>
+                            <td class="amount">€ 29.630,00</td>
+                            <td class="amount">€ 29.631,01</td>
+                            <td class="amount negative">€ -1,01</td>
+                            <td>100,0%</td>
+                        </tr>
+                        <tr>
+                            <td>Concierge en onderhoudsploeg</td>
+                            <td class="amount">€ 53.180,00</td>
+                            <td class="amount">€ 53.178,75</td>
+                            <td class="amount positive">€ 1,25</td>
+                            <td>100,0%</td>
+                        </tr>
+                        <tr>
+                            <td>Opbrengsten</td>
+                            <td class="amount negative">€ -1.730,00</td>
+                            <td class="amount negative">€ -1.727,73</td>
+                            <td class="amount negative">€ -2,27</td>
+                            <td>99,9%</td>
+                        </tr>
+                        <tr>
+                            <td>Ereloon beheer</td>
+                            <td class="amount">€ 82.810,00</td>
+                            <td class="amount">€ 82.809,60</td>
+                            <td class="amount positive">€ 0,40</td>
+                            <td>100,0%</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal gemeenschappelijk</td>
+                            <td class="amount">€ 277.310,00</td>
+                            <td class="amount">€ 277.313,97</td>
+                            <td class="amount negative">€ -3,97</td>
+                            <td>100,0%</td>
+                        </tr>
+                        
+                        <tr class="section-header">
+                            <td colspan="5">C. PRIVATIEVE KOSTEN</td>
+                        </tr>
+                        <tr>
+                            <td>Teledistributie</td>
+                            <td class="amount">€ 10.450,00</td>
+                            <td class="amount">€ 10.451,31</td>
+                            <td class="amount negative">€ -1,31</td>
+                            <td>100,0%</td>
+                        </tr>
+                        <tr>
+                            <td>Huur digiboxen</td>
+                            <td class="amount">€ 5.500,00</td>
+                            <td class="amount">€ 2.940,20</td>
+                            <td class="amount positive">€ 2.559,80</td>
+                            <td>53,5%</td>
+                        </tr>
+                        <tr>
+                            <td>Elektriciteit</td>
+                            <td class="amount">€ 16.000,00</td>
+                            <td class="amount">€ 25.847,59</td>
+                            <td class="amount negative">€ -9.847,59</td>
+                            <td>161,5%</td>
+                        </tr>
+                        <tr>
+                            <td>Onderhoud</td>
+                            <td class="amount">€ 10.000,00</td>
+                            <td class="amount">€ 5.172,00</td>
+                            <td class="amount positive">€ 4.828,00</td>
+                            <td>51,7%</td>
+                        </tr>
+                        <tr>
+                            <td>Riool en huisvuilbelasting</td>
+                            <td class="amount">€ 1.500,00</td>
+                            <td class="amount">€ 1.500,00</td>
+                            <td class="amount">€ 0,00</td>
+                            <td>100,0%</td>
+                        </tr>
+                        <tr>
+                            <td>Diversen</td>
+                            <td class="amount">€ 23.550,00</td>
+                            <td class="amount">€ 9.270,85</td>
+                            <td class="amount positive">€ 14.279,15</td>
+                            <td>39,4%</td>
+                        </tr>
+                        <tr class="subtotal-row">
+                            <td>Subtotaal privatief</td>
+                            <td class="amount">€ 67.000,00</td>
+                            <td class="amount">€ 55.181,95</td>
+                            <td class="amount positive">€ 11.818,05</td>
+                            <td>82,4%</td>
+                        </tr>
+                        
+                        <tr class="total-row">
+                            <td>TOTAAL KOSTEN</td>
+                            <td class="amount">€ 503.010,00</td>
+                            <td class="amount">€ 486.085,70</td>
+                            <td class="amount positive">€ 16.924,30</td>
+                            <td>96,6%</td>
+                        </tr>
+                        
+                        <tr>
+                            <td colspan="5" style="padding: 20px 0;">
+                                <strong>Goedgekeurd budget 2024/2025:</strong> € 510.000,00<br>
+                                <strong>Werkelijke kosten:</strong> € 486.086,19<br>
+                                <strong>Verschil:</strong> € 23.913,81 (95,3% van budget gebruikt)
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chart.js Initialisatie -->
+    <script>
+        // Extra wachttijd voor langzame CDN loads
+        window.addEventListener('load', function() {
+            // Probeer na 1 seconde nog een keer als Chart niet geladen is
+            setTimeout(function() {
+                initializeCharts();
+            }, 1000);
+        });
+        
+        // Direct proberen bij DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+        });
+        
+        function initializeCharts() {
+            // Test of Chart.js correct geladen is
+            if (typeof Chart === 'undefined') {
+                console.log('Chart.js nog niet geladen, wacht op window.load event...');
+                return;
+            }
+            
+            console.log('Chart.js versie:', Chart.version);
+            
+            // Voor Chart.js 3.x en 4.x - auto registratie
+            if (Chart.register) {
+                try {
+                    // Basis componenten die we nodig hebben
+                    const components = [
+                        Chart.controllers.pie,
+                        Chart.controllers.doughnut,
+                        Chart.controllers.bar,
+                        Chart.elements.Arc,
+                        Chart.elements.Rectangle,
+                        Chart.scales.category,
+                        Chart.scales.linear,
+                        Chart.plugins.legend,
+                        Chart.plugins.tooltip
+                    ];
+                    
+                    // Filter alleen bestaande componenten
+                    const validComponents = components.filter(c => c !== undefined);
+                    
+                    if (validComponents.length > 0) {
+                        Chart.register(...validComponents);
+                    }
+                } catch (e) {
+                    console.log('Auto-registratie mislukt, Chart.js mogelijk al geconfigureerd');
+                }
+            }
+            
+            // Verberg alle fallback berichten eerst
+            document.querySelectorAll('.chart-fallback').forEach(function(el) {
+                el.style.display = 'none';
+            });
+            
+            try {
+                // Grafiek 1: Hoofdkostenverdeling (Pie)
+                const canvas1 = document.getElementById('mainExpenseChart');
+                if (canvas1 && canvas1.getContext) {
+                    const chart1 = new Chart(canvas1.getContext('2d'), {
+                        type: 'pie',
+                        data: {
+                            labels: ['TECHEM (€153.590)', 'Gemeenschappelijk (€277.314)', 'Privatief (€55.182)'],
+                            datasets: [{
+                                data: [153590, 277314, 55182],
+                                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                                borderWidth: 2,
+                                borderColor: '#ffffff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                    console.log('Grafiek 1 succesvol geladen');
+                }
+                
+                // Grafiek 2: Budget vs Werkelijk (Bar)
+                const canvas2 = document.getElementById('budgetChart');
+                if (canvas2 && canvas2.getContext) {
+                    const chart2 = new Chart(canvas2.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: ['TECHEM', 'Gemeensch.', 'Privatief', 'Totaal'],
+                            datasets: [
+                                {
+                                    label: 'Budget',
+                                    data: [145500, 268000, 67000, 510000],
+                                    backgroundColor: '#36A2EB',
+                                    borderColor: '#2980b9',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'Werkelijk',
+                                    data: [153590, 277314, 55182, 486086],
+                                    backgroundColor: '#FF6384',
+                                    borderColor: '#e74c3c',
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                    console.log('Grafiek 2 succesvol geladen');
+                }
+                
+                // Grafiek 3: TECHEM Breakdown (Doughnut)
+                const canvas3 = document.getElementById('techemChart');
+                if (canvas3 && canvas3.getContext) {
+                    const chart3 = new Chart(canvas3.getContext('2d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Gas', 'Water', 'Verwarming', 'CV', 'Zwembad', 'Tellers', 'Contract'],
+                            datasets: [{
+                                data: [66100, 18210, 13461, 24429, 10952, 11188, 9251],
+                                backgroundColor: [
+                                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                                    '#9966FF', '#FF9F40', '#C9CBCF'
+                                ],
+                                borderWidth: 2,
+                                borderColor: '#ffffff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    position: 'right'
+                                }
+                            }
+                        }
+                    });
+                    console.log('Grafiek 3 succesvol geladen');
+                }
+                
+                // Grafiek 4: Gemeenschappelijke kosten (Horizontal Bar)
+                const canvas4 = document.getElementById('commonChart');
+                if (canvas4 && canvas4.getContext) {
+                    const chart4 = new Chart(canvas4.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: ['Beheer', 'Concierge', 'Onderhoud', 'Kantoor', 'Verzeker.', 'Liften', 'Elektr.', 'Buitengew.'],
+                            datasets: [{
+                                label: 'Bedrag',
+                                data: [82810, 53179, 37920, 30140, 29631, 20194, 16443, 8726],
+                                backgroundColor: '#36A2EB',
+                                borderColor: '#2980b9',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                    console.log('Grafiek 4 succesvol geladen');
+                }
+                
+                console.log('Alle grafieken succesvol geïnitialiseerd');
+                
+            } catch (error) {
+                console.error('Fout bij het maken van grafieken:', error);
+                document.querySelectorAll('.chart-fallback').forEach(function(el) {
+                    el.style.display = 'block';
+                    el.innerHTML = 'Er is een fout opgetreden bij het laden van de grafieken. Details: ' + error.message;
+                });
+            }
+        }
+        
+        // Tab functionaliteit
+        function openTab(evt, tabName) {
+            var i, tabcontent, tabs;
+            
+            tabcontent = document.getElementsByClassName('tab-content');
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove('active');
+            }
+            
+            tabs = document.getElementsByClassName('tab');
+            for (i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+            
+            var selectedTab = document.getElementById(tabName);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            if (evt && evt.currentTarget) {
+                evt.currentTarget.classList.add('active');
+            }
+        }
+        
+        // Show details functie voor klikbare kaarten
+        function showDetails(type) {
+            var tabMap = {
+                'balance': 'overview',
+                'expenses': 'gemeenschappelijk',
+                'income': 'budget',
+                'owners': 'eigenaars'
+            };
+            
+            if (tabMap[type]) {
+                var tabs = document.querySelectorAll('.tab');
+                for (var i = 0; i < tabs.length; i++) {
+                    var onclick = tabs[i].getAttribute('onclick');
+                    if (onclick && onclick.includes(tabMap[type])) {
+                        tabs[i].click();
+                        break;
+                    }
+                }
+            }
+        }
+    </script>
+
+<script>
+const chartInitialized = {
+  'main-expenses': false,
+  'detailed-categories': false,
+  'cashflow': false,
+  'balance': false
+};
+</script>
+
+
+<script>
+document.querySelectorAll('.tab-link').forEach(link => {
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    const targetId = event.target.getAttribute('data-tab');
+
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    document.getElementById(targetId).classList.add('active');
+
+    document.querySelectorAll('.tab-link').forEach(link => {
+      link.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    if (!chartInitialized[targetId]) {
+      switch (targetId) {
+        case 'main-expenses': initMainExpenseChart(); break;
+        case 'detailed-categories': initDetailedCategoryChart(); break;
+        case 'cashflow': initCashflowChart(); break;
+        case 'balance': initBalanceChart(); break;
+      }
+      chartInitialized[targetId] = true;
+    }
+  });
+});
+</script>
+
+</body>
+</html>
