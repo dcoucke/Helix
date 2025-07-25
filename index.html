@@ -148,17 +148,17 @@
         <!-- Detailed Tabs -->
         <div class="tab-container">
             <div class="tabs">
-                <button class="tab active" onclick="openTab(event, 'overview')">Overzicht</button>
-                <button class="tab" onclick="openTab(event, 'techem')">TECHEM Detail</button>
-                <button class="tab" onclick="openTab(event, 'gemeenschappelijk')">Gemeenschappelijke Kosten</button>
-                <button class="tab" onclick="openTab(event, 'privatief')">Privatieve Kosten</button>
-                <button class="tab" onclick="openTab(event, 'eigenaars')">Vorderingen Eigenaars</button>
-                <button class="tab" onclick="openTab(event, 'leveranciers')">Leveranciers</button>
-                <button class="tab" onclick="openTab(event, 'liften')">Liften Detail</button>
-                <button class="tab" onclick="openTab(event, 'onderhoud')">Onderhoud CV/Zwembad</button>
-                <button class="tab" onclick="openTab(event, 'concierge')">Concierge Detail</button>
-                <button class="tab" onclick="openTab(event, 'verzekeringen')">Verzekeringen</button>
-                <button class="tab" onclick="openTab(event, 'budget')">Budget Vergelijking</button>
+                <button class="tab active" data-tab="overview">Overzicht</button>
+                <button class="tab" data-tab="techem">TECHEM Detail</button>
+                <button class="tab" data-tab="gemeenschappelijk">Gemeenschappelijke Kosten</button>
+                <button class="tab" data-tab="privatief">Privatieve Kosten</button>
+                <button class="tab" data-tab="eigenaars">Vorderingen Eigenaars</button>
+                <button class="tab" data-tab="leveranciers">Leveranciers</button>
+                <button class="tab" data-tab="liften">Liften Detail</button>
+                <button class="tab" data-tab="onderhoud">Onderhoud CV/Zwembad</button>
+                <button class="tab" data-tab="concierge">Concierge Detail</button>
+                <button class="tab" data-tab="verzekeringen">Verzekeringen</button>
+                <button class="tab" data-tab="budget">Budget Vergelijking</button>
             </div>
             
             <!-- Overview Tab -->
@@ -522,6 +522,150 @@
                             <td class="amount">€ 503.010,00</td>
                             <td class="amount">€ 486.085,70</td>
                             <td class="amount positive">€ 16.924,30</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Liften Tab -->
+            <div id="liften" class="tab-content">
+                <h3>Onderhoud Liften - Gedetailleerd Overzicht</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Lift</th>
+                            <th class="amount">Art. 8 (R)</th>
+                            <th class="amount">Art. 9 (O)</th>
+                            <th class="amount">Totaal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Linker lift</td>
+                            <td class="amount">€ 5.703,86</td>
+                            <td class="amount">€ 886,89</td>
+                            <td class="amount">€ 6.590,75</td>
+                        </tr>
+                        <tr>
+                            <td>Midden lift</td>
+                            <td class="amount">€ 5.416,57</td>
+                            <td class="amount">€ 886,89</td>
+                            <td class="amount">€ 6.303,46</td>
+                        </tr>
+                        <tr>
+                            <td>Rechter lift</td>
+                            <td class="amount">€ 6.412,47</td>
+                            <td class="amount">€ 886,90</td>
+                            <td class="amount">€ 7.299,37</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL</td>
+                            <td class="amount">€ 17.532,90</td>
+                            <td class="amount">€ 2.660,68</td>
+                            <td class="amount">€ 20.193,58</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Onderhoud Tab -->
+            <div id="onderhoud" class="tab-content">
+                <h3>Detailopgave Onderhoud C.V. en Zwembad</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Categorie</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Centrale Verwarming</td>
+                            <td class="amount">€ 24.428,93</td>
+                        </tr>
+                        <tr>
+                            <td>Zwembad</td>
+                            <td class="amount">€ 10.951,97</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL</td>
+                            <td class="amount">€ 35.380,90</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Concierge Tab -->
+            <div id="concierge" class="tab-content">
+                <h3>Detailopgave Concierge</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th class="amount">Art. 8</th>
+                            <th class="amount">Art. 9</th>
+                            <th class="amount">Totaal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Brutoloon + bedrijfsvoorheffing</td>
+                            <td class="amount">€ 18.641,88</td>
+                            <td class="amount">€ 18.641,86</td>
+                            <td class="amount">€ 37.283,74</td>
+                        </tr>
+                        <tr>
+                            <td>Bijdrage RSZ</td>
+                            <td class="amount">€ 5.507,03</td>
+                            <td class="amount">€ 5.507,02</td>
+                            <td class="amount">€ 11.014,05</td>
+                        </tr>
+                        <tr>
+                            <td>Overige kosten</td>
+                            <td class="amount">€ 2.552,97</td>
+                            <td class="amount">€ 2.552,99</td>
+                            <td class="amount">€ 5.105,96</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL CONCIERGE</td>
+                            <td class="amount">€ 26.589,38</td>
+                            <td class="amount">€ 26.589,37</td>
+                            <td class="amount">€ 53.178,75</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Verzekeringen Tab -->
+            <div id="verzekeringen" class="tab-content">
+                <h3>Verzekeringen - Periode 15/03/2024 tot 14/03/2025</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Polis</th>
+                            <th>Omschrijving</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>R/614001</td>
+                            <td>Polis burgelijke aansprakelijkheid</td>
+                            <td class="amount">€ 177,47</td>
+                        </tr>
+                        <tr>
+                            <td>R/614004</td>
+                            <td>Polis brand - inboedel</td>
+                            <td class="amount">€ 5.434,94</td>
+                        </tr>
+                        <tr>
+                            <td>R/614000</td>
+                            <td>Polis brand (90%)</td>
+                            <td class="amount">€ 23.946,10</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="2">TOTAAL VERZEKERINGEN</td>
+                            <td class="amount">€ 32.291,69</td>
                         </tr>
                     </tbody>
                 </table>
