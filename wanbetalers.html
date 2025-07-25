@@ -114,6 +114,11 @@
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             min-height: 400px;
+            position: relative;
+        }
+        
+        .chart-container canvas {
+            max-height: 350px !important;
         }
         
         .chart-title {
@@ -272,8 +277,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Residentie HELIX - Eigenaarsbalansen Analyse</h1>
-            <p class="subtitle">Dashboard Wanbetalers - Status per 14/07/2025</p>
+            <h1>Residentie HELIX - Wanbetalers Analyse</h1>
+            <p class="subtitle">Bron: Eigenaarsbalansen 2024/25</p>
         </div>
         
         <div class="kpi-grid">
@@ -305,22 +310,22 @@
         <div class="charts-grid">
             <div class="chart-container">
                 <h3 class="chart-title">Verdeling per Schuldcategorie</h3>
-                <canvas id="categoryChart"></canvas>
+                <canvas id="categoryChart" width="400" height="300"></canvas>
             </div>
             
             <div class="chart-container">
-                <h3 class="chart-title">Top 10 Wanbetalers</h3>
-                <canvas id="top10Chart"></canvas>
+                <h3 class="chart-title">Top 10 Wanbetalers - Concentratie</h3>
+                <canvas id="top10Chart" width="400" height="300"></canvas>
             </div>
             
             <div class="chart-container">
                 <h3 class="chart-title">Verdeling Type Eigenaar</h3>
-                <canvas id="ownerTypeChart"></canvas>
+                <canvas id="ownerTypeChart" width="400" height="300"></canvas>
             </div>
             
             <div class="chart-container">
                 <h3 class="chart-title">Verdeling Natuurlijke Personen vs Vennootschappen</h3>
-                <canvas id="entityChart"></canvas>
+                <canvas id="entityChart" width="400" height="300"></canvas>
             </div>
         </div>
         
@@ -1012,18 +1017,17 @@
             }
         });
         
-        // Bar Chart - Top 10 wanbetalers
+        // Pie Chart - Top 10 concentratie
         const top10Ctx = document.getElementById('top10Chart').getContext('2d');
         new Chart(top10Ctx, {
-            type: 'bar',
+            type: 'pie',
             data: {
-                labels: ['Eigenaar 1', 'Venn. A', 'Eigenaar 3', 'Venn. B', 'Eigenaar 5', 'Venn. C', 'Eigenaar 7', 'Eigenaar 8', 'Eigenaar 9', 'Eigenaar 10'],
+                labels: ['Top 10 wanbetalers (70,35%)', 'Overige 30 wanbetalers (29,65%)'],
                 datasets: [{
-                    label: 'Totale schuld',
-                    data: [24738.81, 14789.53, 13000, 9807.39, 9000.48, 8784.18, 6984.37, 5250, 5000, 5000],
-                    backgroundColor: chartColors.danger,
-                    borderColor: chartColors.danger,
-                    borderWidth: 1
+                    data: [102354.46, 43134.08],
+                    backgroundColor: [chartColors.danger, chartColors.primary],
+                    borderWidth: 2,
+                    borderColor: '#fff'
                 }]
             },
             options: {
@@ -1031,22 +1035,23 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        display: false
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            font: {
+                                size: 14
+                            }
+                        }
                     },
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return '€ ' + context.parsed.y.toLocaleString('nl-BE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return '€ ' + value.toLocaleString('nl-BE');
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += '€ ' + context.parsed.toLocaleString('nl-BE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                                return label;
                             }
                         }
                     }
