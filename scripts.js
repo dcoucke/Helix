@@ -1,14 +1,24 @@
 // Dashboard Functionality voor Residentie HELIX
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dashboard wordt geladen...');
     
-    // Initialize charts when DOM is ready
-    initializeCharts();
+    // Test Chart.js availability
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js niet gevonden');
+        setTimeout(() => {
+            if (typeof Chart === 'undefined') {
+                showChartErrors('Chart.js kon niet worden geladen. Controleer internetverbinding.');
+                return;
+            }
+            initializeCharts();
+        }, 2000);
+    } else {
+        console.log('Chart.js gevonden, initialiseer grafieken...');
+        setTimeout(initializeCharts, 500);
+    }
     
     // Initialize tab functionality
     initializeTabs();
-    
-    // Add loading states
-    showLoadingStates();
 });
 
 // Chart initialization with error handling
@@ -349,16 +359,41 @@ function createCommonChart() {
     }
 }
 
-// Tab functionality
+// Tab functionality - Fixed version
 function initializeTabs() {
-    // Add click event listeners to all tabs
+    console.log('Tabs initialiseren...');
+    
+    // Remove onclick attributes and add proper event listeners
     const tabs = document.querySelectorAll('.tab');
-    tabs.forEach(tab => {
+    tabs.forEach((tab, index) => {
+        // Remove onclick attribute
+        tab.removeAttribute('onclick');
+        
+        // Determine tab name from button text or data attribute
+        let tabName = '';
+        const buttonText = tab.textContent.toLowerCase().trim();
+        
+        if (buttonText.includes('overzicht')) tabName = 'overview';
+        else if (buttonText.includes('techem')) tabName = 'techem';
+        else if (buttonText.includes('gemeenschappelijk')) tabName = 'gemeenschappelijk';
+        else if (buttonText.includes('privatief')) tabName = 'privatief';  
+        else if (buttonText.includes('eigenaars')) tabName = 'eigenaars';
+        else if (buttonText.includes('leveranciers')) tabName = 'leveranciers';
+        else if (buttonText.includes('liften')) tabName = 'liften';
+        else if (buttonText.includes('onderhoud')) tabName = 'onderhoud';
+        else if (buttonText.includes('concierge')) tabName = 'concierge';
+        else if (buttonText.includes('verzekeringen')) tabName = 'verzekeringen';
+        else if (buttonText.includes('budget')) tabName = 'budget';
+        
+        // Add click event listener
         tab.addEventListener('click', function(event) {
-            const tabName = this.getAttribute('onclick').match(/'([^']+)'/)[1];
+            event.preventDefault();
+            console.log('Tab geklikt:', tabName);
             openTab(event, tabName);
         });
     });
+    
+    console.log('Tabs geïnitialiseerd');
 }
 
 // Open specific tab
