@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Residentie HELIX - Financieel Dashboard 2024/2025</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -248,14 +248,275 @@
                 </div>
             </div>
             
-            <!-- Andere tabs hier... (ik verkort dit voor de beknoptheid, maar alle tabs zijn aanwezig) -->
-            <!-- De volledige inhoud van alle andere tabs zou hier staan -->
+            <!-- TECHEM Tab -->
             <div id="techem" class="tab-content">
                 <h3>TECHEM Kostenafrekening</h3>
-                <p>Hier komt de volledige TECHEM tabel...</p>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th>Rekening</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="section-header">
+                            <td colspan="3">GASVERBRUIK</td>
+                        </tr>
+                        <tr>
+                            <td>Gasverbruik 100%</td>
+                            <td>6122</td>
+                            <td class="amount">€ 66.099,87</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 30px;">→ Voor warm water via calorimeters</td>
+                            <td></td>
+                            <td class="amount">€ 51.929,86</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 50px;">• 23% privatief warm water</td>
+                            <td></td>
+                            <td class="amount">€ 11.943,87</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 50px;">• 77% warm water zwembad</td>
+                            <td></td>
+                            <td class="amount">€ 39.985,99</td>
+                        </tr>
+                        <tr>
+                            <td style="padding-left: 30px;">→ Voor verwarming</td>
+                            <td></td>
+                            <td class="amount">€ 14.170,01</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="2">TOTAAL TECHEM</td>
+                            <td class="amount">€ 153.590,28</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             
-            <!-- Voeg alle andere tab inhoud toe zoals in het origineel -->
+            <!-- Gemeenschappelijke Kosten Tab -->
+            <div id="gemeenschappelijk" class="tab-content">
+                <h3>Gemeenschappelijke Kosten Detail</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th class="amount">Art. 8</th>
+                            <th class="amount">Art. 9</th>
+                            <th class="amount">Totaal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Elektriciteit gemene delen</td>
+                            <td class="amount">€ 16.442,56</td>
+                            <td class="amount">-</td>
+                            <td class="amount">€ 16.442,56</td>
+                        </tr>
+                        <tr>
+                            <td>Liften totaal</td>
+                            <td class="amount">€ 16.532,90</td>
+                            <td class="amount">€ 2.660,68</td>
+                            <td class="amount">€ 20.193,58</td>
+                        </tr>
+                        <tr>
+                            <td>Klein onderhoud & herstellingen</td>
+                            <td class="amount">€ 19.843,45</td>
+                            <td class="amount">€ 18.076,67</td>
+                            <td class="amount">€ 37.920,12</td>
+                        </tr>
+                        <tr>
+                            <td>Concierge</td>
+                            <td class="amount">€ 26.589,38</td>
+                            <td class="amount">€ 26.589,37</td>
+                            <td class="amount">€ 53.178,75</td>
+                        </tr>
+                        <tr>
+                            <td>Ereloon beheer</td>
+                            <td class="amount">€ 36.754,92</td>
+                            <td class="amount">€ 46.054,68</td>
+                            <td class="amount">€ 82.809,60</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL GEMEENSCHAPPELIJK</td>
+                            <td class="amount">€ 182.213,67</td>
+                            <td class="amount">€ 95.100,29</td>
+                            <td class="amount">€ 277.313,96</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Privatieve Kosten Tab -->
+            <div id="privatief" class="tab-content">
+                <h3>Privatieve Kosten</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th class="amount">Bedrag</th>
+                            <th class="amount">Per eenheid</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Teledistributie (225 eenheden)</td>
+                            <td class="amount">€ 10.451,31</td>
+                            <td class="amount">€ 46,45</td>
+                        </tr>
+                        <tr>
+                            <td>Huur digiboxen (35 eenheden)</td>
+                            <td class="amount">€ 2.940,20</td>
+                            <td class="amount">€ 84,01</td>
+                        </tr>
+                        <tr>
+                            <td>Elektriciteit</td>
+                            <td class="amount">€ 25.847,59</td>
+                            <td class="amount">-</td>
+                        </tr>
+                        <tr>
+                            <td>Onderhoud</td>
+                            <td class="amount">€ 5.172,00</td>
+                            <td class="amount">-</td>
+                        </tr>
+                        <tr>
+                            <td>Riool en huisvuilbelasting</td>
+                            <td class="amount">€ 1.500,00</td>
+                            <td class="amount">-</td>
+                        </tr>
+                        <tr>
+                            <td>Diversen</td>
+                            <td class="amount">€ 9.270,85</td>
+                            <td class="amount">-</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL PRIVATIEF</td>
+                            <td class="amount">€ 55.181,95</td>
+                            <td class="amount">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Eigenaars Tab -->
+            <div id="eigenaars" class="tab-content">
+                <h3>Vorderingen op Eigenaars (Geanonimiseerd)</h3>
+                <div class="scroll-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Eigenaar ID</th>
+                                <th>Appartement</th>
+                                <th class="amount">Totaal</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Eigenaar-001</td>
+                                <td>B0507/XX</td>
+                                <td class="amount">€ 375,00</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-002</td>
+                                <td>B0305/XX</td>
+                                <td class="amount">€ 2.130,43</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Eigenaar-003</td>
+                                <td>A0904</td>
+                                <td class="amount">€ 17.738,81</td>
+                                <td><span class="owner-status status-debt">Achterstallig</span></td>
+                            </tr>
+                            <tr class="total-row">
+                                <td colspan="2">TOTAAL VORDERINGEN</td>
+                                <td class="amount">€ 72.686,04</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Leveranciers Tab -->
+            <div id="leveranciers" class="tab-content">
+                <h3>Leveranciers - Gemeenschappelijke Kosten</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Leverancier</th>
+                            <th>Omschrijving</th>
+                            <th class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>De Lift</td>
+                            <td>Onderhoud liften</td>
+                            <td class="amount">€ 5.296,39</td>
+                        </tr>
+                        <tr>
+                            <td>Immo Beach</td>
+                            <td>Beheer</td>
+                            <td class="amount">€ 35.112,70</td>
+                        </tr>
+                        <tr>
+                            <td>Luminus</td>
+                            <td>Gas</td>
+                            <td class="amount">€ 6.746,46</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td colspan="2">TOTAAL LEVERANCIERS</td>
+                            <td class="amount">€ 66.656,88</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Budget Tab -->
+            <div id="budget" class="tab-content">
+                <h3>Vergelijking Gebudgetteerde en Werkelijke Uitgaven</h3>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Omschrijving</th>
+                            <th class="amount">Budget</th>
+                            <th class="amount">Werkelijk</th>
+                            <th class="amount">Verschil</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>TECHEM kosten</td>
+                            <td class="amount">€ 158.700,00</td>
+                            <td class="amount">€ 153.589,78</td>
+                            <td class="amount positive">€ 5.110,22</td>
+                        </tr>
+                        <tr>
+                            <td>Gemeenschappelijke kosten</td>
+                            <td class="amount">€ 277.310,00</td>
+                            <td class="amount">€ 277.313,97</td>
+                            <td class="amount negative">€ -3,97</td>
+                        </tr>
+                        <tr>
+                            <td>Privatieve kosten</td>
+                            <td class="amount">€ 67.000,00</td>
+                            <td class="amount">€ 55.181,95</td>
+                            <td class="amount positive">€ 11.818,05</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAAL KOSTEN</td>
+                            <td class="amount">€ 503.010,00</td>
+                            <td class="amount">€ 486.085,70</td>
+                            <td class="amount positive">€ 16.924,30</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             
         </div>
     </div>
