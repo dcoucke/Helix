@@ -23,6 +23,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Chart initialization with error handling
 function initializeCharts() {
+    console.log('Chart initialisatie gestart...');
+    
     // Check if Chart.js is loaded
     if (typeof Chart === 'undefined') {
         console.error('Chart.js is niet geladen');
@@ -31,31 +33,33 @@ function initializeCharts() {
     }
     
     try {
-        // Register Chart.js components
-        Chart.register(
-            Chart.ArcElement,
-            Chart.BarElement,
-            Chart.CategoryScale,
-            Chart.LinearScale,
-            Chart.DoughnutController,
-            Chart.PieController,
-            Chart.BarController,
-            Chart.Legend,
-            Chart.Tooltip,
-            Chart.Title
-        );
-        
-        // Set global Chart.js defaults
+        // Set global Chart.js defaults first
         Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
         Chart.defaults.responsive = true;
         Chart.defaults.maintainAspectRatio = true;
-        Chart.defaults.plugins.legend.labels.usePointStyle = true;
+        
+        console.log('Chart.js defaults ingesteld');
         
         // Initialize each chart with delay to prevent rendering issues
-        setTimeout(() => createMainExpenseChart(), 100);
-        setTimeout(() => createBudgetChart(), 200);
-        setTimeout(() => createTechemChart(), 300);
-        setTimeout(() => createCommonChart(), 400);
+        setTimeout(() => {
+            console.log('Start hoofdkostengrafiek...');
+            createMainExpenseChart();
+        }, 200);
+        
+        setTimeout(() => {
+            console.log('Start budgetgrafiek...');
+            createBudgetChart();
+        }, 400);
+        
+        setTimeout(() => {
+            console.log('Start TECHEM grafiek...');
+            createTechemChart();
+        }, 600);
+        
+        setTimeout(() => {
+            console.log('Start gemeenschappelijke kosten grafiek...');
+            createCommonChart();
+        }, 800);
         
     } catch (error) {
         console.error('Fout bij het initialiseren van grafieken:', error);
