@@ -6,6 +6,15 @@
     <title>Residentie HELIX - Financieel Dashboard 2024/2025</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <!-- Fallback Chart.js -->
+    <script>
+        if (typeof Chart === 'undefined') {
+            console.log('Laden van alternatieve Chart.js...');
+            var script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js';
+            document.head.appendChild(script);
+        }
+    </script>
 </head>
 <body>
     <div class="dashboard-container">
