@@ -2029,184 +2029,174 @@ BE48738006392827,GEMEENSCHAPPELIJKE KOSTEN,VME RES HELIX ZEEDIJK 286,EUR,2024168
             document.getElementById('kpiUitgaven').textContent = '€' + formatNumber(processedData.totalen.uitgaven);
         }
 
-        function createCharts() {
-            // Controleer of data beschikbaar is
-            if (!processedData || !processedData.operationeleUitgaven) {
-                console.error('Geen data beschikbaar voor grafieken');
-                return;
-            }
+     function createCharts() {
+    // Controleer of data beschikbaar is
+    if (!processedData || !processedData.operationeleUitgaven) {
+        console.error('Geen data beschikbaar voor grafieken');
+        return;
+    }
 
-            // 1. Uitgaven per categorie chart
-            const uitgavenCtx = document.getElementById('uitgavenChart').getContext('2d');
-          
-            window.uitgavenChart = new Chart(uitgavenCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: processedData.operationeleUitgaven.perCategorie.map(c => c.categorie),
-                    datasets: [{
-                        data: processedData.operationeleUitgaven.perCategorie.map(c => c.bedrag),
-                        backgroundColor: [
-                            '#f093fb', '#11998e', '#38ef7d', '#667eea', '#764ba2',
-                            '#fa709a', '#fee140', '#30cfd0', '#330867', '#eb3349'
-                        ]
-                    }]
+    // 1. Uitgaven per categorie chart
+    const uitgavenCtx = document.getElementById('uitgavenChart').getContext('2d');
+    new Chart(uitgavenCtx, {
+        type: 'doughnut',
+        data: {
+            labels: processedData.operationeleUitgaven.perCategorie.map(c => c.categorie),
+            datasets: [{
+                data: processedData.operationeleUitgaven.perCategorie.map(c => c.bedrag),
+                backgroundColor: [
+                    '#f093fb', '#11998e', '#38ef7d', '#667eea', '#764ba2',
+                    '#fa709a', '#fee140', '#30cfd0', '#330867', '#eb3349'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        padding: 10,
+                        font: { size: 11 },
+                        generateLabels: function(chart) {
+                            const data = chart.data;
+                            return data.labels.map((label, i) => ({
+                                text: `${label}: €${formatNumber(data.datasets[0].data[i])}`,
+                                fillStyle: data.datasets[0].backgroundColor[i],
+                                index: i
+                            }));
+                        }
+                    }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                padding: 10,
-                                font: { size: 11 },
-                                generateLabels: function(chart) {
-                                    const data = chart.data;
-                                    return data.labels.map((label, i) => ({
-                                        text: `${label}: €${formatNumber(data.datasets[0].data[i])}`,
-                                        fillStyle: data.datasets[0].backgroundColor[i],
-                                        index: i
-                                    }));
-                                }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.parsed;
-                                    const percentage = ((value / processedData.operationeleUitgaven.totaal) * 100).toFixed(1);
-                                    return `${label}: €${formatNumber(value)} (${percentage}%)`;
-                                }
-                            }
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed;
+                            const percentage = ((value / processedData.operationeleUitgaven.totaal) * 100).toFixed(1);
+                            return `${label}: €${formatNumber(value)} (${percentage}%)`;
                         }
                     }
                 }
-            });
-
-            // 2. VENNOOTSCHAP MDN detail chart
-            const vennootschapCtx = document.getElementById('vennootschapChart').getContext('2d');
-            if (window.vennootschapChart) {
-                window.vennootschapChart.destroy();
             }
-            window.vennootschapChart = new Chart(vennootschapCtx, {
-                type: 'pie',
-                data: {
-                    labels: processedData.vennootschapMDN.leveranciers.map(l => l.naam),
-                    datasets: [{
-                        data: processedData.vennootschapMDN.leveranciers.map(l => l.bedrag),
-                        backgroundColor: ['#e91e63', '#9c27b0', '#673ab7', '#3f51b5']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const label = context.label || '';
-                                    const value = context.parsed;
-                                    const percentage = ((value / processedData.vennootschapMDN.totaal) * 100).toFixed(1);
-                                    return `${label}: €${formatNumber(value)} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // 3. Maandelijkse uitgaven chart
-            const maandCtx = document.getElementById('maandChart').getContext('2d');
-            if (window.maandChart) {
-                window.maandChart.destroy();
-            }
-            
-            // Groepeer uitgaven per maand
-            const uitgavenPerMaand = {};
-            if (processedData.operationeleData) {
-                processedData.operationeleData.forEach(row => {
-                    const maand = row['Transactie Maand'];
-                    if (!uitgavenPerMaand[maand]) {
-                        uitgavenPerMaand[maand] = 0;
-                    }
-                    uitgavenPerMaand[maand] += Math.abs(row['Uitgaande Betaling'] || 0);
-                });
-            }
-            
-            const maanden = Object.keys(uitgavenPerMaand).sort();
-            const maandBedragen = maanden.map(m => uitgavenPerMaand[m]);
-            
-            window.maandChart = new Chart(maandCtx, {
-                type: 'line',
-                data: {
-                    labels: maanden,
-                    datasets: [{
-                        label: 'Operationele Uitgaven',
-                        data: maandBedragen,
-                        borderColor: '#3498db',
-                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '€' + formatNumber(value);
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // 4. Top leveranciers chart
-            const leveranciersCtx = document.getElementById('leveranciersChart').getContext('2d');
-            if (window.leveranciersChart) {
-                window.leveranciersChart.destroy();
-            }
-            window.leveranciersChart = new Chart(leveranciersCtx, {
-                type: 'bar',
-                data: {
-                    labels: processedData.topLeveranciers.map(l => l.naam),
-                    datasets: [{
-                        label: 'Totaal Bedrag',
-                        data: processedData.topLeveranciers.map(l => l.bedrag),
-                        backgroundColor: 'rgba(52, 152, 219, 0.7)'
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return '€' + formatNumber(value);
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
-            });
-            
-            console.log('Alle grafieken succesvol aangemaakt');
         }
+    });
+
+    // 2. VENNOOTSCHAP MDN detail chart
+    const vennootschapCtx = document.getElementById('vennootschapChart').getContext('2d');
+    new Chart(vennootschapCtx, {
+        type: 'pie',
+        data: {
+            labels: processedData.vennootschapMDN.leveranciers.map(l => l.naam),
+            datasets: [{
+                data: processedData.vennootschapMDN.leveranciers.map(l => l.bedrag),
+                backgroundColor: ['#e91e63', '#9c27b0', '#673ab7', '#3f51b5']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed;
+                            const percentage = ((value / processedData.vennootschapMDN.totaal) * 100).toFixed(1);
+                            return `${label}: €${formatNumber(value)} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 3. Maandelijkse uitgaven chart
+    const maandCtx = document.getElementById('maandChart').getContext('2d');
+    
+    // Groepeer uitgaven per maand
+    const uitgavenPerMaand = {};
+    if (processedData.operationeleData) {
+        processedData.operationeleData.forEach(row => {
+            const maand = row['Transactie Maand'];
+            if (!uitgavenPerMaand[maand]) {
+                uitgavenPerMaand[maand] = 0;
+            }
+            uitgavenPerMaand[maand] += Math.abs(row['Uitgaande Betaling'] || 0);
+        });
+    }
+    
+    const maanden = Object.keys(uitgavenPerMaand).sort();
+    const maandBedragen = maanden.map(m => uitgavenPerMaand[m]);
+    
+    new Chart(maandCtx, {
+        type: 'line',
+        data: {
+            labels: maanden,
+            datasets: [{
+                label: 'Operationele Uitgaven',
+                data: maandBedragen,
+                borderColor: '#3498db',
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '€' + formatNumber(value);
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 4. Top leveranciers chart
+    const leveranciersCtx = document.getElementById('leveranciersChart').getContext('2d');
+    new Chart(leveranciersCtx, {
+        type: 'bar',
+        data: {
+            labels: processedData.topLeveranciers.map(l => l.naam),
+            datasets: [{
+                label: 'Totaal Bedrag',
+                data: processedData.topLeveranciers.map(l => l.bedrag),
+                backgroundColor: 'rgba(52, 152, 219, 0.7)'
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '€' + formatNumber(value);
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    
+    console.log('Alle grafieken succesvol aangemaakt');
+}
 
         function fillTables() {
             // Vul draaitabel
