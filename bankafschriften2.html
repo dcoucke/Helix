@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residentie HELIX - Financieel Overzicht Mede-eigenaars</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f6fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        /* Samenvatting Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .summary-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-value {
+            font-size: 2em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .summary-card.income .summary-value {
+            color: #27ae60;
+        }
+
+        .summary-card.expense .summary-value {
+            color: #e74c3c;
+        }
+
+        /* Section styling */
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container.small {
+            height: 300px;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #e9ecef;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .amount {
+            text-align: right;
+            font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+            font-weight: 500;
+        }
+
+        .amount.positive {
+            color: #27ae60;
+        }
+
+        .amount.negative {
+            color: #e74c3c;
+        }
+
+        /* Hierarchical table */
+        .expandable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .expandable::before {
+            content: '▶';
+            display: inline-block;
+            margin-right: 8px;
+            transition: transform 0.2s;
+            font-size: 0.8em;
+        }
+
+        .expandable.expanded::before {
+            transform: rotate(90deg);
+        }
+
+        .level-1 {
+            font-weight: 600;
+            background: #f8f9fa;
+        }
+
+        .level-2 td:first-child {
+            padding-left: 30px;
+        }
+
+        .level-3 td:first-child {
+            padding-left: 50px;
+        }
+
+        .level-4 td:first-child {
+            padding-left: 70px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .child-row {
+            display: none;
+        }
+
+        .child-row.show {
+            display: table-row;
+        }
+
+        /* Filters */
+        .filter-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.9em;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        select {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 0.9em;
+            background: white;
+            cursor: pointer;
+        }
+
+        /* Download button */
+        .download-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background 0.2s;
+            float: right;
+            margin-bottom: 15px;
+        }
+
+        .download-btn:hover {
+            background: #2980b9;
+        }
+
+        /* Info box */
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 0.95em;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+        }
+
+        .loading::after {
+            content: '.';
+            animation: dots 1s steps(5, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80%, 100% { content: ''; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+            
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+            }
+            
+            .section {
+                box-shadow: none;
+                break-inside: avoid;
+            }
+            
+            .download-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Residentie HELIX - Financieel Overzicht</h1>
+            <p class="subtitle">Transparantie rapport bankrekening BE48 7380 0639 2827</p>
+            <p class="subtitle">Boekjaar: 14 maart 2024 - 14 maart 2025</p>
+        </header>
+
+        <!-- 1. Samenvatting -->
+        <div class="summary-grid">
+            <div class="summary-card income">
+                <div class="summary-label">Totaal Inkomend</div>
+                <div class="summary-value" id="totalIncome">€0</div>
+            </div>
+            <div class="summary-card expense">
+                <div class="summary-label">Totaal Uitgaand</div>
+                <div class="summary-value" id="totalExpense">€0</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Aantal Transacties</div>
+                <div class="summary-value" id="totalTransactions">0</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Huidig Saldo</div>
+                <div class="summary-value" id="currentBalance">€0</div>
+            </div>
+        </div>
+
+        <!-- 2. Volledige uitgavenanalyse -->
+        <div class="section">
+            <h2 class="section-title">
+                <span>📊</span> Volledige Uitgavenanalyse
+            </h2>
+            <button class="download-btn" onclick="downloadTableAsExcel('expenseTable', 'uitgaven_analyse')">
+                Download Excel
+            </button>
+            <div class="info-box">
+                Klik op ▶ om categorieën uit te klappen. Alle bedragen zijn gesorteerd van hoog naar laag.
+            </div>
+            <div class="table-container">
+                <table id="expenseTable">
+                    <thead>
+                        <tr>
+                            <th width="40%">Categorie / Leverancier / Detail</th>
+                            <th width="15%">Aantal</th>
+                            <th width="20%" class="amount">Bedrag</th>
+                            <th width="10%">%</th>
+                            <th width="15%" class="amount">Gemiddeld</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenseTableBody">
+                        <!-- Dynamisch gevuld -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 3. Top leveranciers -->
+        <div class="section">
+            <h2 class="section-title">
+                <span>🏢</span> Alle Leveranciers - Cumulatief Overzicht
+            </h2>
+            <div class="chart-container">
+                <canvas id="suppliersChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 4. Maandelijkse uitgaven -->
+        <div class="section">
+            <h2 class="section-title">
+                <span>📅</span> Maandelijkse Uitgaven
+            </h2>
+            <div class="filter-container">
+                <div class="filter-group">
+                    <label>Filter categorie:</label>
+                    <select id="monthlyFilter" onchange="updateMonthlyChart()">
+                        <option value="all">Alle categorieën</option>
+                    </select>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 5. Categorieverdeling -->
+        <div class="chart-grid">
+            <div class="section">
+                <h2 class="section-title">
+                    <span>💰</span> Inkomende Betalingen per Categorie
+                </h2>
+                <div class="chart-container small">
+                    <canvas id="incomeChart"></canvas>
+                </div>
+            </div>
+            <div class="section">
+                <h2 class="section-title">
+                    <span>💸</span> Uitgaande Betalingen per Categorie
+                </h2>
+                <div class="chart-container small">
+                    <canvas id="expenseChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Detail kaartbetalingen -->
+        <div class="section">
+            <h2 class="section-title">
+                <span>💳</span> Detail Kaartbetalingen per Winkel
+            </h2>
+            <div id="cardPaymentsContainer">
+                <!-- Dynamisch gevuld -->
+            </div>
+        </div>
+
+        <!-- 7. Vennootschapsanalyse -->
+        <div class="section">
+            <h2 class="section-title">
+                <span>🏛️</span> Vennootschapsanalyse
+            </h2>
+            <div class="chart-grid">
+                <div>
+                    <div class="chart-container small">
+                        <canvas id="companyChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <div class="table-container">
+                        <table id="companyTable">
+                            <thead>
+                                <tr>
+                                    <th>Vennootschap</th>
+                                    <th>Aantal</th>
+                                    <th class="amount">Totaal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="companyTableBody">
+                                <!-- Dynamisch gevuld -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Globale variabelen
+        let csvData = [];
+        let processedData = {
+            summary: {},
+            expenses: {},
+            suppliers: [],
+            monthly: {},
+            categories: { income: {}, expense: {} },
+            cardPayments: {},
+            companies: {}
+        };
+
+        // CSV data placeholder - vervang met echte data
+        const localCSVData = `Rekeningnummer,Rubrieknaam,Naam,Munt,Afschriftnummer,Transactie Datum,Transactie Maand,Omschrijving,Verwerking Datum,Verwerking Maand,Bedrag (ORIGINEEL),Saldo,ANALYSIS CATEGORY,Payment Type,Payment Category,Payment Subtype,Inkomende Betaling,Uitgaande Betaling,Bedrag Betaling,rekeningnummer tegenpartij anoniem,BIC tegenpartij,Naam tegenpartij,gestructureerde mededeling,Vrije mededeling
+PLAATS HIER UW CSV DATA`;
+
+        // Start applicatie
+        window.onload = function() {
+            loadAndProcessData();
+        };
+
+        async function loadAndProcessData() {
+            try {
+                // Parse CSV
+                const parsed = Papa.parse(localCSVData, {
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    delimitersToGuess: [',', ';', '\t', '|']
+                });
+                
+                csvData = parsed.data;
+                console.log(`${csvData.length} transacties geladen`);
+                
+                // Filter boekjaar
+                const startDate = new Date(2024, 2, 14);
+                const endDate = new Date(2025, 2, 14);
+                
+                csvData = csvData.filter(row => {
+                    if (!row['Transactie Datum']) return false;
+                    const [day, month, year] = row['Transactie Datum'].split('/');
+                    const date = new Date(year, month - 1, day);
+                    return date >= startDate && date < endDate;
+                });
+                
+                processData();
+                updateUI();
+                
+            } catch (error) {
+                console.error('Fout bij laden data:', error);
+                alert('Er is een fout opgetreden bij het laden van de data.');
+            }
+        }
+
+        function processData() {
+            // 1. Samenvatting
+            let totalIncome = 0;
+            let totalExpense = 0;
+            let lastBalance = 0;
+            
+            csvData.forEach(row => {
+                if (row['Payment Type'] === 'INKOMENDE BETALING') {
+                    totalIncome += Math.abs(row['Inkomende Betaling'] || 0);
+                } else if (row['Payment Type'] === 'UITGAANDE BETALING') {
+                    totalExpense += Math.abs(row['Uitgaande Betaling'] || 0);
+                }
+                
+                if (row['Saldo']) {
+                    lastBalance = parseFloat(row['Saldo']);
+                }
+            });
+            
+            processedData.summary = {
+                totalIncome,
+                totalExpense,
+                totalTransactions: csvData.length,
+                currentBalance: lastBalance
+            };
+            
+            // 2. Uitgavenanalyse - hiërarchisch
+            const expenses = {};
+            csvData.filter(row => row['Payment Type'] === 'UITGAANDE BETALING').forEach(row => {
+                const category = row['Payment Category'] || 'Onbekend';
+                const subtype = row['Payment Subtype'] || 'Algemeen';
+                const supplier = row['Naam tegenpartij'] || 'Onbekende tegenpartij';
+                const amount = Math.abs(row['Uitgaande Betaling'] || 0);
+                
+                if (!expenses[category]) {
+                    expenses[category] = {
+                        total: 0,
+                        count: 0,
+                        subtypes: {}
+                    };
+                }
+                
+                if (!expenses[category].subtypes[subtype]) {
+                    expenses[category].subtypes[subtype] = {
+                        total: 0,
+                        count: 0,
+                        suppliers: {}
+                    };
+                }
+                
+                if (!expenses[category].subtypes[subtype].suppliers[supplier]) {
+                    expenses[category].subtypes[subtype].suppliers[supplier] = {
+                        total: 0,
+                        count: 0,
+                        transactions: []
+                    };
+                }
+                
+                expenses[category].total += amount;
+                expenses[category].count++;
+                expenses[category].subtypes[subtype].total += amount;
+                expenses[category].subtypes[subtype].count++;
+                expenses[category].subtypes[subtype].suppliers[supplier].total += amount;
+                expenses[category].subtypes[subtype].suppliers[supplier].count++;
+                expenses[category].subtypes[subtype].suppliers[supplier].transactions.push({
+                    date: row['Transactie Datum'],
+                    description: row['Omschrijving'],
+                    amount: amount,
+                    message: row['Vrije mededeling']
+                });
+            });
+            
+            processedData.expenses = expenses;
+            
+            // 3. Leveranciers overzicht
+            const suppliers = {};
+            csvData.filter(row => row['Payment Type'] === 'UITGAANDE BETALING').forEach(row => {
+                const supplier = row['Naam tegenpartij'] || 'Onbekende tegenpartij';
+                const amount = Math.abs(row['Uitgaande Betaling'] || 0);
+                
+                if (!suppliers[supplier]) {
+                    suppliers[supplier] = 0;
+                }
+                suppliers[supplier] += amount;
+            });
+            
+            processedData.suppliers = Object.entries(suppliers)
+                .map(([name, total]) => ({ name, total }))
+                .sort((a, b) => b.total - a.total);
+            
+            // 4. Maandelijkse uitgaven
+            const monthly = {};
+            csvData.filter(row => row['Payment Type'] === 'UITGAANDE BETALING').forEach(row => {
+                const month = row['Transactie Maand'];
+                const category = row['Payment Category'] || 'Onbekend';
+                const amount = Math.abs(row['Uitgaande Betaling'] || 0);
+                
+                if (!monthly[month]) {
+                    monthly[month] = { total: 0, categories: {} };
+                }
+                
+                monthly[month].total += amount;
+                if (!monthly[month].categories[category]) {
+                    monthly[month].categories[category] = 0;
+                }
+                monthly[month].categories[category] += amount;
+            });
+            
+            processedData.monthly = monthly;
+            
+            // 5. Categorieverdeling
+            csvData.forEach(row => {
+                const category = row['ANALYSIS CATEGORY'] || 'Onbekend';
+                const amount = Math.abs(row['Bedrag Betaling'] || 0);
+                
+                if (row['Payment Type'] === 'INKOMENDE BETALING') {
+                    if (!processedData.categories.income[category]) {
+                        processedData.categories.income[category] = 0;
+                    }
+                    processedData.categories.income[category] += amount;
+                } else {
+                    if (!processedData.categories.expense[category]) {
+                        processedData.categories.expense[category] = 0;
+                    }
+                    processedData.categories.expense[category] += amount;
+                }
+            });
+            
+            // 6. Kaartbetalingen
+            const cardPayments = {};
+            csvData.filter(row => 
+                row['Payment Category'] === 'BETALING MET KAART' || 
+                (row['Omschrijving'] && row['Omschrijving'].toLowerCase().includes('kaart'))
+            ).forEach(row => {
+                const description = row['Omschrijving'] || '';
+                let shop = 'Overige';
+                
+                // Probeer winkel te identificeren
+                const shops = ['BRICO', 'COLRUYT', 'MAKRO', 'GAMMA', 'HUBO', 'DELHAIZE', 'CARREFOUR', 'ALDI', 'LIDL', 'ACTION', 'KRUIDVAT'];
+                for (const s of shops) {
+                    if (description.toUpperCase().includes(s)) {
+                        shop = s;
+                        break;
+                    }
+                }
+                
+                if (!cardPayments[shop]) {
+                    cardPayments[shop] = { total: 0, transactions: [] };
+                }
+                
+                const amount = Math.abs(row['Uitgaande Betaling'] || 0);
+                cardPayments[shop].total += amount;
+                cardPayments[shop].transactions.push({
+                    date: row['Transactie Datum'],
+                    description: description,
+                    amount: amount
+                });
+            });
+            
+            processedData.cardPayments = cardPayments;
+            
+            // 7. Vennootschapsanalyse
+            const companies = {};
+            const companyKeywords = ['VENNOOTSCHAP', 'MDN', 'MIDDELKERKE', 'TECHEM', 'IMMO BEACH', 'WEST COAST'];
+            
+            csvData.filter(row => {
+                const cat = (row['ANALYSIS CATEGORY'] || '').toUpperCase();
+                const name = (row['Naam tegenpartij'] || '').toUpperCase();
+                return companyKeywords.some(keyword => cat.includes(keyword) || name.includes(keyword));
+            }).forEach(row => {
+                let company = 'Overige';
+                const cat = (row['ANALYSIS CATEGORY'] || '').toUpperCase();
+                const name = (row['Naam tegenpartij'] || '').toUpperCase();
+                
+                if (cat.includes('VENNOOTSCHAP') || name.includes('VENNOOTSCHAP')) {
+                    company = 'VENNOOTSCHAP MDN';
+                } else if (cat.includes('TECHEM') || name.includes('TECHEM')) {
+                    company = 'TECHEM';
+                } else if (name.includes('IMMO BEACH')) {
+                    company = 'IMMO BEACH';
+                } else if (name.includes('WEST COAST')) {
+                    company = 'WEST COAST INVESTMENTS';
+                }
+                
+                if (!companies[company]) {
+                    companies[company] = { total: 0, count: 0 };
+                }
+                
+                const amount = Math.abs(row['Bedrag Betaling'] || 0);
+                companies[company].total += amount;
+                companies[company].count++;
+            });
+            
+            processedData.companies = companies;
+        }
+
+        function updateUI() {
+            // 1. Update samenvatting
+            document.getElementById('totalIncome').textContent = formatCurrency(processedData.summary.totalIncome);
+            document.getElementById('totalExpense').textContent = formatCurrency(processedData.summary.totalExpense);
+            document.getElementById('totalTransactions').textContent = processedData.summary.totalTransactions.toLocaleString('nl-BE');
+            document.getElementById('currentBalance').textContent = formatCurrency(processedData.summary.currentBalance);
+            
+            // 2. Vul uitgaventabel
+            fillExpenseTable();
+            
+            // 3. Leveranciers grafiek
+            createSuppliersChart();
+            
+            // 4. Maandelijkse grafiek
+            createMonthlyChart();
+            updateMonthlyFilter();
+            
+            // 5. Categorie grafieken
+            createCategoryCharts();
+            
+            // 6. Kaartbetalingen
+            fillCardPayments();
+            
+            // 7. Vennootschapsanalyse
+            createCompanyChart();
+            fillCompanyTable();
+        }
+
+        function fillExpenseTable() {
+            const tbody = document.getElementById('expenseTableBody');
+            tbody.innerHTML = '';
+            
+            const totalExpense = processedData.summary.totalExpense;
+            let categoryIndex = 0;
+            
+            // Sorteer categorieën op totaal
+            const sortedCategories = Object.entries(processedData.expenses)
+                .sort((a, b) => b[1].total - a[1].total);
+            
+            sortedCategories.forEach(([category, catData]) => {
+                // Categorie rij
+                const catRow = document.createElement('tr');
+                catRow.className = 'level-1';
+                catRow.innerHTML = `
+                    <td class="expandable" onclick="toggleCategory(${categoryIndex})">${category}</td>
+                    <td>${catData.count}</td>
+                    <td class="amount negative">${formatCurrency(catData.total)}</td>
+                    <td>${((catData.total / totalExpense) * 100).toFixed(1)}%</td>
+                    <td class="amount">${formatCurrency(catData.total / catData.count)}</td>
+                `;
+                tbody.appendChild(catRow);
+                
+                // Subtypes
+                const sortedSubtypes = Object.entries(catData.subtypes)
+                    .sort((a, b) => b[1].total - a[1].total);
+                
+                sortedSubtypes.forEach(([subtype, subData], subIndex) => {
+                    const subRow = document.createElement('tr');
+                    subRow.className = `level-2 child-row category-${categoryIndex}`;
+                    subRow.innerHTML = `
+                        <td class="expandable" onclick="toggleSubtype(${categoryIndex}, ${subIndex})">${subtype}</td>
+                        <td>${subData.count}</td>
+                        <td class="amount negative">${formatCurrency(subData.total)}</td>
+                        <td>${((subData.total / catData.total) * 100).toFixed(1)}%</td>
+                        <td class="amount">${formatCurrency(subData.total / subData.count)}</td>
+                    `;
+                    tbody.appendChild(subRow);
+                    
+                    // Leveranciers
+                    const sortedSuppliers = Object.entries(subData.suppliers)
+                        .sort((a, b) => b[1].total - a[1].total);
+                    
+                    sortedSuppliers.forEach(([supplier, supData], supIndex) => {
+                        const supRow = document.createElement('tr');
+                        supRow.className = `level-3 child-row subtype-${categoryIndex}-${subIndex}`;
+                        supRow.innerHTML = `
+                            <td class="expandable" onclick="toggleSupplier(${categoryIndex}, ${subIndex}, ${supIndex})">${supplier}</td>
+                            <td>${supData.count}</td>
+                            <td class="amount negative">${formatCurrency(supData.total)}</td>
+                            <td>${((supData.total / subData.total) * 100).toFixed(1)}%</td>
+                            <td class="amount">${formatCurrency(supData.total / supData.count)}</td>
+                        `;
+                        tbody.appendChild(supRow);
+                        
+                        // Transacties (chronologisch)
+                        supData.transactions
+                            .sort((a, b) => new Date(b.date.split('/').reverse()) - new Date(a.date.split('/').reverse()))
+                            .forEach(trans => {
+                                const transRow = document.createElement('tr');
+                                transRow.className = `level-4 child-row supplier-${categoryIndex}-${subIndex}-${supIndex}`;
+                                transRow.innerHTML = `
+                                    <td>${trans.date} - ${trans.description.substring(0, 50)}...</td>
+                                    <td>1</td>
+                                    <td class="amount negative">${formatCurrency(trans.amount)}</td>
+                                    <td></td>
+                                    <td></td>
+                                `;
+                                tbody.appendChild(transRow);
+                            });
+                    });
+                });
+                
+                categoryIndex++;
+            });
+            
+            // Totaal rij
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'level-1';
+            totalRow.style.fontWeight = 'bold';
+            totalRow.innerHTML = `
+                <td>TOTAAL UITGAVEN</td>
+                <td>${csvData.filter(r => r['Payment Type'] === 'UITGAANDE BETALING').length}</td>
+                <td class="amount negative">${formatCurrency(totalExpense)}</td>
+                <td>100.0%</td>
+                <td></td>
+            `;
+            tbody.appendChild(totalRow);
+        }
+
+        function createSuppliersChart() {
+            const ctx = document.getElementById('suppliersChart').getContext('2d');
+            
+            // Bereken cumulatief
+            let cumulative = 0;
+            const cumulativeData = processedData.suppliers.map(s => {
+                cumulative += s.total;
+                return cumulative;
+            });
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: processedData.suppliers.map(s => s.name),
+                    datasets: [{
+                        label: 'Totaal bedrag',
+                        data: processedData.suppliers.map(s => s.total),
+                        backgroundColor: 'rgba(52, 152, 219, 0.6)',
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Cumulatief',
+                        data: cumulativeData,
+                        type: 'line',
+                        borderColor: 'rgba(231, 76, 60, 1)',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        yAxisID: 'y-right'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => '€' + value.toLocaleString('nl-BE')
+                            }
+                        },
+                        'y-right': {
+                            position: 'right',
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                callback: value => '€' + value.toLocaleString('nl-BE')
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: context => {
+                                    const label = context.dataset.label;
+                                    const value = formatCurrency(context.parsed.y);
+                                    if (label === 'Cumulatief') {
+                                        const percentage = ((context.parsed.y / processedData.summary.totalExpense) * 100).toFixed(1);
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
+                                    return `${label}: ${value}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createMonthlyChart() {
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            const months = Object.keys(processedData.monthly).sort();
+            const data = months.map(m => processedData.monthly[m].total);
+            
+            window.monthlyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'Totale uitgaven',
+                        data: data,
+                        borderColor: 'rgba(52, 152, 219, 1)',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => '€' + value.toLocaleString('nl-BE')
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: context => formatCurrency(context.parsed.y)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateMonthlyFilter() {
+            const select = document.getElementById('monthlyFilter');
+            const categories = new Set();
+            
+            Object.values(processedData.monthly).forEach(monthData => {
+                Object.keys(monthData.categories).forEach(cat => categories.add(cat));
+            });
+            
+            Array.from(categories).sort().forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                select.appendChild(option);
+            });
+        }
+
+        function updateMonthlyChart() {
+            const filter = document.getElementById('monthlyFilter').value;
+            const months = Object.keys(processedData.monthly).sort();
+            let data;
+            
+            if (filter === 'all') {
+                data = months.map(m => processedData.monthly[m].total);
+            } else {
+                data = months.map(m => processedData.monthly[m].categories[filter] || 0);
+            }
+            
+            window.monthlyChart.data.datasets[0].data = data;
+            window.monthlyChart.data.datasets[0].label = filter === 'all' ? 'Totale uitgaven' : filter;
+            window.monthlyChart.update();
+        }
+
+        function createCategoryCharts() {
+            // Inkomsten
+            const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+            const incomeData = Object.entries(processedData.categories.income)
+                .sort((a, b) => b[1] - a[1]);
+            
+            new Chart(incomeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: incomeData.map(d => d[0]),
+                    datasets: [{
+                        data: incomeData.map(d => d[1]),
+                        backgroundColor: [
+                            '#27ae60', '#2ecc71', '#16a085', '#1abc9c', 
+                            '#3498db', '#2980b9', '#9b59b6', '#8e44ad'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 10,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: context => {
+                                    const label = context.label;
+                                    const value = formatCurrency(context.parsed);
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Uitgaven
+            const expenseCtx = document.getElementById('expenseChart').getContext('2d');
+            const expenseData = Object.entries(processedData.categories.expense)
+                .sort((a, b) => b[1] - a[1]);
+            
+            new Chart(expenseCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: expenseData.map(d => d[0]),
+                    datasets: [{
+                        data: expenseData.map(d => d[1]),
+                        backgroundColor: [
+                            '#e74c3c', '#c0392b', '#e67e22', '#d35400',
+                            '#f39c12', '#f1c40f', '#95a5a6', '#7f8c8d'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 10,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: context => {
+                                    const label = context.label;
+                                    const value = formatCurrency(context.parsed);
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function fillCardPayments() {
+            const container = document.getElementById('cardPaymentsContainer');
+            container.innerHTML = '';
+            
+            const sortedShops = Object.entries(processedData.cardPayments)
+                .sort((a, b) => b[1].total - a[1].total);
+            
+            sortedShops.forEach(([shop, data]) => {
+                const shopDiv = document.createElement('div');
+                shopDiv.style.marginBottom = '30px';
+                
+                const shopTitle = document.createElement('h3');
+                shopTitle.style.marginBottom = '15px';
+                shopTitle.innerHTML = `${shop} <span style="float: right; color: #e74c3c;">${formatCurrency(data.total)}</span>`;
+                shopDiv.appendChild(shopTitle);
+                
+                const table = document.createElement('table');
+                table.style.width = '100%';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th width="20%">Datum</th>
+                            <th width="60%">Omschrijving</th>
+                            <th width="20%" class="amount">Bedrag</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.transactions
+                            .sort((a, b) => new Date(b.date.split('/').reverse()) - new Date(a.date.split('/').reverse()))
+                            .map(trans => `
+                                <tr>
+                                    <td>${trans.date}</td>
+                                    <td>${trans.description}</td>
+                                    <td class="amount negative">${formatCurrency(trans.amount)}</td>
+                                </tr>
+                            `).join('')}
+                    </tbody>
+                `;
+                
+                shopDiv.appendChild(table);
+                container.appendChild(shopDiv);
+            });
+        }
+
+        function createCompanyChart() {
+            const ctx = document.getElementById('companyChart').getContext('2d');
+            const data = Object.entries(processedData.companies)
+                .sort((a, b) => b[1].total - a[1].total);
+            
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: data.map(d => d[0]),
+                    datasets: [{
+                        data: data.map(d => d[1].total),
+                        backgroundColor: [
+                            '#9b59b6', '#8e44ad', '#3498db', '#2980b9',
+                            '#1abc9c', '#16a085', '#f39c12', '#e67e22'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: context => {
+                                    const label = context.label;
+                                    const value = formatCurrency(context.parsed);
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function fillCompanyTable() {
+            const tbody = document.getElementById('companyTableBody');
+            tbody.innerHTML = '';
+            
+            const sortedCompanies = Object.entries(processedData.companies)
+                .sort((a, b) => b[1].total - a[1].total);
+            
+            sortedCompanies.forEach(([company, data]) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${company}</td>
+                    <td>${data.count}</td>
+                    <td class="amount negative">${formatCurrency(data.total)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Totaal
+            const total = sortedCompanies.reduce((sum, [, data]) => sum + data.total, 0);
+            const totalRow = document.createElement('tr');
+            totalRow.style.fontWeight = 'bold';
+            totalRow.innerHTML = `
+                <td>TOTAAL</td>
+                <td>${sortedCompanies.reduce((sum, [, data]) => sum + data.count, 0)}</td>
+                <td class="amount negative">${formatCurrency(total)}</td>
+            `;
+            tbody.appendChild(totalRow);
+        }
+
+        // Toggle functies
+        function toggleCategory(index) {
+            const rows = document.querySelectorAll(`.category-${index}`);
+            const expandable = event.target;
+            
+            rows.forEach(row => {
+                row.classList.toggle('show');
+                // Sluit ook alle children
+                const subIndex = Array.from(row.classList).find(c => c.startsWith('subtype-'));
+                if (subIndex) {
+                    document.querySelectorAll(`.${subIndex}`).forEach(r => r.classList.remove('show'));
+                }
+            });
+            
+            expandable.classList.toggle('expanded');
+        }
+
+        function toggleSubtype(catIndex, subIndex) {
+            event.stopPropagation();
+            const rows = document.querySelectorAll(`.subtype-${catIndex}-${subIndex}`);
+            const expandable = event.target;
+            
+            rows.forEach(row => {
+                row.classList.toggle('show');
+                // Sluit ook alle children
+                const supIndex = Array.from(row.classList).find(c => c.startsWith('supplier-'));
+                if (supIndex) {
+                    document.querySelectorAll(`.${supIndex}`).forEach(r => r.classList.remove('show'));
+                }
+            });
+            
+            expandable.classList.toggle('expanded');
+        }
+
+        function toggleSupplier(catIndex, subIndex, supIndex) {
+            event.stopPropagation();
+            const rows = document.querySelectorAll(`.supplier-${catIndex}-${subIndex}-${supIndex}`);
+            const expandable = event.target;
+            
+            rows.forEach(row => {
+                row.classList.toggle('show');
+            });
+            
+            expandable.classList.toggle('expanded');
+        }
+
+        // Hulpfuncties
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('nl-BE', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(amount);
+        }
+
+        function downloadTableAsExcel(tableId, filename) {
+            const table = document.getElementById(tableId);
+            const ws = XLSX.utils.table_to_sheet(table);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+            XLSX.writeFile(wb, `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+    </script>
+</body>
+</html>
