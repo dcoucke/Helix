@@ -636,22 +636,61 @@
             event.target.classList.add('active');
         }
 
+        // Voor lokaal testen: plaats hier uw CSV data
+        const localCSVData = `Rekeningnummer,Rubrieknaam,Naam,Munt,Afschriftnummer,Transactie Datum,Transactie Maand,Omschrijving,Verwerking Datum,Verwerking Maand,Bedrag (ORIGINEEL),Saldo,ANALYSIS CATEGORY,Payment Type,Payment Category,Payment Subtype,Inkomende Betaling,Uitgaande Betaling,Bedrag Betaling,rekeningnummer tegenpartij anoniem,BIC tegenpartij,Naam tegenpartij,gestructureerde mededeling,Vrije mededeling
+PLAATS HIER UW CSV DATA`;
+
+        // API configuratie
+        const API_ENDPOINT = '/api/bankdata'; // Voor Vercel
+        const USE_LOCAL_DATA = false; // Zet op true voor lokaal testen, false voor Vercel
+
         // Laad en verwerk CSV data
         async function loadAndProcessData() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.innerHTML = '<div style="text-align: center; padding: 50px;"><h2>Financiële data wordt geladen...</h2></div>';
+            document.querySelector('.container').prepend(loadingDiv);
+
             try {
-                // Probeer de CSV file te laden
-                const response = await window.fs.readFile('BE48738006392827 FINAL VERSION  INPUT FOR CLAUDE.csv', { encoding: 'utf8' });
+                let csvText;
+                
+                if (USE_LOCAL_DATA) {
+                    // Gebruik lokale data voor testen
+                    csvText = localCSVData;
+                    console.log('Gebruik lokale CSV data voor testen');
+                } else {
+                    // Haal CSV data op van API endpoint
+                    const response = await fetch(API_ENDPOINT);
+                    
+                    if (!response.ok) {
+                        throw new Error(`API fout: ${response.status} ${response.statusText}`);
+                    }
+
+                    csvText = await response.text();
+                    console.log('CSV data opgehaald van API');
+                }
                 
                 // Parse CSV met PapaParse
-                const parsed = Papa.parse(response, {
+                const parsed = Papa.parse(csvText, {
                     header: true,
                     dynamicTyping: true,
                     skipEmptyLines: true,
                     delimitersToGuess: [',', ';', '\t', '|']
                 });
                 
+                if (parsed.errors.length > 0) {
+                    console.error('CSV parse fouten:', parsed.errors);
+                }
+                
                 csvData = parsed.data;
-                console.log('CSV geladen:', csvData.length, 'rijen');
+                console.log(`CSV data succesvol geladen: ${csvData.length} transacties`);
+                
+                // Verifieer data integriteit
+                if (csvData.length === 0) {
+                    throw new Error('Geen transacties gevonden in de data');
+                }
+                
+                // Verwijder loading message
+                loadingDiv.remove();
                 
                 // Verwerk de echte data
                 processRealData();
@@ -661,14 +700,28 @@
                 createCharts();
                 fillTables();
                 
+                // Voeg verificatie timestamp toe
+                const verificationDiv = document.createElement('div');
+                verificationDiv.style.cssText = 'text-align: center; color: #666; font-size: 0.9em; margin-top: 20px;';
+                verificationDiv.innerHTML = `Data geladen op: ${new Date().toLocaleString('nl-BE')} | ${csvData.length} transacties verwerkt`;
+                document.querySelector('.container').appendChild(verificationDiv);
+                
             } catch (error) {
-                console.error('Fout bij laden CSV, gebruik mock data:', error);
-                // Fallback naar mock data als CSV niet beschikbaar is
-                initializeMockData();
-                processData();
-                updateKPIs();
-                createCharts();
-                fillTables();
+                console.error('KRITIEKE FOUT bij laden data:', error);
+                loadingDiv.remove();
+                
+                // Toon duidelijke foutmelding
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = 'background: #ff6b6b; color: white; padding: 30px; border-radius: 10px; margin: 20px; text-align: center;';
+                errorDiv.innerHTML = `
+                    <h1>⚠️ Kritieke Fout</h1>
+                    <p style="font-size: 1.2em; margin: 20px 0;">Kan financiële data niet laden</p>
+                    <p>Foutdetails: ${error.message}</p>
+                    <p style="margin-top: 20px;">Voor lokaal testen: zet USE_LOCAL_DATA op true</p>
+                    <button onclick="location.reload()" style="background: white; color: #ff6b6b; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 20px;">Opnieuw Proberen</button>
+                `;
+                document.querySelector('.container').innerHTML = '';
+                document.querySelector('.container').appendChild(errorDiv);
             }
         }
 
@@ -796,9 +849,18 @@
         }
 
         function createCharts() {
+            // Controleer of data beschikbaar is
+            if (!processedData || !processedData.operationeleUitgaven) {
+                console.error('Geen data beschikbaar voor grafieken');
+                return;
+            }
+
             // 1. Uitgaven per categorie chart
             const uitgavenCtx = document.getElementById('uitgavenChart').getContext('2d');
-            new Chart(uitgavenCtx, {
+            if (uitgavenCtx && window.uitgavenChart) {
+                window.uitgavenChart.destroy();
+            }
+            window.uitgavenChart = new Chart(uitgavenCtx, {
                 type: 'doughnut',
                 data: {
                     labels: processedData.operationeleUitgaven.perCategorie.map(c => c.categorie),
@@ -845,7 +907,10 @@
 
             // 2. VENNOOTSCHAP MDN detail chart
             const vennootschapCtx = document.getElementById('vennootschapChart').getContext('2d');
-            new Chart(vennootschapCtx, {
+            if (vennootschapCtx && window.vennootschapChart) {
+                window.vennootschapChart.destroy();
+            }
+            window.vennootschapChart = new Chart(vennootschapCtx, {
                 type: 'pie',
                 data: {
                     labels: processedData.vennootschapMDN.leveranciers.map(l => l.naam),
@@ -875,15 +940,34 @@
                 }
             });
 
-            // 3. Maandelijkse uitgaven chart (mock data voor demo)
+            // 3. Maandelijkse uitgaven chart
             const maandCtx = document.getElementById('maandChart').getContext('2d');
-            new Chart(maandCtx, {
+            if (maandCtx && window.maandChart) {
+                window.maandChart.destroy();
+            }
+            
+            // Groepeer uitgaven per maand
+            const uitgavenPerMaand = {};
+            if (processedData.operationeleData) {
+                processedData.operationeleData.forEach(row => {
+                    const maand = row['Transactie Maand'];
+                    if (!uitgavenPerMaand[maand]) {
+                        uitgavenPerMaand[maand] = 0;
+                    }
+                    uitgavenPerMaand[maand] += Math.abs(row['Uitgaande Betaling'] || 0);
+                });
+            }
+            
+            const maanden = Object.keys(uitgavenPerMaand).sort();
+            const maandBedragen = maanden.map(m => uitgavenPerMaand[m]);
+            
+            window.maandChart = new Chart(maandCtx, {
                 type: 'line',
                 data: {
-                    labels: ['Mrt', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt'],
+                    labels: maanden,
                     datasets: [{
                         label: 'Operationele Uitgaven',
-                        data: [72000, 68000, 75000, 82000, 79000, 71000, 74000, 72759],
+                        data: maandBedragen,
                         borderColor: '#3498db',
                         backgroundColor: 'rgba(52, 152, 219, 0.1)',
                         tension: 0.1
@@ -907,7 +991,10 @@
 
             // 4. Top leveranciers chart
             const leveranciersCtx = document.getElementById('leveranciersChart').getContext('2d');
-            new Chart(leveranciersCtx, {
+            if (leveranciersCtx && window.leveranciersChart) {
+                window.leveranciersChart.destroy();
+            }
+            window.leveranciersChart = new Chart(leveranciersCtx, {
                 type: 'bar',
                 data: {
                     labels: processedData.topLeveranciers.map(l => l.naam),
@@ -938,6 +1025,8 @@
                     }
                 }
             });
+            
+            console.log('Alle grafieken succesvol aangemaakt');
         }
 
         function fillTables() {
