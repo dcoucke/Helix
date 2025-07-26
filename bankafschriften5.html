@@ -149,6 +149,12 @@
             border-radius: 15px;
             padding: 25px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            position: relative;
+            height: 400px;
+        }
+        
+        .chart-container canvas {
+            max-height: 350px !important;
         }
         
         .chart-container.full-width {
@@ -268,8 +274,29 @@
             border-bottom: 1px solid #f1f5f9;
         }
         
-        .pivot-table tr:hover {
-            background: #f8fafc;
+        .pivot-table tbody tr {
+            transition: background-color 0.2s ease;
+        }
+        
+        .pivot-table tr[onclick] {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .pivot-table tr[onclick]:hover {
+            background: #f1f5f9 !important;
+        }
+        
+        .pivot-table tr.category-header:hover {
+            background: #e2e8f0;
+        }
+        
+        .pivot-table tr.sub-row:hover {
+            background: #f1f5f9;
+        }
+        
+        .pivot-table tr.detail-row:hover {
+            background: #f8f9fa;
         }
         
         .pivot-table .amount {
@@ -679,7 +706,7 @@
                         <h3 class="chart-title">Waar Gaan de Operationele Kosten Naartoe?</h3>
                         <span class="chart-info" title="Klik op een segment voor details">ℹ️</span>
                     </div>
-                    <canvas id="operationalPieChart" height="300"></canvas>
+                    <canvas id="operationalPieChart" style="max-height: 300px;"></canvas>
                 </div>
                 
                 <div class="chart-container">
@@ -687,7 +714,7 @@
                         <h3 class="chart-title">Top 10 Grootste Uitgaven</h3>
                         <span class="chart-info" title="Alle leveranciers op bedrag">ℹ️</span>
                     </div>
-                    <canvas id="topSuppliersChart" height="300"></canvas>
+                    <canvas id="topSuppliersChart" style="max-height: 300px;"></canvas>
                 </div>
                 
                 <div class="chart-container full-width">
@@ -695,7 +722,7 @@
                         <h3 class="chart-title">Maandelijkse Uitgaven Trend</h3>
                         <span class="chart-info" title="Operationele uitgaven per maand">ℹ️</span>
                     </div>
-                    <canvas id="monthlyTrendChart" height="200"></canvas>
+                    <canvas id="monthlyTrendChart" style="max-height: 200px;"></canvas>
                 </div>
             `;
             
@@ -1080,8 +1107,8 @@
                     const supplierId = `${categoryId}_${supplier.replace(/\s+/g, '_')}`;
                     
                     tableHTML += `
-                        <tr class="sub-row" style="display: none;" data-category="${categoryId}">
-                            <td onclick="toggleSupplier('${supplierId}')" style="cursor: pointer;">
+                        <tr class="sub-row" style="display: none;" data-category="${categoryId}" onclick="toggleSupplier('${supplierId}')" style="cursor: pointer;">
+                            <td>
                                 <span class="expand-icon" id="icon_${supplierId}">▶</span> 
                                 ${supplier} (${supplierData.count} transacties)
                             </td>
@@ -1187,7 +1214,7 @@
             html += `
                 <div class="chart-container">
                     <h3 class="chart-title">MDN versus Andere Grote Kostenposten</h3>
-                    <canvas id="mdnComparisonChart" height="300"></canvas>
+                    <canvas id="mdnComparisonChart" style="max-height: 300px;"></canvas>
                 </div>
             `;
             
@@ -1397,7 +1424,7 @@
             
             <div class="chart-container" style="margin-top: 30px;">
                 <h3 class="chart-title">Uitgaven per Categorie per Maand</h3>
-                <canvas id="monthlyStackedChart" height="300"></canvas>
+                <canvas id="monthlyStackedChart" style="max-height: 300px;"></canvas>
             </div>
             `;
             
@@ -1623,46 +1650,73 @@
             
             const isExpanded = icon.textContent === '▼';
             icon.textContent = isExpanded ? '▶' : '▼';
+            icon.classList.toggle('expanded');
             
             rows.forEach(row => {
                 row.style.display = isExpanded ? 'none' : 'table-row';
                 // Also hide supplier details when closing category
                 if (isExpanded) {
-                    const supplierRows = row.querySelectorAll('[data-supplier]');
-                    supplierRows.forEach(sr => sr.style.display = 'none');
+                    const supplierRows = document.querySelectorAll(`[data-supplier^="${categoryId}"]`);
+                    supplierRows.forEach(sr => {
+                        sr.style.display = 'none';
+                        // Reset supplier icons
+                        const supplierId = sr.getAttribute('data-supplier');
+                        const supplierIcon = document.getElementById(`icon_${supplierId}`);
+                        if (supplierIcon) {
+                            supplierIcon.textContent = '▶';
+                            supplierIcon.classList.remove('expanded');
+                        }
+                    });
                 }
             });
         }
         
         function toggleSupplier(supplierId) {
+            event.stopPropagation(); // Prevent triggering parent row click
+            
             const icon = document.getElementById(`icon_${supplierId}`);
             const rows = document.querySelectorAll(`[data-supplier="${supplierId}"]`);
             
             const isExpanded = icon.textContent === '▼';
             icon.textContent = isExpanded ? '▶' : '▼';
+            icon.classList.toggle('expanded');
             
             rows.forEach(row => {
                 row.style.display = isExpanded ? 'none' : 'table-row';
             });
-            
-            event.stopPropagation();
         }
         
+        // Show category details with smooth scrolling
         function showCategoryDetails(category) {
-            switchTab('categories');
+            // Switch to categories tab
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button')[1].classList.add('active'); // Categories is second tab
+            
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('categories').classList.add('active');
+            
             const categoryId = category.replace(/\s+/g, '_');
             
-            // Auto-expand the category
+            // Auto-expand the category after a short delay
             setTimeout(() => {
                 const icon = document.getElementById(`icon_${categoryId}`);
                 if (icon && icon.textContent === '▶') {
                     toggleCategory(categoryId);
                 }
                 
-                // Scroll to category
-                const categoryRow = document.querySelector(`[onclick="toggleCategory('${categoryId}')"]`);
+                // Smooth scroll to category
+                const categoryRow = document.querySelector(`tr[onclick="toggleCategory('${categoryId}')"]`);
                 if (categoryRow) {
                     categoryRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Highlight the row briefly
+                    categoryRow.style.backgroundColor = '#fef3c7';
+                    setTimeout(() => {
+                        categoryRow.style.backgroundColor = '';
+                    }, 2000);
                 }
             }, 100);
         }
