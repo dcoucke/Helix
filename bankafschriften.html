@@ -857,7 +857,7 @@ PLAATS HIER UW CSV DATA`;
 
             // 1. Uitgaven per categorie chart
             const uitgavenCtx = document.getElementById('uitgavenChart').getContext('2d');
-            if (uitgavenCtx && window.uitgavenChart) {
+            if (window.uitgavenChart) {
                 window.uitgavenChart.destroy();
             }
             window.uitgavenChart = new Chart(uitgavenCtx, {
@@ -907,7 +907,7 @@ PLAATS HIER UW CSV DATA`;
 
             // 2. VENNOOTSCHAP MDN detail chart
             const vennootschapCtx = document.getElementById('vennootschapChart').getContext('2d');
-            if (vennootschapCtx && window.vennootschapChart) {
+            if (window.vennootschapChart) {
                 window.vennootschapChart.destroy();
             }
             window.vennootschapChart = new Chart(vennootschapCtx, {
@@ -942,7 +942,7 @@ PLAATS HIER UW CSV DATA`;
 
             // 3. Maandelijkse uitgaven chart
             const maandCtx = document.getElementById('maandChart').getContext('2d');
-            if (maandCtx && window.maandChart) {
+            if (window.maandChart) {
                 window.maandChart.destroy();
             }
             
@@ -991,7 +991,7 @@ PLAATS HIER UW CSV DATA`;
 
             // 4. Top leveranciers chart
             const leveranciersCtx = document.getElementById('leveranciersChart').getContext('2d');
-            if (leveranciersCtx && window.leveranciersChart) {
+            if (window.leveranciersChart) {
                 window.leveranciersChart.destroy();
             }
             window.leveranciersChart = new Chart(leveranciersCtx, {
