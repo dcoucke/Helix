@@ -157,6 +157,11 @@
             border-radius: 15px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
             min-height: 400px;
+            position: relative;
+        }
+        
+        .chart-container canvas {
+            max-height: 350px !important;
         }
 
         .chart-container.full-width {
@@ -406,19 +411,27 @@
         <div class="charts-grid">
             <div class="chart-container">
                 <h3 class="chart-title">Top 10 Uitgavencategorieën (Operationeel)</h3>
-                <canvas id="uitgavenChart"></canvas>
+                <div style="position: relative; height: 350px;">
+                    <canvas id="uitgavenChart"></canvas>
+                </div>
             </div>
             <div class="chart-container">
                 <h3 class="chart-title">Verdeling VENNOOTSCHAP MDN Betalingen</h3>
-                <canvas id="vennootschapChart"></canvas>
+                <div style="position: relative; height: 350px;">
+                    <canvas id="vennootschapChart"></canvas>
+                </div>
             </div>
             <div class="chart-container">
                 <h3 class="chart-title">Maandelijkse Uitgaven Evolutie</h3>
-                <canvas id="maandChart"></canvas>
+                <div style="position: relative; height: 350px;">
+                    <canvas id="maandChart"></canvas>
+                </div>
             </div>
             <div class="chart-container">
                 <h3 class="chart-title">Top 15 Leveranciers (Bedrag)</h3>
-                <canvas id="leveranciersChart"></canvas>
+                <div style="position: relative; height: 350px;">
+                    <canvas id="leveranciersChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -529,7 +542,7 @@
                     </tbody>
                 </table>
             </div>
-            <canvas id="kaartMaandChart" style="margin-top: 30px; max-height: 300px;"></canvas>
+                            <canvas id="kaartMaandChart" style="margin-top: 30px; max-height: 300px;"></canvas>
         </div>
 
         <div id="energie" class="tab-content">
@@ -626,12 +639,22 @@
         // Laad en verwerk CSV data
         async function loadAndProcessData() {
             try {
-                // In productie zou dit de echte CSV file laden
-                // Voor demo doeleinden gebruik ik mock data gebaseerd op de analyse
-                initializeMockData();
+                // Probeer de CSV file te laden
+                const response = await window.fs.readFile('BE48738006392827 FINAL VERSION  INPUT FOR CLAUDE.csv', { encoding: 'utf8' });
                 
-                // Verwerk de data
-                processData();
+                // Parse CSV met PapaParse
+                const parsed = Papa.parse(response, {
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    delimitersToGuess: [',', ';', '\t', '|']
+                });
+                
+                csvData = parsed.data;
+                console.log('CSV geladen:', csvData.length, 'rijen');
+                
+                // Verwerk de echte data
+                processRealData();
                 
                 // Vul alle componenten
                 updateKPIs();
@@ -639,66 +662,131 @@
                 fillTables();
                 
             } catch (error) {
-                console.error('Fout bij laden data:', error);
+                console.error('Fout bij laden CSV, gebruik mock data:', error);
+                // Fallback naar mock data als CSV niet beschikbaar is
+                initializeMockData();
+                processData();
+                updateKPIs();
+                createCharts();
+                fillTables();
             }
         }
 
-        function initializeMockData() {
-            // Mock data gebaseerd op de werkelijke analyse
+
+
+        function processRealData() {
+            // Filter data op boekjaar
+            const boekjaarStart = new Date(2024, 2, 14); // 14 maart 2024
+            const boekjaarEind = new Date(2025, 2, 14); // 14 maart 2025
+            
+            // Converteer datums en filter
+            const boekjaarData = csvData.filter(row => {
+                if (!row['Transactie Datum']) return false;
+                const [dag, maand, jaar] = row['Transactie Datum'].split('/');
+                const datum = new Date(jaar, maand - 1, dag);
+                return datum >= boekjaarStart && datum < boekjaarEind;
+            });
+            
+            // Basis analyses
+            const uitgaandeBetalingen = boekjaarData.filter(row => row['Payment Type'] === 'UITGAANDE BETALING');
+            const inkomsteBetalingen = boekjaarData.filter(row => row['Payment Type'] === 'INKOMENDE BETALING');
+            const operationeleUitgaven = uitgaandeBetalingen.filter(row => row['ANALYSIS CATEGORY'] === 'OPERATIONELE UITGAVE');
+            
+            // Bereken totalen
+            const totaalUitgaven = uitgaandeBetalingen.reduce((sum, row) => sum + Math.abs(row['Uitgaande Betaling'] || 0), 0);
+            const totaalInkomsten = inkomsteBetalingen.reduce((sum, row) => sum + Math.abs(row['Inkomende Betaling'] || 0), 0);
+            const totaalOperationeel = operationeleUitgaven.reduce((sum, row) => sum + Math.abs(row['Uitgaande Betaling'] || 0), 0);
+            
+            // Groepeer operationele uitgaven per Payment Category
+            const categorieGroepen = {};
+            operationeleUitgaven.forEach(row => {
+                const cat = row['Payment Category'] || 'Onbekend';
+                if (!categorieGroepen[cat]) {
+                    categorieGroepen[cat] = {
+                        categorie: cat,
+                        bedrag: 0,
+                        aantal: 0,
+                        transacties: []
+                    };
+                }
+                categorieGroepen[cat].bedrag += Math.abs(row['Uitgaande Betaling'] || 0);
+                categorieGroepen[cat].aantal += 1;
+                categorieGroepen[cat].transacties.push(row);
+            });
+            
+            // Sorteer categorieën op bedrag
+            const categorieArray = Object.values(categorieGroepen)
+                .sort((a, b) => b.bedrag - a.bedrag)
+                .map(cat => ({
+                    ...cat,
+                    percentage: ((cat.bedrag / totaalOperationeel) * 100).toFixed(1)
+                }));
+            
+            // Analyseer VENNOOTSCHAP MDN
+            const vennootschapMDN = operationeleUitgaven.filter(row => row['Payment Category'] === 'VENNOOTSCHAP MDN');
+            const vennootschapLeveranciers = {};
+            vennootschapMDN.forEach(row => {
+                const naam = row['Naam tegenpartij'] || 'Onbekend';
+                if (!vennootschapLeveranciers[naam]) {
+                    vennootschapLeveranciers[naam] = { naam, bedrag: 0, aantal: 0 };
+                }
+                vennootschapLeveranciers[naam].bedrag += Math.abs(row['Uitgaande Betaling'] || 0);
+                vennootschapLeveranciers[naam].aantal += 1;
+            });
+            
+            // Groepeer alle leveranciers
+            const alleLeveranciers = {};
+            operationeleUitgaven.forEach(row => {
+                const naam = row['Naam tegenpartij'];
+                if (naam && naam !== 'null') {
+                    if (!alleLeveranciers[naam]) {
+                        alleLeveranciers[naam] = {
+                            naam: naam,
+                            bedrag: 0,
+                            aantal: 0,
+                            categorie: row['Payment Category']
+                        };
+                    }
+                    alleLeveranciers[naam].bedrag += Math.abs(row['Uitgaande Betaling'] || 0);
+                    alleLeveranciers[naam].aantal += 1;
+                }
+            });
+            
+            const topLeveranciers = Object.values(alleLeveranciers)
+                .sort((a, b) => b.bedrag - a.bedrag)
+                .slice(0, 15);
+            
+            // Analyseer kaartbetalingen
+            const kaartbetalingen = uitgaandeBetalingen.filter(row => 
+                row['Payment Category'] === 'BETALING MET KAART'
+            );
+            
+            // Bereken laatste saldo
+            const laatsteSaldo = boekjaarData.length > 0 ? 
+                parseFloat(boekjaarData[boekjaarData.length - 1]['Saldo']) : 0;
+            
+            // Sla verwerkte data op
             processedData = {
                 operationeleUitgaven: {
-                    totaal: 593759.46,
-                    perCategorie: [
-                        { categorie: 'VENNOOTSCHAP MDN', bedrag: 151121.28, aantal: 21, percentage: 25.4 },
-                        { categorie: 'LUMINUS', bedrag: 133046.72, aantal: 158, percentage: 22.4 },
-                        { categorie: 'FARYS', bedrag: 37751.34, aantal: 5, percentage: 6.4 },
-                        { categorie: 'PERSONEEL', bedrag: 37682.12, aantal: 48, percentage: 6.3 },
-                        { categorie: 'EQUANS', bedrag: 33185.85, aantal: 14, percentage: 5.6 },
-                        { categorie: 'VERZEKERING', bedrag: 26606.78, aantal: 1, percentage: 4.5 },
-                        { categorie: 'SCHOONMAAK', bedrag: 23328.30, aantal: 50, percentage: 3.9 },
-                        { categorie: 'TECHEM', bedrag: 14167.26, aantal: 5, percentage: 2.4 },
-                        { categorie: 'ONDERHOUD', bedrag: 13397.06, aantal: 11, percentage: 2.3 },
-                        { categorie: 'BETALING MET KAART', bedrag: 12908.73, aantal: 97, percentage: 2.2 }
-                    ]
+                    totaal: totaalOperationeel,
+                    perCategorie: categorieArray.slice(0, 10)
                 },
                 vennootschapMDN: {
-                    totaal: 151121.28,
-                    leveranciers: [
-                        { naam: 'BOEKHOUDING', bedrag: 143071.07, aantal: 17 },
-                        { naam: 'VERKOPEN', bedrag: 285.56, aantal: 2 },
-                        { naam: 'WEST COAST INVESTMENTS', bedrag: 7112.55, aantal: 1 },
-                        { naam: 'IMMO BEACH BOEKHOUDING', bedrag: 652.10, aantal: 1 }
-                    ]
+                    totaal: vennootschapMDN.reduce((sum, row) => sum + Math.abs(row['Uitgaande Betaling'] || 0), 0),
+                    leveranciers: Object.values(vennootschapLeveranciers).sort((a, b) => b.bedrag - a.bedrag),
+                    transacties: vennootschapMDN
                 },
-                topLeveranciers: [
-                    { naam: 'BOEKHOUDING', bedrag: 143071.07, aantal: 17, categorie: 'VENNOOTSCHAP MDN' },
-                    { naam: 'LUMINUS', bedrag: 133046.72, aantal: 158, categorie: 'LUMINUS' },
-                    { naam: 'FARYS', bedrag: 37751.34, aantal: 5, categorie: 'FARYS' },
-                    { naam: 'EQUANS', bedrag: 33185.85, aantal: 14, categorie: 'EQUANS' },
-                    { naam: 'VIVIUM NV', bedrag: 26860.89, aantal: 3, categorie: 'VERZEKERING' },
-                    { naam: 'GROEP S', bedrag: 19118.39, aantal: 34, categorie: 'PERSONEEL' },
-                    { naam: 'DETRE RUDY', bedrag: 18563.73, aantal: 14, categorie: 'PERSONEEL' },
-                    { naam: 'TECHEM', bedrag: 14167.26, aantal: 5, categorie: 'TECHEM' },
-                    { naam: 'TELENET N.V', bedrag: 12382.59, aantal: 18, categorie: 'TELENET' },
-                    { naam: 'AB CLAENING BV', bedrag: 10537.24, aantal: 14, categorie: 'SCHOONMAAK' },
-                    { naam: 'DE LIFT', bedrag: 8814.57, aantal: 10, categorie: 'LIFTEN' },
-                    { naam: 'LEFEVRE DANNY DAKWERKEN', bedrag: 8574.00, aantal: 1, categorie: 'ONDERHOUD' },
-                    { naam: 'ELEKTRO POWER', bedrag: 8511.08, aantal: 7, categorie: 'ELEKTRO POWER' },
-                    { naam: 'VEOLIA', bedrag: 8344.61, aantal: 12, categorie: 'VEOLIA' },
-                    { naam: 'APM CLAEN', bedrag: 8076.75, aantal: 18, categorie: 'SCHOONMAAK' }
-                ],
+                topLeveranciers: topLeveranciers,
+                kaartbetalingen: kaartbetalingen,
                 totalen: {
-                    inkomsten: 908808.21,
-                    uitgaven: 863130.11,
-                    operationeel: 593759.46,
-                    investeringen: 182569.10,
-                    saldo: 45678.23
-                }
+                    inkomsten: totaalInkomsten,
+                    uitgaven: totaalUitgaven,
+                    operationeel: totaalOperationeel,
+                    saldo: laatsteSaldo
+                },
+                alleData: boekjaarData,
+                operationeleData: operationeleUitgaven
             };
-        }
-
-        function processData() {
-            // Additionele verwerking indien nodig
         }
 
         function updateKPIs() {
@@ -872,6 +960,8 @@
             const tbody = document.getElementById('pivotBody');
             tbody.innerHTML = '';
             
+            if (!processedData.operationeleUitgaven) return;
+            
             processedData.operationeleUitgaven.perCategorie.forEach((cat, index) => {
                 // Hoofdcategorie rij
                 const tr = document.createElement('tr');
@@ -885,20 +975,49 @@
                 `;
                 tbody.appendChild(tr);
                 
-                // Voeg mock detail rijen toe voor demo
-                if (cat.categorie === 'VENNOOTSCHAP MDN') {
-                    processedData.vennootschapMDN.leveranciers.forEach((lev, levIndex) => {
-                        const childTr = document.createElement('tr');
-                        childTr.className = `child-row category-${index}`;
-                        childTr.innerHTML = `
-                            <td>${lev.naam}</td>
-                            <td>${lev.aantal}</td>
-                            <td class="amount-negative">€${formatNumber(lev.bedrag)}</td>
-                            <td>${((lev.bedrag / cat.bedrag) * 100).toFixed(1)}%</td>
-                            <td>€${formatNumber(lev.bedrag / lev.aantal)}</td>
-                        `;
-                        tbody.appendChild(childTr);
+                // Voeg detail rijen toe voor elke categorie
+                if (cat.transacties) {
+                    // Groepeer per leverancier binnen categorie
+                    const leveranciersInCat = {};
+                    cat.transacties.forEach(trans => {
+                        const naam = trans['Naam tegenpartij'] || 'Onbekend';
+                        if (!leveranciersInCat[naam]) {
+                            leveranciersInCat[naam] = { naam, bedrag: 0, aantal: 0, transacties: [] };
+                        }
+                        leveranciersInCat[naam].bedrag += Math.abs(trans['Uitgaande Betaling'] || 0);
+                        leveranciersInCat[naam].aantal += 1;
+                        leveranciersInCat[naam].transacties.push(trans);
                     });
+                    
+                    // Sorteer leveranciers op bedrag
+                    Object.values(leveranciersInCat)
+                        .sort((a, b) => b.bedrag - a.bedrag)
+                        .forEach((lev, levIndex) => {
+                            const childTr = document.createElement('tr');
+                            childTr.className = `child-row category-${index}`;
+                            childTr.innerHTML = `
+                                <td class="expandable" onclick="toggleLeverancier(${index}, ${levIndex})">${lev.naam}</td>
+                                <td>${lev.aantal}</td>
+                                <td class="amount-negative">€${formatNumber(lev.bedrag)}</td>
+                                <td>${((lev.bedrag / cat.bedrag) * 100).toFixed(1)}%</td>
+                                <td>€${formatNumber(lev.bedrag / lev.aantal)}</td>
+                            `;
+                            tbody.appendChild(childTr);
+                            
+                            // Voeg individuele transacties toe
+                            lev.transacties.forEach(trans => {
+                                const grandchildTr = document.createElement('tr');
+                                grandchildTr.className = `grandchild-row leverancier-${index}-${levIndex}`;
+                                grandchildTr.innerHTML = `
+                                    <td>${trans['Transactie Datum']} - ${trans['Omschrijving'].substring(0, 50)}...</td>
+                                    <td>1</td>
+                                    <td class="amount-negative">€${formatNumber(Math.abs(trans['Uitgaande Betaling'] || 0))}</td>
+                                    <td>-</td>
+                                    <td>-</td>
+                                `;
+                                tbody.appendChild(grandchildTr);
+                            });
+                        });
                 }
             });
             
@@ -907,12 +1026,24 @@
             totalTr.className = 'pivot-total';
             totalTr.innerHTML = `
                 <td>TOTAAL OPERATIONELE UITGAVEN</td>
-                <td>${processedData.operationeleUitgaven.perCategorie.reduce((sum, cat) => sum + cat.aantal, 0)}</td>
+                <td>${processedData.operationeleData ? processedData.operationeleData.length : 0}</td>
                 <td class="amount-negative">€${formatNumber(processedData.operationeleUitgaven.totaal)}</td>
                 <td>100.0%</td>
                 <td>-</td>
             `;
             tbody.appendChild(totalTr);
+        }
+
+        function toggleLeverancier(catIndex, levIndex) {
+            event.stopPropagation();
+            const grandchildRows = document.querySelectorAll(`.leverancier-${catIndex}-${levIndex}`);
+            const expandable = event.target;
+            
+            grandchildRows.forEach(row => {
+                row.classList.toggle('show');
+            });
+            
+            expandable.classList.toggle('expanded');
         }
 
         function fillLeveranciersTable() {
@@ -936,64 +1067,81 @@
             const tbody = document.getElementById('vennootschapTable');
             tbody.innerHTML = '';
             
-            // Mock transacties voor demo
-            const mockTransacties = [
-                { datum: '15/09/2024', leverancier: 'BOEKHOUDING', omschrijving: 'Maandelijkse boekhouding augustus', bedrag: 8416.53 },
-                { datum: '01/09/2024', leverancier: 'BOEKHOUDING', omschrijving: 'Maandelijkse boekhouding juli', bedrag: 8416.53 },
-                { datum: '15/08/2024', leverancier: 'BOEKHOUDING', omschrijving: 'Maandelijkse boekhouding juni', bedrag: 8416.53 },
-                { datum: '30/07/2024', leverancier: 'WEST COAST INVESTMENTS', omschrijving: 'Beheerkosten Q2', bedrag: 7112.55 }
-            ];
+            if (!processedData.vennootschapMDN || !processedData.vennootschapMDN.transacties) return;
             
-            mockTransacties.forEach(trans => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${trans.datum}</td>
-                    <td>${trans.leverancier}</td>
-                    <td>${trans.omschrijving}</td>
-                    <td class="amount-negative">€${formatNumber(trans.bedrag)}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+            // Toon alle VENNOOTSCHAP MDN transacties
+            processedData.vennootschapMDN.transacties
+                .sort((a, b) => {
+                    const dateA = new Date(a['Transactie Datum'].split('/').reverse().join('-'));
+                    const dateB = new Date(b['Transactie Datum'].split('/').reverse().join('-'));
+                    return dateB - dateA;
+                })
+                .forEach(trans => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${trans['Transactie Datum']}</td>
+                        <td>${trans['Naam tegenpartij'] || 'Onbekend'}</td>
+                        <td>${trans['Omschrijving']}</td>
+                        <td class="amount-negative">€${formatNumber(Math.abs(trans['Uitgaande Betaling'] || 0))}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
             
             // Vul samenvatting
             const summary = document.getElementById('vennootschapSummary');
-            summary.innerHTML = processedData.vennootschapMDN.leveranciers.map(lev => 
-                `<li><strong>${lev.naam}:</strong> €${formatNumber(lev.bedrag)} (${lev.aantal} betalingen)</li>`
-            ).join('');
+            if (processedData.vennootschapMDN.leveranciers) {
+                summary.innerHTML = processedData.vennootschapMDN.leveranciers.map(lev => 
+                    `<li><strong>${lev.naam}:</strong> €${formatNumber(lev.bedrag)} (${lev.aantal} betalingen)</li>`
+                ).join('');
+            }
         }
 
         function fillKaartTable() {
             const tbody = document.getElementById('kaartTable');
             tbody.innerHTML = '';
             
-            // Mock kaart transacties
-            const mockKaart = [
-                { datum: '28/09/2024', omschrijving: 'BRICO - Onderhoudsmateriaal', bedrag: 245.67, maand: '2024-09' },
-                { datum: '25/09/2024', omschrijving: 'COLRUYT - Schoonmaakproducten', bedrag: 189.45, maand: '2024-09' },
-                { datum: '22/09/2024', omschrijving: 'MAKRO - Bulkaankopen', bedrag: 567.89, maand: '2024-09' },
-                { datum: '18/09/2024', omschrijving: 'GAMMA - Gereedschap', bedrag: 123.45, maand: '2024-09' }
-            ];
+            if (!processedData.kaartbetalingen) return;
             
-            mockKaart.forEach(trans => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${trans.datum}</td>
-                    <td>${trans.omschrijving}</td>
-                    <td class="amount-negative">€${formatNumber(trans.bedrag)}</td>
-                    <td>${trans.maand}</td>
-                `;
-                tbody.appendChild(tr);
+            // Toon alle kaartbetalingen
+            processedData.kaartbetalingen
+                .sort((a, b) => {
+                    const dateA = new Date(a['Transactie Datum'].split('/').reverse().join('-'));
+                    const dateB = new Date(b['Transactie Datum'].split('/').reverse().join('-'));
+                    return dateB - dateA;
+                })
+                .forEach(trans => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${trans['Transactie Datum']}</td>
+                        <td>${trans['Omschrijving']}</td>
+                        <td class="amount-negative">€${formatNumber(Math.abs(trans['Uitgaande Betaling'] || 0))}</td>
+                        <td>${trans['Transactie Maand']}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            
+            // Groepeer per maand voor de grafiek
+            const kaartPerMaand = {};
+            processedData.kaartbetalingen.forEach(trans => {
+                const maand = trans['Transactie Maand'];
+                if (!kaartPerMaand[maand]) {
+                    kaartPerMaand[maand] = 0;
+                }
+                kaartPerMaand[maand] += Math.abs(trans['Uitgaande Betaling'] || 0);
             });
             
-            // Maandelijkse kaart uitgaven chart
+            // Maak grafiek
+            const maanden = Object.keys(kaartPerMaand).sort();
+            const bedragen = maanden.map(m => kaartPerMaand[m]);
+            
             const kaartMaandCtx = document.getElementById('kaartMaandChart').getContext('2d');
             new Chart(kaartMaandCtx, {
                 type: 'bar',
                 data: {
-                    labels: ['Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep'],
+                    labels: maanden,
                     datasets: [{
                         label: 'Kaartbetalingen per maand',
-                        data: [1567, 1890, 2234, 2456, 2123, 2639],
+                        data: bedragen,
                         backgroundColor: 'rgba(250, 112, 154, 0.7)'
                     }]
                 },
