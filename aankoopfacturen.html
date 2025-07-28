@@ -1050,26 +1050,7 @@
             document.body.style.overflow = '';
         }
 
-        // Maak factuurnummers klikbaar
-        function makeFactuurLinksClickable() {
-            // Voor de leveranciers tabel sub-rows
-            document.querySelectorAll('#leveranciers-table .sub-row td:first-child').forEach(td => {
-                const factuurNummer = td.textContent.trim();
-                if (factuurNummer && factuurNummer !== '-') {
-                    td.innerHTML = `<span class="factuur-link" onclick="openFactuurModal('${factuurNummer}')">${factuurNummer}</span>`;
-                }
-            });
-            
-            // Voor de details tabel
-            document.querySelectorAll('#details-table td:nth-child(3)').forEach(td => {
-                const factuurNummer = td.textContent.trim();
-                if (factuurNummer && factuurNummer !== '-') {
-                    td.innerHTML = `<span class="factuur-link" onclick="openFactuurModal('${factuurNummer}')">${factuurNummer}</span>`;
-                }
-            });
-            
-            // Voor de anomalie tabel zou je ook kunnen toevoegen indien gewenst
-        }
+        // Maak factuurnummers klikbaar - VERWIJDERD want we doen dit nu direct in de HTML
 
         // ESC key om modals te sluiten
         document.addEventListener('keydown', (e) => {
