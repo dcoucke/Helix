@@ -1352,91 +1352,27 @@
             );
             const priveTotal = _.sumBy(priveExpenses, 'Transactie Bedrag');
             
-            // Check how many are cash payments (BETALING MET KAART)
-            const cashPayments = priveExpenses.filter(row => 
-                row['Subcategorie (Levarancier/Ontvanger)'] === 'BETALING MET KAART'
-            );
-            const cashTotal = _.sumBy(cashPayments, 'Transactie Bedrag');
-            const cashPercentage = ((cashTotal / priveTotal) * 100).toFixed(1);
-            
-            // Sort all private work transactions chronologically
-            const sortedTransactions = _.sortBy(priveExpenses, row => {
-                const parts = row['Transactie Datum'].split('/');
-                return new Date(parts[2], parts[1]-1, parts[0]);
-            });
-            
-            // Group by month for summary
-            const monthlyTotals = _(priveExpenses)
-                .groupBy('Transactie Maand')
-                .mapValues(group => ({
-                    total: _.sumBy(group, 'Transactie Bedrag'),
-                    count: group.length,
-                    cashAmount: _.sumBy(group.filter(r => r['Subcategorie (Levarancier/Ontvanger)'] === 'BETALING MET KAART'), 'Transactie Bedrag')
-                }))
-                .toPairs()
-                .sortBy(0)
-                .value();
+            // Sort all private work transactions by amount (high to low)
+            const sortedTransactions = _.sortBy(priveExpenses, row => -row['Transactie Bedrag']);
             
             let html = `
                 <div class="info-box cash-highlight">
                     <div class="info-box-icon">💰</div>
                     <div class="info-box-text">
-                        <strong>Privéwerken - Cash Betalingen:</strong> 
-                        Van de totale €${formatNumber(priveTotal)} aan privéwerken werd 
-                        <strong>€${formatNumber(cashTotal)} (${cashPercentage}%)</strong> cash betaald met de bankkaart
+                        <strong>Toelichting:</strong> Privéwerken zijn werkzaamheden uitgevoerd voor individuele eigenaars die betaald werden van de gemeenschappelijke rekening. Ook rioolbelasting staat hierbij.
                     </div>
                 </div>
                 
                 <div class="table-container">
                     <div class="table-header">
-                        <h3 class="table-title">Maandelijks Overzicht</h3>
+                        <h3 class="table-title">Alle Privéwerken - €${formatNumber(priveTotal)} (${priveExpenses.length} transacties)</h3>
                     </div>
                     <table class="pivot-table">
                         <thead>
                             <tr>
-                                <th>Maand</th>
-                                <th class="amount">Totaal Privéwerken</th>
-                                <th class="amount">Waarvan Cash</th>
-                                <th>Aantal Transacties</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-            
-            monthlyTotals.forEach(([month, data]) => {
-                const cashPerc = data.cashAmount > 0 ? `(${((data.cashAmount / data.total) * 100).toFixed(0)}%)` : '';
-                html += `
-                    <tr>
-                        <td>${formatMonth(month)}</td>
-                        <td class="amount">€ ${formatNumber(data.total)}</td>
-                        <td class="amount">${data.cashAmount > 0 ? '€ ' + formatNumber(data.cashAmount) + ' ' + cashPerc : '-'}</td>
-                        <td>${data.count}</td>
-                    </tr>
-                `;
-            });
-            
-            html += `
-                        <tr class="category-header">
-                            <td><strong>TOTAAL</strong></td>
-                            <td class="amount"><strong>€ ${formatNumber(priveTotal)}</strong></td>
-                            <td class="amount"><strong>€ ${formatNumber(cashTotal)}</strong></td>
-                            <td><strong>${priveExpenses.length}</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="table-container" style="margin-top: 25px;">
-                <div class="table-header">
-                    <h3 class="table-title">Alle Privéwerken Transacties (Chronologisch)</h3>
-                </div>
-                <div style="max-height: 600px; overflow-y: auto;">
-                    <table class="pivot-table">
-                        <thead style="position: sticky; top: 0; background: white; z-index: 10;">
-                            <tr>
-                                <th style="width: 100px;">Datum</th>
-                                <th style="width: 120px;" class="amount">Bedrag</th>
-                                <th style="width: 200px;">Leverancier</th>
+                                <th>Naam Tegenpartij</th>
+                                <th>Datum</th>
+                                <th class="amount">Bedrag</th>
                                 <th>Omschrijving</th>
                             </tr>
                         </thead>
@@ -1444,16 +1380,14 @@
             `;
             
             sortedTransactions.forEach((transaction, index) => {
-                const isCash = transaction['Subcategorie (Levarancier/Ontvanger)'] === 'BETALING MET KAART';
-                const rowClass = isCash ? 'style="background-color: #dcfce7;"' : '';
-                const leverancier = transaction['Subcategorie (Levarancier/Ontvanger)'];
+                const naam = transaction['Naam tegenpartij'] || 'Onbekend';
                 const omschrijving = transaction['Transactie Omschrijving'] || 'Privéwerk - geen details';
                 
                 html += `
-                    <tr ${rowClass}>
+                    <tr onclick="showPriveTransactionDetails('${index}')" style="cursor: pointer;">
+                        <td class="clickable">${naam}</td>
                         <td>${transaction['Transactie Datum']}</td>
                         <td class="amount">€ ${formatNumber(transaction['Transactie Bedrag'])}</td>
-                        <td>${isCash ? '💰 ' + leverancier : leverancier}</td>
                         <td>${omschrijving}</td>
                     </tr>
                 `;
@@ -1463,17 +1397,58 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-            
-            <div class="alert alert-info" style="margin-top: 30px;">
-                <span>ℹ️</span>
-                <span><strong>Toelichting:</strong> 
-                Privéwerken zijn werkzaamheden uitgevoerd voor individuele eigenaars. 
-                De groene regels (💰) zijn cash betalingen via de bankkaart van de residentie.</span>
-            </div>
             `;
             
             document.getElementById('prive').innerHTML = html;
+            
+            // Store prive expenses for detail view
+            window.priveExpenses = sortedTransactions;
+        }
+        
+        // Show private transaction details
+        function showPriveTransactionDetails(index) {
+            const transaction = window.priveExpenses[index];
+            
+            let modalHTML = `
+                <h3>Privéwerk Transactie Details</h3>
+                <table class="pivot-table" style="margin-top: 20px;">
+                    <tr>
+                        <td style="width: 200px;"><strong>Datum</strong></td>
+                        <td>${transaction['Transactie Datum']}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Naam Tegenpartij</strong></td>
+                        <td>${transaction['Naam tegenpartij'] || 'Onbekend'}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Leverancier</strong></td>
+                        <td>${transaction['Subcategorie (Levarancier/Ontvanger)']}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bedrag</strong></td>
+                        <td>€ ${formatNumber(transaction['Transactie Bedrag'])}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Omschrijving</strong></td>
+                        <td>${transaction['Transactie Omschrijving'] || 'Geen omschrijving'}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Type Betaling</strong></td>
+                        <td>${transaction['Type Betaling (In/Uit)']}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Boekhoudkundig Type</strong></td>
+                        <td>${transaction['Boekhoudkunidg Type']}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hoofdcategorie</strong></td>
+                        <td>${transaction['Hoofdcategorie']}</td>
+                    </tr>
+                </table>
+            `;
+            
+            document.getElementById('modalBody').innerHTML = modalHTML;
+            document.getElementById('transactionModal').style.display = 'block';
         }
         
         // Render RVM tab
