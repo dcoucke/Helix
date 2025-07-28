@@ -1,159 +1,312 @@
-// nav.js - Centraal navigatie script voor Residentie HELIX
-// Plaats dit bestand in de root van je GitHub Pages site
+// nav.js - Hypermodern navigatie voor Residentie HELIX
+// Minimalistisch, strak, en volgens de laatste design standards
 
 (function() {
-    // Configuratie - hier kan je makkelijk pagina's toevoegen/aanpassen
+    // Configuratie
     const navItems = [
-        { href: 'index.html', icon: '🏠', text: 'Home' },
-        { href: 'bankafschriften.html', icon: '🏦', text: 'Bankafschriften' },
-        { href: 'aankoopfacturen.html', icon: '📄', text: 'Aankoopfacturen' },
-        { href: 'wanbetalers.html', icon: '⚠️', text: 'Wanbetalers' },
-        { href: 'boekhouding.html', icon: '📊', text: 'Boekhouding', badge: 'Beta' }
+        { href: 'index.html', text: 'Home' },
+        { href: 'bankafschriften.html', text: 'Bankafschriften' },
+        { href: 'aankoopfacturen.html', text: 'Aankoopfacturen' },
+        { href: 'wanbetalers.html', text: 'Wanbetalers' },
+        { href: 'boekhouding.html', text: 'Boekhouding', badge: 'Beta' }
     ];
 
-    // CSS Styles
+    // CSS Styles - Hypermodern minimalistisch design
     const styles = `
         .nav-menu {
             position: fixed;
-            top: 20px;
-            left: 20px;
+            top: 32px;
+            left: 32px;
             z-index: 1000;
         }
 
         .nav-toggle {
-            background: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 0;
+            width: 44px;
+            height: 44px;
             cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .nav-toggle:hover {
+            background: rgba(255, 255, 255, 1);
+            border-color: rgba(0, 0, 0, 0.12);
+        }
+
+        .nav-toggle-lines {
+            width: 18px;
+            height: 12px;
+            position: relative;
+        }
+
+        .nav-toggle-lines span {
+            display: block;
+            position: absolute;
+            height: 1.5px;
+            width: 100%;
+            background: #1e293b;
+            left: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav-toggle-lines span:nth-child(1) {
+            top: 0;
+        }
+
+        .nav-toggle-lines span:nth-child(2) {
+            top: 5px;
+        }
+
+        .nav-toggle-lines span:nth-child(3) {
+            top: 10px;
+        }
+
+        .nav-toggle.active .nav-toggle-lines span:nth-child(1) {
+            transform: rotate(45deg);
+            top: 5px;
+        }
+
+        .nav-toggle.active .nav-toggle-lines span:nth-child(2) {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+
+        .nav-toggle.active .nav-toggle-lines span:nth-child(3) {
+            transform: rotate(-45deg);
+            top: 5px;
+        }
+
+        .nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            visibility: hidden;
             transition: all 0.3s ease;
-            width: 50px;
-            height: 50px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .nav-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .nav-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 320px;
+            height: 100vh;
+            background: white;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-panel.active {
+            transform: translateX(0);
+        }
+
+        .nav-header {
+            padding: 32px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .nav-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-subtitle {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin: 4px 0 0 0;
+        }
+
+        .nav-links {
+            flex: 1;
+            padding: 16px 0;
+            overflow-y: auto;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            padding: 14px 32px;
+            text-decoration: none;
+            color: #475569;
+            font-size: 0.9375rem;
+            font-weight: 400;
+            transition: all 0.2s ease;
+            position: relative;
+            letter-spacing: -0.01em;
+        }
+
+        .nav-links a:hover {
+            color: #1e293b;
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .nav-links a.active {
+            color: #3b82f6;
+            font-weight: 500;
+        }
+
+        .nav-links a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 24px;
+            background: #3b82f6;
+            border-radius: 0 2px 2px 0;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            background: #f1f5f9;
+            color: #64748b;
+            border-radius: 4px;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-close {
+            position: absolute;
+            top: 32px;
+            right: 32px;
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .nav-toggle:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        .nav-toggle span {
-            display: block;
-            width: 25px;
-            height: 3px;
-            background: #1e293b;
-            margin: 4px 0;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .nav-toggle.active span:nth-child(1) {
-            transform: rotate(45deg) translate(5px, 5px);
-        }
-
-        .nav-toggle.active span:nth-child(2) {
-            opacity: 0;
-        }
-
-        .nav-toggle.active span:nth-child(3) {
-            transform: rotate(-45deg) translate(7px, -6px);
-        }
-
-        .nav-dropdown {
-            position: absolute;
-            top: 60px;
-            left: 0;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            min-width: 250px;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s ease;
-        }
-
-        .nav-dropdown.active {
+        .nav-close:hover {
             opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
         }
 
-        .nav-dropdown a {
-            display: flex;
-            align-items: center;
-            padding: 15px 20px;
-            text-decoration: none;
-            color: #1e293b;
-            transition: background 0.2s ease;
-            border-bottom: 1px solid #f1f5f9;
+        .nav-close::before,
+        .nav-close::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 1.5px;
+            background: #475569;
         }
 
-        .nav-dropdown a:first-child {
-            border-radius: 12px 12px 0 0;
+        .nav-close::before {
+            transform: rotate(45deg);
         }
 
-        .nav-dropdown a:last-child {
-            border-bottom: none;
-            border-radius: 0 0 12px 12px;
+        .nav-close::after {
+            transform: rotate(-45deg);
         }
 
-        .nav-dropdown a:hover {
-            background: #f8fafc;
-        }
-
-        .nav-dropdown a.active {
-            background: #e0f2fe;
-            color: #0369a1;
-            font-weight: 500;
-        }
-
-        .nav-icon {
-            font-size: 1.2rem;
-            margin-right: 12px;
-            width: 24px;
-            text-align: center;
-        }
-
-        .nav-text {
-            flex: 1;
-        }
-
-        .nav-badge {
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            border-radius: 12px;
-            background: #e0f2fe;
-            color: #0369a1;
-        }
-
-        /* Voor donkere headers - uncomment indien nodig */
-        /*
-        .dark-header .nav-toggle {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .dark-header .nav-toggle span {
-            background: white;
-        }
-
-        .dark-header .nav-toggle:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        */
-
+        /* Mobile optimizations */
         @media (max-width: 768px) {
             .nav-menu {
-                top: 10px;
-                left: 10px;
+                top: 16px;
+                left: 16px;
             }
-            
-            .nav-dropdown {
-                min-width: 200px;
+
+            .nav-panel {
+                width: 280px;
+            }
+
+            .nav-header {
+                padding: 24px;
+            }
+
+            .nav-links a {
+                padding: 12px 24px;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            .nav-toggle {
+                background: rgba(0, 0, 0, 0.8);
+                border-color: rgba(255, 255, 255, 0.1);
+            }
+
+            .nav-toggle:hover {
+                background: rgba(0, 0, 0, 0.9);
+                border-color: rgba(255, 255, 255, 0.2);
+            }
+
+            .nav-toggle-lines span {
+                background: white;
+            }
+
+            .nav-panel {
+                background: #0f172a;
+                box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            }
+
+            .nav-header {
+                border-bottom-color: rgba(255, 255, 255, 0.06);
+            }
+
+            .nav-title {
+                color: white;
+            }
+
+            .nav-subtitle {
+                color: #94a3b8;
+            }
+
+            .nav-links a {
+                color: #cbd5e1;
+            }
+
+            .nav-links a:hover {
+                color: white;
+                background: rgba(255, 255, 255, 0.05);
+            }
+
+            .nav-links a.active {
+                color: #60a5fa;
+            }
+
+            .nav-links a.active::before {
+                background: #60a5fa;
+            }
+
+            .nav-close::before,
+            .nav-close::after {
+                background: #94a3b8;
+            }
+
+            .nav-badge {
+                background: #1e293b;
+                color: #94a3b8;
             }
         }
     `;
@@ -166,24 +319,33 @@
     // Creëer menu HTML
     const menuHTML = `
         <div class="nav-menu">
-            <button class="nav-toggle" id="navToggle">
-                <span></span>
-                <span></span>
-                <span></span>
+            <button class="nav-toggle" id="navToggle" aria-label="Menu">
+                <div class="nav-toggle-lines">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
             </button>
-            <div class="nav-dropdown" id="navDropdown">
+        </div>
+        <div class="nav-overlay" id="navOverlay"></div>
+        <nav class="nav-panel" id="navPanel">
+            <button class="nav-close" id="navClose" aria-label="Sluit menu"></button>
+            <div class="nav-header">
+                <h2 class="nav-title">Residentie HELIX</h2>
+                <p class="nav-subtitle">Financieel Dashboard</p>
+            </div>
+            <div class="nav-links">
                 ${navItems.map(item => `
                     <a href="${item.href}">
-                        <span class="nav-icon">${item.icon}</span>
-                        <span class="nav-text">${item.text}</span>
+                        ${item.text}
                         ${item.badge ? `<span class="nav-badge">${item.badge}</span>` : ''}
                     </a>
                 `).join('')}
             </div>
-        </div>
+        </nav>
     `;
 
-    // Wacht tot DOM geladen is
+    // Initialiseer navigatie
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initNav);
     } else {
@@ -194,48 +356,47 @@
         // Injecteer menu HTML
         document.body.insertAdjacentHTML('afterbegin', menuHTML);
 
-        // Voeg padding toe aan body
-        document.body.style.paddingTop = '70px';
+        // Geen extra padding toevoegen - laat pagina's hun eigen styling behouden
 
         // Setup event listeners
         const navToggle = document.getElementById('navToggle');
-        const navDropdown = document.getElementById('navDropdown');
+        const navOverlay = document.getElementById('navOverlay');
+        const navPanel = document.getElementById('navPanel');
+        const navClose = document.getElementById('navClose');
 
-        // Toggle menu
-        navToggle.addEventListener('click', function() {
-            this.classList.toggle('active');
-            navDropdown.classList.toggle('active');
-        });
+        function openMenu() {
+            navToggle.classList.add('active');
+            navOverlay.classList.add('active');
+            navPanel.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
 
-        // Sluit menu bij klik buiten
-        document.addEventListener('click', function(e) {
-            if (!navToggle.contains(e.target) && !navDropdown.contains(e.target)) {
-                navToggle.classList.remove('active');
-                navDropdown.classList.remove('active');
+        function closeMenu() {
+            navToggle.classList.remove('active');
+            navOverlay.classList.remove('active');
+            navPanel.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        navToggle.addEventListener('click', openMenu);
+        navOverlay.addEventListener('click', closeMenu);
+        navClose.addEventListener('click', closeMenu);
+
+        // ESC key om te sluiten
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && navPanel.classList.contains('active')) {
+                closeMenu();
             }
         });
 
         // Markeer huidige pagina
         const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-        const navLinks = navDropdown.querySelectorAll('a');
+        const navLinks = document.querySelectorAll('.nav-links a');
         
         navLinks.forEach(link => {
             if (link.getAttribute('href') === currentPage) {
                 link.classList.add('active');
             }
         });
-
-        // Check voor donkere header (optioneel)
-        const header = document.querySelector('header');
-        if (header) {
-            const headerBg = window.getComputedStyle(header).backgroundColor;
-            const rgb = headerBg.match(/\d+/g);
-            if (rgb) {
-                const brightness = (parseInt(rgb[0]) * 299 + parseInt(rgb[1]) * 587 + parseInt(rgb[2]) * 114) / 1000;
-                if (brightness < 128) {
-                    document.querySelector('.nav-menu').classList.add('dark-header');
-                }
-            }
-        }
     }
 })();
