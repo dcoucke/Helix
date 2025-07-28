@@ -1519,6 +1519,92 @@
                 `;
             });
             
+            // Add summary if there are multiple RVM members
+            if (rvmByPerson.length > 1) {
+                html += `
+                    <div class="alert alert-info">
+                        <span>📊</span>
+                        <span><strong>Samenvatting:</strong> 
+                        ${rvmByPerson.length} RVM leden ontvingen samen €${formatNumber(rvmTotal)} 
+                        over ${rvmExpenses.length} betalingen</span>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('rvm').innerHTML = html;
+        }
+        
+        // Render MDN tab
+        function renderMDNTab() {
+            const mdnExpenses = operationalExpenses.filter(row => row['Hoofdcategorie'] === 'VENNOOTSCHAPPEN MDN');
+            const mdnTotal = _.sumBy(mdnExpenses, 'Transactie Bedrag');
+            const totaalOperationeel = _.sumBy(operationalExpenses, 'Transactie Bedrag');
+            const mdnPercentage = (mdnTotal / totaalOperationeel * 100).toFixed(1);
+            
+            const mdnByCompany = _(mdnExpenses)
+                .groupBy('Subcategorie (Levarancier/Ontvanger)')
+                .mapValues(group => ({
+                    transactions: _.sortBy(group, row => {
+                        const parts = row['Transactie Datum'].split('/');
+                        return new Date(parts[2], parts[1]-1, parts[0]);
+                    }),
+                    total: _.sumBy(group, 'Transactie Bedrag'),
+                    count: group.length
+                }))
+                .value();
+            
+            let html = `
+                <div class="info-box mdn-highlight">
+                    <div class="info-box-icon">🏢</div>
+                    <div class="info-box-text">
+                        <strong>Beheerkosten MDN Vennootschappen:</strong> 
+                        In totaal is €${formatNumber(mdnTotal)} (${mdnPercentage}% van alle operationele kosten) 
+                        betaald aan de 3 vennootschappen van onze syndicus MDN.
+                    </div>
+                </div>
+            `;
+            
+            Object.entries(mdnByCompany).forEach(([company, data]) => {
+                const companyPercentage = (data.total / mdnTotal * 100).toFixed(1);
+                
+                html += `
+                    <div class="table-container" style="margin-bottom: 25px;">
+                        <div class="table-header">
+                            <h3 class="table-title">${company} - €${formatNumber(data.total)} (${companyPercentage}% van MDN totaal)</h3>
+                        </div>
+                        <table class="pivot-table">
+                            <thead>
+                                <tr>
+                                    <th>Datum</th>
+                                    <th class="amount">Bedrag</th>
+                                    <th>Omschrijving</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                data.transactions.forEach(transaction => {
+                    html += `
+                        <tr>
+                            <td>${transaction['Transactie Datum']}</td>
+                            <td class="amount">€ ${formatNumber(transaction['Transactie Bedrag'])}</td>
+                            <td>${transaction['Transactie Omschrijving'] || 'Beheerkosten'}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                                <tr class="category-header">
+                                    <td><strong>Totaal ${company}</strong></td>
+                                    <td class="amount"><strong>€ ${formatNumber(data.total)}</strong></td>
+                                    <td><strong>${data.count} betalingen</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+            
             // Add comparison chart
             html += `
                 <div class="chart-container">
@@ -2186,90 +2272,4 @@
         }
     </script>
 </body>
-</html>>
-                        </table>
-                    </div>
-                `;
-            });
-            
-            // Add summary if there are multiple RVM members
-            if (rvmByPerson.length > 1) {
-                html += `
-                    <div class="alert alert-info">
-                        <span>📊</span>
-                        <span><strong>Samenvatting:</strong> 
-                        ${rvmByPerson.length} RVM leden ontvingen samen €${formatNumber(rvmTotal)} 
-                        over ${rvmExpenses.length} betalingen</span>
-                    </div>
-                `;
-            }
-            
-            document.getElementById('rvm').innerHTML = html;
-        }
-        
-        // Render MDN tab
-        function renderMDNTab() {
-            const mdnExpenses = operationalExpenses.filter(row => row['Hoofdcategorie'] === 'VENNOOTSCHAPPEN MDN');
-            const mdnTotal = _.sumBy(mdnExpenses, 'Transactie Bedrag');
-            const totaalOperationeel = _.sumBy(operationalExpenses, 'Transactie Bedrag');
-            const mdnPercentage = (mdnTotal / totaalOperationeel * 100).toFixed(1);
-            
-            const mdnByCompany = _(mdnExpenses)
-                .groupBy('Subcategorie (Levarancier/Ontvanger)')
-                .mapValues(group => ({
-                    transactions: _.sortBy(group, row => {
-                        const parts = row['Transactie Datum'].split('/');
-                        return new Date(parts[2], parts[1]-1, parts[0]);
-                    }),
-                    total: _.sumBy(group, 'Transactie Bedrag'),
-                    count: group.length
-                }))
-                .value();
-            
-            let html = `
-                <div class="info-box mdn-highlight">
-                    <div class="info-box-icon">🏢</div>
-                    <div class="info-box-text">
-                        <strong>Beheerkosten MDN Vennootschappen:</strong> 
-                        In totaal is €${formatNumber(mdnTotal)} (${mdnPercentage}% van alle operationele kosten) 
-                        betaald aan de 3 vennootschappen van onze syndicus MDN.
-                    </div>
-                </div>
-            `;
-            
-            Object.entries(mdnByCompany).forEach(([company, data]) => {
-                const companyPercentage = (data.total / mdnTotal * 100).toFixed(1);
-                
-                html += `
-                    <div class="table-container" style="margin-bottom: 25px;">
-                        <div class="table-header">
-                            <h3 class="table-title">${company} - €${formatNumber(data.total)} (${companyPercentage}% van MDN totaal)</h3>
-                        </div>
-                        <table class="pivot-table">
-                            <thead>
-                                <tr>
-                                    <th>Datum</th>
-                                    <th class="amount">Bedrag</th>
-                                    <th>Omschrijving</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                `;
-                
-                data.transactions.forEach(transaction => {
-                    html += `
-                        <tr>
-                            <td>${transaction['Transactie Datum']}</td>
-                            <td class="amount">€ ${formatNumber(transaction['Transactie Bedrag'])}</td>
-                            <td>${transaction['Transactie Omschrijving'] || 'Beheerkosten'}</td>
-                        </tr>
-                    `;
-                });
-                
-                html += `
-                                <tr class="category-header">
-                                    <td><strong>Totaal ${company}</strong></td>
-                                    <td class="amount"><strong>€ ${formatNumber(data.total)}</strong></td>
-                                    <td><strong>${data.count} betalingen</strong></td>
-                                </tr>
-                            </tbody
+</html>
