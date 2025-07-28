@@ -1360,7 +1360,7 @@
 
             const ctx4 = document.getElementById('terugkerendChart').getContext('2d');
             charts.terugkerend = new Chart(ctx4, {
-                type: 'horizontalBar',
+                type: 'bar',
                 data: {
                     labels: terugkerendeLeveranciers.map(l => l.leverancier),
                     datasets: [{
@@ -1371,6 +1371,7 @@
                     }]
                 },
                 options: {
+                    indexAxis: 'y',
                     responsive: true,
                     plugins: {
                         legend: { display: false },
