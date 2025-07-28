@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Residentie HELIX - Waar Gaat Uw Geld Naartoe?</title>
+    <title>Nazicht Bankafschriften - Residentie HELIX</title>
     
     <!-- External Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -33,8 +33,8 @@
         header {
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: white;
-            padding: 30px 0;
-            margin-bottom: 30px;
+            padding: 40px 0 30px 0;
+            margin-bottom: 0;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
@@ -44,16 +44,17 @@
         }
         
         h1 {
-            font-size: 2.5rem;
+            font-size: 3rem;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
         }
         
         .subtitle {
-            opacity: 0.9;
-            margin-top: 10px;
-            font-size: 1.1rem;
-            margin-bottom: 20px;
+            opacity: 0.95;
+            font-size: 1.25rem;
+            margin-bottom: 25px;
+            font-weight: 400;
         }
         
         .period-info {
@@ -63,6 +64,31 @@
             display: inline-block;
             backdrop-filter: blur(10px);
             font-weight: 500;
+        }
+
+        /* Explanation banner */
+        .explanation-banner {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .explanation-banner-icon {
+            font-size: 1.5rem;
+            color: #0284c7;
+            flex-shrink: 0;
+        }
+
+        .explanation-banner-text {
+            font-size: 0.95rem;
+            color: #075985;
+            line-height: 1.5;
         }
         
         /* KPI Cards - New Style */
@@ -651,8 +677,8 @@
     <header>
         <div class="container">
             <div class="header-content">
-                <h1>Waar Gaat Uw Geld Naartoe?</h1>
-                <p class="subtitle">Residentie HELIX - Volledig Transparant Financieel Overzicht</p>
+                <h1>Nazicht Bankafschriften</h1>
+                <p class="subtitle">Een helder overzicht van alle uitgaven per kostensoort</p>
                 <div class="period-info">
                     <strong>Periode:</strong> 14 maart 2024 - 14 maart 2025
                 </div>
@@ -661,6 +687,14 @@
     </header>
     
     <div class="container">
+        <!-- Explanation Banner -->
+        <div class="explanation-banner">
+            <div class="explanation-banner-icon">ℹ️</div>
+            <div class="explanation-banner-text">
+                Toont elke betaling die van de bankrekening gebeurde, ook als daar geen factuur voor beschikbaar is
+            </div>
+        </div>
+        
         <!-- KPI Section -->
         <div class="kpi-grid" id="kpiSection">
             <div class="loading">
