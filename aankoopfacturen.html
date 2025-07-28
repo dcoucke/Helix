@@ -160,6 +160,7 @@
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: relative;
         }
 
         .chart-title {
@@ -167,6 +168,105 @@
             font-weight: 600;
             margin-bottom: 20px;
             color: #1e293b;
+            padding-right: 40px;
+        }
+
+        /* Fullscreen button */
+        .fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f1f5f9;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            color: #64748b;
+        }
+
+        .fullscreen-btn:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .fullscreen-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Fullscreen modal */
+        .chart-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            padding: 40px;
+        }
+
+        .chart-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-modal-content {
+            background: white;
+            width: 90%;
+            height: 90%;
+            max-width: 1200px;
+            border-radius: 12px;
+            padding: 30px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .chart-modal-close {
+            background: #f1f5f9;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .chart-modal-close:hover {
+            background: #e2e8f0;
+        }
+
+        .chart-modal-body {
+            flex: 1;
+            position: relative;
+        }
+
+        .chart-modal canvas {
+            max-height: 100% !important;
         }
 
         /* Tables */
@@ -411,6 +511,160 @@
             opacity: 1;
         }
 
+        /* Factuur Detail Modal */
+        .factuur-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .factuur-modal.active {
+            display: flex;
+        }
+
+        .factuur-modal-content {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .factuur-modal-header {
+            padding: 24px 24px 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .factuur-modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .factuur-modal-close {
+            background: transparent;
+            border: none;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+            color: #94a3b8;
+        }
+
+        .factuur-modal-close:hover {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .factuur-modal-body {
+            padding: 24px;
+        }
+
+        .factuur-detail-section {
+            margin-bottom: 32px;
+        }
+
+        .factuur-detail-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .factuur-section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 16px;
+        }
+
+        .factuur-detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .factuur-detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .factuur-detail-label {
+            font-weight: 500;
+            color: #475569;
+            font-size: 0.9375rem;
+        }
+
+        .factuur-detail-value {
+            color: #0f172a;
+            font-size: 0.9375rem;
+            text-align: right;
+            max-width: 60%;
+        }
+
+        .factuur-detail-value.large {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #3b82f6;
+        }
+
+        .factuur-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .factuur-status.betaald {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .factuur-status.openstaand {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Clickable factuur nummer styling */
+        .factuur-link {
+            color: #3b82f6;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-bottom: 1px dotted #3b82f6;
+        }
+
+        .factuur-link:hover {
+            color: #2563eb;
+            border-bottom-style: solid;
+        }
+
         /* Export button */
         .export-btn {
             background: #10b981;
@@ -518,16 +772,31 @@
             <!-- Tab: Trends -->
             <div id="tab-trends" class="tab-content" style="display: none;">
                 <div class="chart-container" style="margin-bottom: 25px;">
+                    <button class="fullscreen-btn" onclick="openChartModal('maandChart', 'Maandelijkse Uitgaven')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                        </svg>
+                    </button>
                     <h3 class="chart-title">Maandelijkse Uitgaven</h3>
                     <canvas id="maandChart"></canvas>
                 </div>
                 
                 <div class="chart-grid">
                     <div class="chart-container">
+                        <button class="fullscreen-btn" onclick="openChartModal('terugkerendChart', 'Top 5 Terugkerende Kosten')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
                         <h3 class="chart-title">Top 5 Terugkerende Kosten</h3>
                         <canvas id="terugkerendChart"></canvas>
                     </div>
                     <div class="chart-container">
+                        <button class="fullscreen-btn" onclick="openChartModal('seizoenChart', 'Seizoenspatronen Energie')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
                         <h3 class="chart-title">Seizoenspatronen Energie</h3>
                         <canvas id="seizoenChart"></canvas>
                     </div>
@@ -537,6 +806,11 @@
             <!-- Tab: Categorieën -->
             <div id="tab-categorien" class="tab-content" style="display: none;">
                 <div class="chart-container" style="margin-bottom: 25px;">
+                    <button class="fullscreen-btn" onclick="openChartModal('categorieDetailChart', 'Uitgaven per Categorie - Detailview')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                        </svg>
+                    </button>
                     <h3 class="chart-title">Uitgaven per Categorie - Detailview</h3>
                     <canvas id="categorieDetailChart"></canvas>
                 </div>
@@ -599,9 +873,218 @@
         </div>
     </div>
 
+    <!-- Chart Modal -->
+    <div class="chart-modal" id="chartModal">
+        <div class="chart-modal-content">
+            <div class="chart-modal-header">
+                <h2 class="chart-modal-title" id="modalTitle"></h2>
+                <button class="chart-modal-close" onclick="closeChartModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="chart-modal-body">
+                <canvas id="modalChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Factuur Detail Modal -->
+    <div class="factuur-modal" id="factuurModal">
+        <div class="factuur-modal-content">
+            <div class="factuur-modal-header">
+                <h2 class="factuur-modal-title">Factuur Details</h2>
+                <button class="factuur-modal-close" onclick="closeFactuurModal()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="factuur-modal-body" id="factuurModalBody">
+                <!-- Content wordt dynamisch ingevuld -->
+            </div>
+        </div>
+    </div>
+
     <script>
         let factuurData = [];
         let charts = {};
+        let modalChart = null;
+
+        // Fullscreen functionaliteit
+        function openChartModal(chartId, title) {
+            const modal = document.getElementById('chartModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalCanvas = document.getElementById('modalChart');
+            const originalChart = charts[chartId.replace('Chart', '')];
+            
+            // Set title
+            modalTitle.textContent = title;
+            
+            // Clone chart configuration
+            const config = JSON.parse(JSON.stringify(originalChart.config));
+            
+            // Adjust for fullscreen
+            if (config.options) {
+                config.options.maintainAspectRatio = false;
+                config.options.responsive = true;
+            }
+            
+            // Destroy previous modal chart if exists
+            if (modalChart) {
+                modalChart.destroy();
+            }
+            
+            // Create new chart in modal
+            modalChart = new Chart(modalCanvas, config);
+            
+            // Show modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeChartModal() {
+            const modal = document.getElementById('chartModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            
+            if (modalChart) {
+                modalChart.destroy();
+                modalChart = null;
+            }
+        }
+
+        // Factuur detail modal functionaliteit
+        function openFactuurModal(factuurNummer) {
+            const factuur = factuurData.find(f => 
+                f.Factuur_Nummer && f.Factuur_Nummer.toString() === factuurNummer.toString()
+            );
+            
+            if (!factuur) return;
+            
+            const modalBody = document.getElementById('factuurModalBody');
+            const status = factuur.openstaand > 0 ? 'openstaand' : 'betaald';
+            const statusText = factuur.openstaand > 0 ? 'Openstaand' : 'Betaald';
+            
+            modalBody.innerHTML = `
+                <div class="factuur-detail-section">
+                    <h3 class="factuur-section-title">Factuur Informatie</h3>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Factuurnummer</span>
+                        <span class="factuur-detail-value">${factuur.Factuur_Nummer}</span>
+                    </div>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Intern Nummer</span>
+                        <span class="factuur-detail-value">${factuur.Nummer}</span>
+                    </div>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Datum</span>
+                        <span class="factuur-detail-value">${factuur.Factuur_Datum}</span>
+                    </div>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Boekingsdatum</span>
+                        <span class="factuur-detail-value">${factuur.Boeking}</span>
+                    </div>
+                </div>
+
+                <div class="factuur-detail-section">
+                    <h3 class="factuur-section-title">Leverancier Details</h3>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Naam Leverancier</span>
+                        <span class="factuur-detail-value">${factuur.Leverancier}</span>
+                    </div>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Categorie</span>
+                        <span class="factuur-detail-value">${factuur.categorie}</span>
+                    </div>
+                </div>
+
+                <div class="factuur-detail-section">
+                    <h3 class="factuur-section-title">Financiële Details</h3>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Totaal Bedrag</span>
+                        <span class="factuur-detail-value large">${formatGetal(factuur.Totaal)}</span>
+                    </div>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Reeds Betaald</span>
+                        <span class="factuur-detail-value">${formatGetal(factuur.Betaald)}</span>
+                    </div>
+                    ${factuur.openstaand > 0 ? `
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Nog Te Betalen</span>
+                        <span class="factuur-detail-value" style="color: #ef4444;">${formatGetal(factuur.openstaand)}</span>
+                    </div>
+                    ` : ''}
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Status</span>
+                        <span class="factuur-detail-value">
+                            <span class="factuur-status ${status}">${statusText}</span>
+                        </span>
+                    </div>
+                </div>
+
+                ${factuur.Laatst_Betaald_Op ? `
+                <div class="factuur-detail-section">
+                    <h3 class="factuur-section-title">Betalingsinformatie</h3>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Laatste Betaling</span>
+                        <span class="factuur-detail-value">${factuur.Laatst_Betaald_Op}</span>
+                    </div>
+                    ${factuur.Limietdatum ? `
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Limietdatum</span>
+                        <span class="factuur-detail-value">${factuur.Limietdatum}</span>
+                    </div>
+                    ` : ''}
+                </div>
+                ` : ''}
+            `;
+            
+            document.getElementById('factuurModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFactuurModal() {
+            document.getElementById('factuurModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Maak factuurnummers klikbaar
+        function makeFactuurLinksClickable() {
+            // Voor de leveranciers tabel sub-rows
+            document.querySelectorAll('#leveranciers-table .sub-row td:first-child').forEach(td => {
+                const factuurNummer = td.textContent.trim();
+                if (factuurNummer && factuurNummer !== '-') {
+                    td.innerHTML = `<span class="factuur-link" onclick="openFactuurModal('${factuurNummer}')">${factuurNummer}</span>`;
+                }
+            });
+            
+            // Voor de details tabel
+            document.querySelectorAll('#details-table td:nth-child(3)').forEach(td => {
+                const factuurNummer = td.textContent.trim();
+                if (factuurNummer && factuurNummer !== '-') {
+                    td.innerHTML = `<span class="factuur-link" onclick="openFactuurModal('${factuurNummer}')">${factuurNummer}</span>`;
+                }
+            });
+            
+            // Voor de anomalie tabel zou je ook kunnen toevoegen indien gewenst
+        }
+
+        // ESC key om modals te sluiten
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeChartModal();
+                closeFactuurModal();
+            }
+        });
+
+        // Click outside to close factuur modal
+        document.getElementById('factuurModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closeFactuurModal();
+            }
+        });
 
         // Categorieën mapping
         const categorieMapping = {
@@ -882,6 +1365,151 @@
                     }
                 }
             });
+
+            // Terugkerende kosten chart
+            const terugkerendeLeveranciers = Object.entries(leveranciersGroep)
+                .filter(([lev, facturen]) => facturen.length >= 3)
+                .map(([lev, facturen]) => ({
+                    leverancier: lev,
+                    aantal: facturen.length,
+                    gemiddeld: _.meanBy(facturen, 'Totaal')
+                }))
+                .sort((a, b) => b.gemiddeld - a.gemiddeld)
+                .slice(0, 5);
+
+            const ctx4 = document.getElementById('terugkerendChart').getContext('2d');
+            charts.terugkerend = new Chart(ctx4, {
+                type: 'horizontalBar',
+                data: {
+                    labels: terugkerendeLeveranciers.map(l => l.leverancier),
+                    datasets: [{
+                        label: 'Gemiddeld per factuur',
+                        data: terugkerendeLeveranciers.map(l => l.gemiddeld),
+                        backgroundColor: '#10b981',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const lev = terugkerendeLeveranciers[context.dataIndex];
+                                    return `${formatGetal(context.parsed.x)} (${lev.aantal} facturen)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => formatGetal(value)
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Seizoenspatronen energie
+            const energieFacturen = factuurData.filter(f => 
+                f.Leverancier.includes('LUMINUS') || f.Leverancier.includes('FARYS')
+            );
+            
+            const energiePerMaand = _.groupBy(energieFacturen.map(f => {
+                const parts = f.Factuur_Datum.split('/');
+                const datum = new Date(parts[2], parts[1] - 1, parts[0]);
+                return {
+                    ...f,
+                    maand: datum.getMonth() + 1,
+                    maandNaam: datum.toLocaleDateString('nl-BE', { month: 'short' })
+                };
+            }), 'maand');
+
+            const seizoensData = Object.entries(energiePerMaand)
+                .map(([maand, facturen]) => ({
+                    maand: parseInt(maand),
+                    maandNaam: facturen[0].maandNaam,
+                    totaal: _.sumBy(facturen, 'Totaal'),
+                    aantal: facturen.length
+                }))
+                .sort((a, b) => a.maand - b.maand);
+
+            const ctx5 = document.getElementById('seizoenChart').getContext('2d');
+            charts.seizoen = new Chart(ctx5, {
+                type: 'bar',
+                data: {
+                    labels: seizoensData.map(s => s.maandNaam),
+                    datasets: [{
+                        label: 'Energiekosten per maand',
+                        data: seizoensData.map(s => s.totaal),
+                        backgroundColor: '#f59e0b',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => formatGetal(context.parsed.y)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => formatGetal(value)
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Categorie detail chart
+            const ctx6 = document.getElementById('categorieDetailChart').getContext('2d');
+            charts.categorieDetail = new Chart(ctx6, {
+                type: 'bar',
+                data: {
+                    labels: categorieData.map(c => c.categorie),
+                    datasets: [{
+                        label: 'Totaal per categorie',
+                        data: categorieData.map(c => c.totaal),
+                        backgroundColor: [
+                            '#3b82f6', '#10b981', '#f59e0b', '#ef4444',
+                            '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
+                        ],
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const value = formatGetal(context.parsed.y);
+                                    const percentage = ((context.parsed.y / _.sumBy(factuurData, 'Totaal')) * 100).toFixed(1);
+                                    return `${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => formatGetal(value)
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         function createTables() {
@@ -973,8 +1601,40 @@
                 });
             });
 
+            // Categorie tabel
+            const categorieTableData = Object.entries(categorieGroep)
+                .map(([cat, facturen]) => ({
+                    categorie: cat,
+                    aantal: facturen.length,
+                    totaal: _.sumBy(facturen, 'Totaal'),
+                    gemiddeld: _.meanBy(facturen, 'Totaal')
+                }))
+                .sort((a, b) => b.totaal - a.totaal);
+
+            const categorieTbody = document.querySelector('#categorie-table tbody');
+            categorieTbody.innerHTML = categorieTableData.map(cat => {
+                const percentage = ((cat.totaal / totaal) * 100).toFixed(1);
+                return `
+                    <tr>
+                        <td>${cat.categorie}</td>
+                        <td>${cat.aantal}</td>
+                        <td>${formatGetal(cat.totaal)}</td>
+                        <td>${formatGetal(cat.gemiddeld)}</td>
+                        <td>
+                            ${percentage}%
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${percentage}%"></div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
             // Details tabel
             updateDetailsTable(factuurData);
+            
+            // Maak factuurnummers klikbaar na het laden van tabellen
+            setTimeout(makeFactuurLinksClickable, 100);
         }
 
         function updateDetailsTable(data) {
@@ -983,7 +1643,7 @@
                 <tr>
                     <td>${f.Nummer}</td>
                     <td>${f.Leverancier}</td>
-                    <td>${f.Factuur_Nummer}</td>
+                    <td><span class="factuur-link" onclick="openFactuurModal('${f.Factuur_Nummer}')">${f.Factuur_Nummer}</span></td>
                     <td>${f.Factuur_Datum}</td>
                     <td>${formatGetal(f.Totaal)}</td>
                     <td>${formatGetal(f.Betaald)}</td>
@@ -1042,6 +1702,5 @@
         // Start applicatie
         loadData();
     </script>
-    <script src="nav.js"></script>
 </body>
 </html>
