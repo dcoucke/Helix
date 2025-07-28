@@ -888,7 +888,7 @@
 
         // Fullscreen functions
         function openFullscreen(chartId, title) {
-            const originalChart = charts[chartId.replace('Chart', '')];
+            const originalChart = charts[chartId.replace('Chart', '')] || charts[chartId];
             if (!originalChart) return;
 
             document.getElementById('fullscreenTitle').textContent = title;
@@ -896,19 +896,32 @@
             
             const ctx = document.getElementById('fullscreenCanvas').getContext('2d');
             
-            // Clone the chart configuration
-            const config = JSON.parse(JSON.stringify(originalChart.config));
-            
-            // Adjust options for fullscreen
-            if (config.options) {
-                config.options.maintainAspectRatio = false;
-                config.options.responsive = true;
-            }
-            
-            // Create new chart instance
+            // Destroy previous fullscreen chart if exists
             if (fullscreenChart) {
                 fullscreenChart.destroy();
             }
+            
+            // Get the original chart's configuration
+            const config = {
+                type: originalChart.config.type,
+                data: {
+                    labels: [...originalChart.data.labels],
+                    datasets: originalChart.data.datasets.map(dataset => ({
+                        ...dataset,
+                        data: [...dataset.data]
+                    }))
+                },
+                options: {
+                    ...originalChart.config.options,
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    animation: {
+                        duration: 0 // Disable animation for immediate render
+                    }
+                }
+            };
+            
+            // Create new chart instance
             fullscreenChart = new Chart(ctx, config);
         }
 
