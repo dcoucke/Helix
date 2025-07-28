@@ -107,14 +107,15 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 320px;
+            width: 280px;
             height: 100vh;
-            background: white;
+            background: #ffffff;
             transform: translateX(-100%);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.08);
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         .nav-panel.active {
@@ -122,63 +123,61 @@
         }
 
         .nav-header {
-            padding: 32px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            padding: 28px 28px 20px 28px;
+            border-bottom: 1px solid #f1f5f9;
+            flex-shrink: 0;
         }
 
         .nav-title {
-            font-size: 1.25rem;
+            font-size: 1.125rem;
             font-weight: 600;
-            color: #1e293b;
+            color: #0f172a;
             margin: 0;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.025em;
         }
 
         .nav-subtitle {
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             color: #64748b;
-            margin: 4px 0 0 0;
+            margin: 2px 0 0 0;
+            font-weight: 400;
         }
 
         .nav-links {
             flex: 1;
-            padding: 16px 0;
+            padding: 8px;
             overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .nav-links a {
             display: flex;
             align-items: center;
-            padding: 14px 32px;
+            padding: 10px 20px;
+            margin: 2px 0;
             text-decoration: none;
             color: #475569;
             font-size: 0.9375rem;
             font-weight: 400;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             position: relative;
             letter-spacing: -0.01em;
+            border-radius: 6px;
         }
 
         .nav-links a:hover {
             color: #1e293b;
-            background: rgba(0, 0, 0, 0.02);
+            background: #f1f5f9;
         }
 
         .nav-links a.active {
             color: #3b82f6;
             font-weight: 500;
+            background: rgba(59, 130, 246, 0.08);
         }
 
         .nav-links a.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 3px;
-            height: 24px;
-            background: #3b82f6;
-            border-radius: 0 2px 2px 0;
+            display: none;
         }
 
         .nav-badge {
