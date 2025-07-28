@@ -1,4 +1,24 @@
-<!DOCTYPE html>
+function updateDetailsTable(data) {
+            console.log('UpdateDetailsTable called with', data.length, 'records');
+            const tbody = document.querySelector('#details-table tbody');
+            if (!tbody) {
+                console.error('Details table tbody not found');
+                return;
+            }
+            
+            tbody.innerHTML = data.map(f => `
+                <tr>
+                    <td>${f.Nummer || '-'}</td>
+                    <td>${f.Leverancier || '-'}</td>
+                    <td>${f.Factuur_Nummer ? `<span class="factuur-link" onclick="openFactuurModal('${f.Factuur_Nummer}')">${f.Factuur_Nummer}</span>` : '-'}</td>
+                    <td>${f.Factuur_Datum || '-'}</td>
+                    <td>${formatGetal(f.Totaal || 0)}</td>
+                    <td>${formatGetal(f.Betaald || 0)}</td>
+                    <td>${f.openstaand > 0 ? formatGetal(f.openstaand) : '-'}</td>
+                </tr>
+            `).join('');
+        }
+                <!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
@@ -653,16 +673,19 @@
 
         /* Clickable factuur nummer styling */
         .factuur-link {
-            color: #3b82f6;
+            color: #2563eb;
             cursor: pointer;
-            text-decoration: none;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 2px;
             transition: all 0.2s ease;
-            border-bottom: 1px dotted #3b82f6;
+            font-weight: 500;
         }
 
         .factuur-link:hover {
-            color: #2563eb;
-            border-bottom-style: solid;
+            color: #1d4ed8;
+            text-decoration-style: solid;
+            text-decoration-thickness: 2px;
         }
 
         /* Export button */
@@ -1146,11 +1169,13 @@
         }
 
         function initDashboard() {
+            console.log('InitDashboard started, factuurData length:', factuurData.length);
             createKPIs();
             createAlerts();
             createCharts();
             createTables();
             setupSearch();
+            console.log('InitDashboard completed');
         }
 
         function createKPIs() {
@@ -1621,14 +1646,19 @@
 
         function updateDetailsTable(data) {
             const tbody = document.querySelector('#details-table tbody');
+            if (!tbody) {
+                console.error('Details table tbody not found');
+                return;
+            }
+            
             tbody.innerHTML = data.map(f => `
                 <tr>
-                    <td>${f.Nummer}</td>
-                    <td>${f.Leverancier}</td>
-                    <td><span class="factuur-link" onclick="openFactuurModal('${f.Factuur_Nummer}')">${f.Factuur_Nummer}</span></td>
-                    <td>${f.Factuur_Datum}</td>
-                    <td>${formatGetal(f.Totaal)}</td>
-                    <td>${formatGetal(f.Betaald)}</td>
+                    <td>${f.Nummer || '-'}</td>
+                    <td>${f.Leverancier || '-'}</td>
+                    <td>${f.Factuur_Nummer ? `<span class="factuur-link" onclick="openFactuurModal('${f.Factuur_Nummer}')">${f.Factuur_Nummer}</span>` : '-'}</td>
+                    <td>${f.Factuur_Datum || '-'}</td>
+                    <td>${formatGetal(f.Totaal || 0)}</td>
+                    <td>${formatGetal(f.Betaald || 0)}</td>
                     <td>${f.openstaand > 0 ? formatGetal(f.openstaand) : '-'}</td>
                 </tr>
             `).join('');
@@ -1636,12 +1666,17 @@
 
         function setupSearch() {
             const searchInput = document.getElementById('search-input');
+            if (!searchInput) {
+                console.error('Search input not found');
+                return;
+            }
+            
             searchInput.addEventListener('input', (e) => {
                 const query = e.target.value.toLowerCase();
                 const filtered = factuurData.filter(f => 
-                    f.Leverancier.toLowerCase().includes(query) ||
-                    f.Factuur_Nummer.toString().toLowerCase().includes(query) ||
-                    f.Totaal.toString().includes(query)
+                    (f.Leverancier && f.Leverancier.toLowerCase().includes(query)) ||
+                    (f.Factuur_Nummer && f.Factuur_Nummer.toString().toLowerCase().includes(query)) ||
+                    (f.Totaal && f.Totaal.toString().includes(query))
                 );
                 updateDetailsTable(filtered);
             });
