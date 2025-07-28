@@ -599,7 +599,7 @@
         // Laad en parse CSV
         async function loadData() {
             try {
-                const response = await fetch('BE48738006392827 FINAL VERSION  AANKOOPFACTUREN.csv');
+                const response = await fetch('aankoopfacturen.csv');
                 const csvText = await response.text();
                 
                 const parsed = Papa.parse(csvText, {
@@ -623,7 +623,7 @@
             } catch (error) {
                 console.error('Error loading data:', error);
                 document.getElementById('loading').innerHTML = 
-                    'Fout bij laden data. Upload het CSV bestand: BE48738006392827 FINAL VERSION  AANKOOPFACTUREN.csv';
+                    'Fout bij laden data. Upload het CSV bestand: aankoopfacturen.csv';
             }
         }
 
