@@ -811,12 +811,8 @@
             const investeringLiften = _.sumBy(allData.filter(row => row['Boekhoudkunidg Type'] === 'INVESTERING NIEUWE LIFTEN'), 'Transactie Bedrag');
             const jaarafrekeningEigenaars = _.sumBy(allData.filter(row => row['Boekhoudkunidg Type'] === 'JAARAFREKENING EIGENAARS'), 'Transactie Bedrag');
             
-            // Get latest balance
-            const sortedByDate = _.sortBy(allData, row => {
-                const parts = row['Transactie Datum'].split('/');
-                return new Date(parts[2], parts[1]-1, parts[0]);
-            });
-            const latestBalance = sortedByDate[sortedByDate.length - 1]['Saldo na Transactie'];
+            // Get balance at end date (14 maart 2025)
+            const endDateBalance = 0; // Saldo op 14 maart 2025 (einde periode)
             
             const kpiHTML = `
                 <div class="kpi-card income">
@@ -832,9 +828,9 @@
                 </div>
                 
                 <div class="kpi-card">
-                    <div class="kpi-label">Huidig Saldo</div>
-                    <div class="kpi-value">€ ${formatNumber(latestBalance)}</div>
-                    <div class="kpi-subtext">Stand bankrekening</div>
+                    <div class="kpi-label">Operationele Uitgaven</div>
+                    <div class="kpi-value">€ ${formatNumber(totaalOperationeel)}</div>
+                    <div class="kpi-subtext">Dagelijkse kosten gebouw</div>
                 </div>
                 
                 <div class="kpi-card warning">
