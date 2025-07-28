@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residentie HELIX - Financieel Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Welcome section */
+        .welcome {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .welcome h2 {
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-size: 1.75rem;
+        }
+
+        .welcome p {
+            color: #64748b;
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Dashboard grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .dashboard-card:hover::before {
+            width: 8px;
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .card-description {
+            color: #64748b;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .card-link {
+            color: #3b82f6;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .card-link::after {
+            content: '→';
+            transition: transform 0.3s ease;
+        }
+
+        .dashboard-card:hover .card-link::after {
+            transform: translateX(5px);
+        }
+
+        /* Status indicators */
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .status.live {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.beta {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Info section */
+        .info-section {
+            background: #f1f5f9;
+            padding: 30px;
+            border-radius: 12px;
+            margin-top: 40px;
+        }
+
+        .info-section h3 {
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+
+        .info-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-section li {
+            color: #475569;
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .info-section li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 60px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Residentie HELIX</h1>
+        <p class="subtitle">Financieel Dashboard voor Mede-eigenaars</p>
+    </header>
+
+    <div class="container">
+        <div class="welcome">
+            <h2>Welkom bij het Financiële Dashboard</h2>
+            <p>Als rekeningcommissaris streef ik naar volledige transparantie over de financiën van onze residentie. 
+               Hier vind je alle belangrijke financiële informatie op een toegankelijke manier gepresenteerd.</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <a href="bankafschriften.html" class="dashboard-card">
+                <div class="card-icon">🏦</div>
+                <h3 class="card-title">Bankafschriften</h3>
+                <p class="card-description">
+                    Bekijk alle banktransacties in detail. Zie waar geld binnenkomt en waar het naartoe gaat.
+                </p>
+                <span class="card-link">Open dashboard</span>
+                <span class="status live">Live</span>
+            </a>
+
+            <a href="aankoopfacturen.html" class="dashboard-card">
+                <div class="card-icon">📄</div>
+                <h3 class="card-title">Aankoopfacturen</h3>
+                <p class="card-description">
+                    Analyseer alle inkomende facturen, leveranciers en betalingsstatus. Zie welke kosten we maken.
+                </p>
+                <span class="card-link">Open dashboard</span>
+                <span class="status live">Live</span>
+            </a>
+
+            <a href="wanbetalers.html" class="dashboard-card">
+                <div class="card-icon">⚠️</div>
+                <h3 class="card-title">Wanbetalers</h3>
+                <p class="card-description">
+                    Overzicht van openstaande bijdragen en achterstallige betalingen per appartement.
+                </p>
+                <span class="card-link">Open dashboard</span>
+                <span class="status live">Live</span>
+            </a>
+
+            <a href="boekhouding.html" class="dashboard-card">
+                <div class="card-icon">📊</div>
+                <h3 class="card-title">Boekhouding</h3>
+                <p class="card-description">
+                    Gedetailleerd boekhoudkundig overzicht met balans, resultatenrekening en budgetopvolging.
+                </p>
+                <span class="card-link">Open dashboard</span>
+                <span class="status beta">In ontwikkeling</span>
+            </a>
+        </div>
+
+        <div class="info-section">
+            <h3>📌 Belangrijke informatie</h3>
+            <ul>
+                <li>Alle dashboards worden maandelijks geüpdatet met de laatste gegevens</li>
+                <li>De data is volledig anoniem waar het individuele appartementen betreft</li>
+                <li>Voor vragen kan je terecht bij de rekeningcommissaris</li>
+                <li>Deze dashboards zijn alleen toegankelijk voor mede-eigenaars</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2024 Residentie HELIX - Dashboard ontwikkeld door de rekeningcommissaris</p>
+    </footer>
+</body>
+</html>
