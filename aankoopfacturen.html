@@ -1050,8 +1050,6 @@
             document.body.style.overflow = '';
         }
 
-        // Maak factuurnummers klikbaar - VERWIJDERD want we doen dit nu direct in de HTML
-
         // ESC key om modals te sluiten
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -1128,9 +1126,11 @@
 
                 factuurData = parsed.data.map(row => ({
                     ...row,
-                    categorie: bepaalCategorie(row.Leverancier),
-                    openstaand: row.Totaal - row.Betaald
+                    categorie: bepaalCategorie(row.Leverancier || ''),
+                    openstaand: (row.Totaal || 0) - (row.Betaald || 0)
                 }));
+
+                console.log('Data loaded:', factuurData.length, 'records');
 
                 // Verberg loading, toon dashboard
                 document.getElementById('loading').style.display = 'none';
