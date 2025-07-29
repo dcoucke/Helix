@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leveranciersbalans - Residentie HELIX</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
     <style>
         * {
@@ -47,7 +47,6 @@
             font-size: 1.1rem;
         }
 
-        /* Info banner */
         .explanation-banner {
             background: #f0fdf4;
             border: 1px solid #86efac;
@@ -72,7 +71,6 @@
             line-height: 1.5;
         }
 
-        /* Tabs */
         .tabs {
             display: flex;
             gap: 10px;
@@ -107,7 +105,6 @@
             box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
         }
 
-        /* KPI Cards */
         .kpi-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -137,10 +134,6 @@
 
         .kpi-card.warning::before {
             background: #f59e0b;
-        }
-
-        .kpi-card.success::before {
-            background: #10b981;
         }
 
         .kpi-card.danger::before {
@@ -175,7 +168,6 @@
             color: #94a3b8;
         }
 
-        /* Charts Section */
         .chart-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -189,10 +181,16 @@
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             position: relative;
+            min-height: 400px;
         }
 
         .chart-container.full-width {
             grid-column: 1 / -1;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
         }
 
         .chart-title {
@@ -203,7 +201,100 @@
             padding-right: 40px;
         }
 
-        /* Tables */
+        /* Fullscreen button */
+        .fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f1f5f9;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            color: #64748b;
+        }
+
+        .fullscreen-btn:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .fullscreen-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Chart Modal */
+        .chart-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            padding: 40px;
+        }
+
+        .chart-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-modal-content {
+            background: white;
+            width: 90%;
+            height: 90%;
+            max-width: 1200px;
+            border-radius: 12px;
+            padding: 30px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .chart-modal-close {
+            background: #f1f5f9;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .chart-modal-close:hover {
+            background: #e2e8f0;
+        }
+
+        .chart-modal-body {
+            flex: 1;
+            position: relative;
+        }
+
         .table-container {
             background: white;
             border-radius: 12px;
@@ -251,7 +342,6 @@
             background: #f8fafc;
         }
 
-        /* Status badges */
         .status-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -275,7 +365,6 @@
             color: #3730a3;
         }
 
-        /* Alerts */
         .alert {
             padding: 15px 20px;
             border-radius: 8px;
@@ -291,13 +380,6 @@
             border: 1px solid #fde68a;
         }
 
-        .alert-info {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #93c5fd;
-        }
-
-        /* Progress bars */
         .progress-bar {
             width: 100%;
             height: 8px;
@@ -313,15 +395,6 @@
             transition: width 1s ease;
         }
 
-        .progress-fill.warning {
-            background: #f59e0b;
-        }
-
-        .progress-fill.danger {
-            background: #ef4444;
-        }
-
-        /* Info note */
         .info-note {
             background: #f1f5f9;
             padding: 20px;
@@ -347,30 +420,40 @@
             line-height: 1.5;
         }
 
-        /* Search */
-        .search-container {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 25px;
+        .expandable {
+            cursor: pointer;
+            user-select: none;
         }
 
-        .search-input {
-            width: 100%;
-            padding: 12px 20px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
+        .expandable:hover {
+            background: #f1f5f9;
         }
 
-        .search-input:focus {
-            outline: none;
-            border-color: #10b981;
+        .expand-icon {
+            display: inline-block;
+            width: 20px;
+            transition: transform 0.3s ease;
+            margin-right: 8px;
         }
 
-        /* Loading */
+        .expand-icon.expanded {
+            transform: rotate(90deg);
+        }
+
+        .sub-row {
+            background: #fafbfc;
+            font-size: 0.875rem;
+        }
+
+        .sub-row td {
+            padding-left: 40px;
+            color: #64748b;
+        }
+
+        .sub-row td:first-child {
+            padding-left: 60px;
+        }
+
         .loading {
             text-align: center;
             padding: 50px;
@@ -378,28 +461,14 @@
             color: #64748b;
         }
 
-        /* Risk indicator */
-        .risk-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
+        .tab-content {
+            display: none;
         }
 
-        .risk-high {
-            background: #ef4444;
+        .tab-content.active {
+            display: block;
         }
 
-        .risk-medium {
-            background: #f59e0b;
-        }
-
-        .risk-low {
-            background: #10b981;
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
             .chart-grid {
                 grid-template-columns: 1fr;
@@ -411,15 +480,6 @@
             
             h1 {
                 font-size: 1.75rem;
-            }
-            
-            .tabs {
-                flex-direction: column;
-            }
-            
-            .tab {
-                width: 100%;
-                text-align: center;
             }
         }
     </style>
@@ -440,79 +500,44 @@
         
         <div id="loading" class="loading">Dashboard wordt geladen...</div>
         <div id="dashboard" style="display: none;">
-            <!-- Alert voor belangrijke openstaande bedragen -->
             <div id="alert-container"></div>
 
-            <!-- Tabs -->
             <div class="tabs">
-                <button class="tab active" onclick="showTab('overzicht')">Overzicht</button>
-                <button class="tab" onclick="showTab('openstaand')">Openstaande Bedragen</button>
-                <button class="tab" onclick="showTab('categorien')">Per Categorie</button>
-                <button class="tab" onclick="showTab('risico')">Risico Analyse</button>
-                <button class="tab" onclick="showTab('details')">Alle Leveranciers</button>
+                <button class="tab active" data-tab="overzicht">Overzicht</button>
+                <button class="tab" data-tab="categorien">Per Categorie</button>
+                <button class="tab" data-tab="details">Alle Leveranciers</button>
             </div>
 
-            <!-- Tab: Overzicht -->
-            <div id="tab-overzicht" class="tab-content">
+            <div id="tab-overzicht" class="tab-content active">
                 <div class="kpi-grid" id="kpi-grid"></div>
                 
                 <div class="chart-grid">
                     <div class="chart-container">
+                        <button class="fullscreen-btn" onclick="openChartModal('openstaandChart', 'Top 10 Openstaande Leveranciers')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
                         <h3 class="chart-title">Top 10 Openstaande Leveranciers</h3>
-                        <canvas id="openstaandChart"></canvas>
+                        <div class="chart-wrapper">
+                            <canvas id="openstaandChart"></canvas>
+                        </div>
                     </div>
                     <div class="chart-container">
+                        <button class="fullscreen-btn" onclick="openChartModal('categorieChart', 'Verdeling per Categorie')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
                         <h3 class="chart-title">Verdeling per Categorie</h3>
-                        <canvas id="categorieChart"></canvas>
+                        <div class="chart-wrapper">
+                            <canvas id="categorieChart"></canvas>
+                        </div>
                     </div>
-                </div>
-
-                <div class="chart-container full-width">
-                    <h3 class="chart-title">Balans per Categorie</h3>
-                    <canvas id="balansChart"></canvas>
                 </div>
             </div>
 
-            <!-- Tab: Openstaand -->
-            <div id="tab-openstaand" class="tab-content" style="display: none;">
-                <div class="table-container">
-                    <div class="table-header">
-                        <h3 class="table-title">Leveranciers met Openstaande Bedragen</h3>
-                        <span id="totaal-openstaand"></span>
-                    </div>
-                    <table id="openstaand-table">
-                        <thead>
-                            <tr>
-                                <th>Leverancier</th>
-                                <th>Categorie</th>
-                                <th>Totaal Gefactureerd</th>
-                                <th>Openstaand Bedrag</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-
-                <div class="table-container">
-                    <div class="table-header">
-                        <h3 class="table-title">Leveranciers met Tegoed</h3>
-                    </div>
-                    <table id="tegoed-table">
-                        <thead>
-                            <tr>
-                                <th>Leverancier</th>
-                                <th>Categorie</th>
-                                <th>Tegoed Bedrag</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Tab: Categorieën -->
-            <div id="tab-categorien" class="tab-content" style="display: none;">
+            <div id="tab-categorien" class="tab-content">
                 <div class="table-container">
                     <div class="table-header">
                         <h3 class="table-title">Overzicht per Categorie</h3>
@@ -521,7 +546,7 @@
                         <thead>
                             <tr>
                                 <th>Categorie</th>
-                                <th>Aantal Leveranciers</th>
+                                <th>Aantal</th>
                                 <th>Totaal Omzet</th>
                                 <th>Openstaand</th>
                                 <th>% van Totaal</th>
@@ -530,52 +555,9 @@
                         <tbody></tbody>
                     </table>
                 </div>
-
-                <div class="chart-container full-width">
-                    <h3 class="chart-title">Top 5 Leveranciers per Categorie</h3>
-                    <canvas id="topPerCategorieChart"></canvas>
-                </div>
             </div>
 
-            <!-- Tab: Risico -->
-            <div id="tab-risico" class="tab-content" style="display: none;">
-                <div class="chart-grid">
-                    <div class="chart-container">
-                        <h3 class="chart-title">Risico Matrix</h3>
-                        <canvas id="risicoChart"></canvas>
-                    </div>
-                    <div class="chart-container">
-                        <h3 class="chart-title">Concentratie Risico</h3>
-                        <canvas id="concentratieChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="table-container">
-                    <div class="table-header">
-                        <h3 class="table-title">Hoogste Risico Leveranciers</h3>
-                    </div>
-                    <table id="risico-table">
-                        <thead>
-                            <tr>
-                                <th>Risico</th>
-                                <th>Leverancier</th>
-                                <th>Openstaand</th>
-                                <th>% van Totaal Openstaand</th>
-                                <th>Actiepunt</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Tab: Details -->
-            <div id="tab-details" class="tab-content" style="display: none;">
-                <div class="search-container">
-                    <input type="text" class="search-input" id="search-input" 
-                           placeholder="🔍 Zoek op leverancier, categorie of bedrag...">
-                </div>
-                
+            <div id="tab-details" class="tab-content">
                 <div class="table-container">
                     <div class="table-header">
                         <h3 class="table-title">Alle Leveranciers</h3>
@@ -585,7 +567,6 @@
                             <tr>
                                 <th>Leverancier</th>
                                 <th>Categorie</th>
-                                <th>Debet</th>
                                 <th>Credit</th>
                                 <th>Saldo</th>
                                 <th>Status</th>
@@ -596,104 +577,119 @@
                 </div>
             </div>
 
-            <!-- Informatie nota -->
             <div class="info-note">
                 <h4>Leeswijzer:</h4>
                 <ul>
-                    <li><strong>Openstaand bedrag:</strong> Dit moeten we nog betalen aan de leverancier</li>
-                    <li><strong>Tegoed:</strong> We hebben teveel betaald of een voorschot gegeven</li>
-                    <li><strong>Debet/Credit:</strong> Boekhoudkundige termen voor wat we verschuldigd zijn (debet) en wat gefactureerd is (credit)</li>
-                    <li>Een gezonde balans heeft zo min mogelijk grote openstaande bedragen</li>
+                    <li><strong>Credit:</strong> Het totaal gefactureerde bedrag van deze leverancier</li>
+                    <li><strong>Saldo CR (rood):</strong> Dit bedrag moeten we nog betalen</li>
+                    <li><strong>Saldo DB (groen):</strong> We hebben een tegoed bij deze leverancier</li>
                 </ul>
             </div>
         </div>
     </div>
 
+    <!-- Chart Modal -->
+    <div class="chart-modal" id="chartModal">
+        <div class="chart-modal-content">
+            <div class="chart-modal-header">
+                <h2 class="chart-modal-title" id="modalTitle"></h2>
+                <button class="chart-modal-close" onclick="closeChartModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="chart-modal-body">
+                <canvas id="modalChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Leveranciers data (uit de PDF)
-        const leveranciersDataRaw = `Leverancier,Debet,Credit,Saldo_DB,Saldo_CR
-A MODE,358.48,358.48,0,0
-Aaron Dehottay A-P-M CLAEN,1815.00,1815.00,0,0
-AB CLAENING,10537.24,10537.24,0,0
-ACA KEURING,1461.08,1461.08,0,0
-ADVOCATENKANTOOR EQUATOR - ADVOCAAT CARETTE,2075.95,2075.95,0,0
-ANSUL,1737.80,1737.80,0,0
-A-P-M-CLAEN,8076.75,8076.75,0,0
-AVA Papierwaren,120.80,120.80,0,0
-AXA - verzekeringen,2268.28,2268.28,0,0
-B T C BELGIAN TRANSLATION CENTER,211.75,211.75,0,0
-BRANDEBEVEILIGINGSCHOP,497.56,497.56,0,0
-BRENNTAG,1080.38,1080.38,0,0
-BRICO,288.13,288.13,0,0
-BTC BELGIAN TRANSLATION CENTRE,4881.14,4881.14,0,0
-Casselman,145.20,145.20,0,0
-Certi- Check,4054.99,4054.99,0,0
-Colorpoint,1771.90,1771.90,0,0
-DAKWERKEN LEFEVRE Danny,8574.97,8574.97,0,0
-DE LIFT,8814.57,14110.96,0,5296.39
-DECATHLON,48.00,48.00,0,0
-DEFEVER,856.15,856.15,0,0
-DEPOORTER-DEJAEGHERE,1743.20,1743.20,0,0
-DIGITAV,2904.00,2904.00,0,0
-DOCHY & ZONEN ( glashandel ),2731.22,2731.22,0,0
-DRUKKERIJ DUMON PRINT,153.19,153.19,0,0
-DVV CLAENING,608.03,608.03,0,0
-ELEKTRO POWER,8511.08,10159.54,0,1648.46
-EQUANS,51335.85,50727.82,608.03,0
-EURO SCHOP,300.40,300.40,0,0
-EVER CLEAN.,848.94,848.94,0,0
-EVERCLEAN4U,572.34,572.34,0,0
-FARYS,37751.34,37751.34,0,0
-FLORALUX,389.57,389.57,0,0
-Franne Nagels,220.00,220.00,0,0
-GASTRO SERVICE,1675.85,1675.85,0,0
-GEMEENTE CONTAINERPARK,16.00,16.00,0,0
-GEMEENTE MIDDELKERKE,3300.00,5800.00,0,2500.00
-GROEP S,19118.39,21857.90,0,2739.51
-Houthandel Tavernier,276.85,276.85,0,0
-HUURLAND,350.00,350.00,0,0
-IMMO BEACH - drukwerk,6789.09,9210.86,0,2421.77
-IMMO BEACH - ereloon beheer,137702.07,168245.85,0,30543.78
-IMMO BEACH - schoonmaak,1575.00,1575.00,0,0
-IMMO BEACH - telefoon,2270.86,2843.01,0,572.15
-Karchter nv,6644.17,6644.17,0,0
-KLEINE UITGAVEN,16207.60,17525.60,0,1318.00
-Kraanwerken Vandaele VOF,240.29,240.29,0,0
-LEFEVRE LIEVEN,2899.65,3584.94,0,685.29
-LUMINUS,4016.00,4016.00,0,0
-LUMINUS - ALG DELEN,18669.44,18669.44,0,0
-LUMINUS - CONCIERGERIE,3539.78,3539.78,0,0
-LUMINUS - D.VERL.,9996.04,9996.04,0,0
-LUMINUS - ELEC PRIVATIEF,25847.59,25847.59,0,0
-LUMINUS - GAS,76972.36,83718.82,0,6746.46
-LUMINUS - LIFT 1,1616.44,1616.44,0,0
-LUMINUS - LIFT 2,2095.02,2095.02,0,0
-LUMINUS - LIFT 3,1485.16,1485.16,0,0
-MENSURA,236.52,301.83,0,65.31
-NOTAS,3025.00,3025.00,0,0
-Odrada meubelen,654.00,654.00,0,0
-POST,663.29,1224.45,0,561.16
-PRIMA Woonidee,3614.00,3614.00,0,0
-SARRAZIJN,561.80,561.80,0,0
-SCHOONMAAK/PRIVATE WERKEN,2215.00,2215.00,0,0
-Seacom .be,2720.08,4123.08,0,1403.00
-STEYAERT Geert,1087.56,1087.56,0,0
-STOCKARTIKELEN,287.86,287.86,0,0
-TECHEM Caloribel,9162.14,9162.14,0,0
-TELENET,12290.70,12290.70,0,0
-VANSTEEN BV,822.80,822.80,0,0
-VEOLIA,11335.42,12229.66,0,894.24
-Vercon Construct,3049.62,3049.62,0,0
-VINCOTTE BELGIUM,1213.45,1213.45,0,0
-VIVIUM,29734.10,29661.60,72.50,0
-Weemaes,1905.00,1905.00,0,0
-WEST COAST INVESTMENTS,7112.55,14043.56,0,6931.01
-ZEHNDER GROUP BELGIUM,151.00,151.00,0,0`;
+        // Data embedded directly
+        const leveranciersRaw = [
+            {naam: "IMMO BEACH - ereloon beheer", credit: 168245.85, saldoCR: 30543.78},
+            {naam: "LUMINUS - GAS", credit: 83718.82, saldoCR: 6746.46},
+            {naam: "EQUANS", credit: 50727.82, saldoDB: 608.03},
+            {naam: "FARYS", credit: 37751.34, saldoCR: 0},
+            {naam: "VIVIUM", credit: 29661.60, saldoDB: 72.50},
+            {naam: "LUMINUS - ELEC PRIVATIEF", credit: 25847.59, saldoCR: 0},
+            {naam: "GROEP S", credit: 21857.90, saldoCR: 2739.51},
+            {naam: "LUMINUS - ALG DELEN", credit: 18669.44, saldoCR: 0},
+            {naam: "KLEINE UITGAVEN", credit: 17525.60, saldoCR: 1318.00},
+            {naam: "DE LIFT", credit: 14110.96, saldoCR: 5296.39},
+            {naam: "WEST COAST INVESTMENTS", credit: 14043.56, saldoCR: 6931.01},
+            {naam: "TELENET", credit: 12290.70, saldoCR: 0},
+            {naam: "VEOLIA", credit: 12229.66, saldoCR: 894.24},
+            {naam: "AB CLAENING", credit: 10537.24, saldoCR: 0},
+            {naam: "ELEKTRO POWER", credit: 10159.54, saldoCR: 1648.46},
+            {naam: "LUMINUS - D.VERL.", credit: 9996.04, saldoCR: 0},
+            {naam: "IMMO BEACH - drukwerk", credit: 9210.86, saldoCR: 2421.77},
+            {naam: "TECHEM Caloribel", credit: 9162.14, saldoCR: 0},
+            {naam: "DAKWERKEN LEFEVRE Danny", credit: 8574.97, saldoCR: 0},
+            {naam: "A-P-M-CLAEN", credit: 8076.75, saldoCR: 0},
+            {naam: "Karchter nv", credit: 6644.17, saldoCR: 0},
+            {naam: "GEMEENTE MIDDELKERKE", credit: 5800.00, saldoCR: 2500.00},
+            {naam: "BTC BELGIAN TRANSLATION CENTRE", credit: 4881.14, saldoCR: 0},
+            {naam: "Seacom .be", credit: 4123.08, saldoCR: 1403.00},
+            {naam: "Certi- Check", credit: 4054.99, saldoCR: 0},
+            {naam: "LUMINUS", credit: 4016.00, saldoCR: 0},
+            {naam: "PRIMA Woonidee", credit: 3614.00, saldoCR: 0},
+            {naam: "LEFEVRE LIEVEN", credit: 3584.94, saldoCR: 685.29},
+            {naam: "LUMINUS - CONCIERGERIE", credit: 3539.78, saldoCR: 0},
+            {naam: "Vercon Construct", credit: 3049.62, saldoCR: 0},
+            {naam: "NOTAS", credit: 3025.00, saldoCR: 0},
+            {naam: "IMMO BEACH - telefoon", credit: 2843.01, saldoCR: 572.15},
+            {naam: "DOCHY & ZONEN ( glashandel )", credit: 2731.22, saldoCR: 0},
+            {naam: "AXA - verzekeringen", credit: 2268.28, saldoCR: 0},
+            {naam: "SCHOONMAAK/PRIVATE WERKEN", credit: 2215.00, saldoCR: 0},
+            {naam: "LUMINUS - LIFT 2", credit: 2095.02, saldoCR: 0},
+            {naam: "ADVOCATENKANTOOR EQUATOR", credit: 2075.95, saldoCR: 0},
+            {naam: "Weemaes", credit: 1905.00, saldoCR: 0},
+            {naam: "Aaron Dehottay A-P-M CLAEN", credit: 1815.00, saldoCR: 0},
+            {naam: "Colorpoint", credit: 1771.90, saldoCR: 0},
+            {naam: "DEPOORTER-DEJAEGHERE", credit: 1743.20, saldoCR: 0},
+            {naam: "ANSUL", credit: 1737.80, saldoCR: 0},
+            {naam: "GASTRO SERVICE", credit: 1675.85, saldoCR: 0},
+            {naam: "LUMINUS - LIFT 1", credit: 1616.44, saldoCR: 0},
+            {naam: "IMMO BEACH - schoonmaak", credit: 1575.00, saldoCR: 0},
+            {naam: "LUMINUS - LIFT 3", credit: 1485.16, saldoCR: 0},
+            {naam: "ACA KEURING", credit: 1461.08, saldoCR: 0},
+            {naam: "POST", credit: 1224.45, saldoCR: 561.16},
+            {naam: "VINCOTTE BELGIUM", credit: 1213.45, saldoCR: 0},
+            {naam: "STEYAERT Geert", credit: 1087.56, saldoCR: 0},
+            {naam: "BRENNTAG", credit: 1080.38, saldoCR: 0},
+            {naam: "DEFEVER", credit: 856.15, saldoCR: 0},
+            {naam: "EVER CLEAN.", credit: 848.94, saldoCR: 0},
+            {naam: "VANSTEEN BV", credit: 822.80, saldoCR: 0},
+            {naam: "Odrada meubelen", credit: 654.00, saldoCR: 0},
+            {naam: "DVV CLAENING", credit: 608.03, saldoCR: 0},
+            {naam: "EVERCLEAN4U", credit: 572.34, saldoCR: 0},
+            {naam: "SARRAZIJN", credit: 561.80, saldoCR: 0},
+            {naam: "BRANDEBEVEILIGINGSCHOP", credit: 497.56, saldoCR: 0},
+            {naam: "FLORALUX", credit: 389.57, saldoCR: 0},
+            {naam: "A MODE", credit: 358.48, saldoCR: 0},
+            {naam: "HUURLAND", credit: 350.00, saldoCR: 0},
+            {naam: "MENSURA", credit: 301.83, saldoCR: 65.31},
+            {naam: "EURO SCHOP", credit: 300.40, saldoCR: 0},
+            {naam: "DIGITAV", credit: 2904.00, saldoCR: 0},
+            {naam: "BRICO", credit: 288.13, saldoCR: 0},
+            {naam: "STOCKARTIKELEN", credit: 287.86, saldoCR: 0},
+            {naam: "Houthandel Tavernier", credit: 276.85, saldoCR: 0},
+            {naam: "Kraanwerken Vandaele VOF", credit: 240.29, saldoCR: 0},
+            {naam: "Franne Nagels", credit: 220.00, saldoCR: 0},
+            {naam: "B T C BELGIAN TRANSLATION CENTER", credit: 211.75, saldoCR: 0},
+            {naam: "DRUKKERIJ DUMON PRINT", credit: 153.19, saldoCR: 0},
+            {naam: "ZEHNDER GROUP BELGIUM", credit: 151.00, saldoCR: 0},
+            {naam: "Casselman", credit: 145.20, saldoCR: 0},
+            {naam: "AVA Papierwaren", credit: 120.80, saldoCR: 0},
+            {naam: "DECATHLON", credit: 48.00, saldoCR: 0},
+            {naam: "GEMEENTE CONTAINERPARK", credit: 16.00, saldoCR: 0}
+        ];
 
-        let leveranciersData = [];
         let charts = {};
+        let modalChart = null;
 
-        // Helper functies
         function formatGetal(num) {
             return new Intl.NumberFormat('nl-BE', { 
                 style: 'currency', 
@@ -701,337 +697,357 @@ ZEHNDER GROUP BELGIUM,151.00,151.00,0,0`;
             }).format(num);
         }
 
-        function bepaalCategorie(leverancier) {
-            const naam = leverancier.toUpperCase();
-            
-            if (naam.includes('IMMO BEACH')) return 'Beheerder';
-            else if (naam.includes('LUMINUS') || naam.includes('FARYS')) return 'Nutsvoorzieningen';
-            else if (naam.includes('TELENET') || naam.includes('SEACOM')) return 'Telecom';
-            else if (naam.includes('CLAENING') || naam.includes('CLEAN') || naam.includes('SCHOONMAAK')) return 'Schoonmaak';
-            else if (naam.includes('LIFT') || naam.includes('EQUANS') || naam.includes('ELEKTRO')) return 'Technisch Onderhoud';
-            else if (naam.includes('VERZEKERING') || naam.includes('AXA') || naam.includes('VIVIUM')) return 'Verzekeringen';
-            else if (naam.includes('GEMEENTE')) return 'Gemeente';
-            else if (naam.includes('GROEP S')) return 'Sociale Secretariaat';
-            else if (naam.includes('DAKWERK') || naam.includes('CONSTRUCT')) return 'Werken & Renovatie';
-            else if (naam.includes('VEOLIA') || naam.includes('TECHEM')) return 'Afval & Meterstanden';
-            else if (naam.includes('VINCOTTE') || naam.includes('KEURING') || naam.includes('CERTI')) return 'Keuringen & Controles';
-            else if (naam.includes('ADVOCAAT') || naam.includes('NOTAS')) return 'Juridisch';
-            else if (naam.includes('KLEINE UITGAVEN') || naam.includes('STOCKARTIKELEN')) return 'Algemene Kosten';
-            
+        function bepaalCategorie(naam) {
+            const n = naam.toUpperCase();
+            if (n.includes('IMMO BEACH')) return 'Beheerder';
+            if (n.includes('LUMINUS') || n.includes('FARYS')) return 'Nutsvoorzieningen';
+            if (n.includes('TELENET') || n.includes('SEACOM')) return 'Telecom';
+            if (n.includes('CLAENING') || n.includes('CLEAN') || n.includes('SCHOONMAAK')) return 'Schoonmaak';
+            if (n.includes('LIFT') || n.includes('EQUANS') || n.includes('ELEKTRO')) return 'Technisch Onderhoud';
+            if (n.includes('AXA') || n.includes('VIVIUM')) return 'Verzekeringen';
+            if (n.includes('GEMEENTE')) return 'Gemeente';
+            if (n.includes('GROEP S')) return 'Sociale Secretariaat';
+            if (n.includes('DAKWERK') || n.includes('CONSTRUCT')) return 'Werken & Renovatie';
+            if (n.includes('VEOLIA') || n.includes('TECHEM')) return 'Afval & Meterstanden';
             return 'Overige';
         }
 
-        function bepaalRisico(leverancier) {
-            const openstaand = leverancier.nettoSaldo;
-            const totaalOmzet = leverancier.Credit;
-            
-            if (openstaand > 10000) return 'hoog';
-            else if (openstaand > 5000) return 'medium';
-            else if (openstaand > 1000) return 'laag';
-            return 'geen';
-        }
-
-        // Parse CSV data
-        function parseData() {
-            const lines = leveranciersDataRaw.trim().split('\n');
-            const headers = lines[0].split(',');
-            
-            leveranciersData = lines.slice(1).map(line => {
-                const values = line.split(',');
-                const debet = parseFloat(values[1]) || 0;
-                const credit = parseFloat(values[2]) || 0;
-                const saldoDB = parseFloat(values[3]) || 0;
-                const saldoCR = parseFloat(values[4]) || 0;
-                
-                const nettoSaldo = saldoCR - saldoDB;
-                
-                return {
-                    Leverancier: values[0],
-                    Debet: debet,
-                    Credit: credit,
-                    Saldo_DB: saldoDB,
-                    Saldo_CR: saldoCR,
-                    nettoSaldo: nettoSaldo,
-                    categorie: bepaalCategorie(values[0]),
-                    isOpenstaand: nettoSaldo > 0,
-                    isTegoed: nettoSaldo < 0,
-                    risico: bepaalRisico({ nettoSaldo, Credit: credit })
-                };
-            });
-        }
-
-        // Tab switching
-        function showTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.style.display = 'none';
-            });
-            
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            document.getElementById(`tab-${tabName}`).style.display = 'block';
-            event.target.classList.add('active');
-        }
-
-        // Initialize dashboard
         function initDashboard() {
             try {
-                parseData();
-                createKPIs();
-                createAlerts();
-                createCharts();
-                createTables();
-                setupSearch();
-                
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-            } catch (error) {
-                console.error('Error initializing dashboard:', error);
-                document.getElementById('loading').innerHTML = 
-                    'Er is een fout opgetreden bij het laden van het dashboard. Probeer de pagina te verversen.';
-            }
-        }
+                // Process data
+                const leveranciers = leveranciersRaw.map(l => ({
+                    ...l,
+                    categorie: bepaalCategorie(l.naam),
+                    saldoDB: l.saldoDB || 0,
+                    saldoCR: l.saldoCR || 0,
+                    nettoSaldo: (l.saldoCR || 0) - (l.saldoDB || 0)
+                }));
 
-        function createKPIs() {
-            // Correcte totalen uit de PDF
-            const totaalCredit = 666536.82;
-            const totaalOpenstaand = 68246.00;
-            const totaalTegoed = 680.53;
-            const aantalOpenstaand = leveranciersData.filter(l => l.isOpenstaand).length;
-            
-            const kpis = [
-                {
-                    label: 'Totaal Gefactureerd',
-                    value: formatGetal(totaalCredit),
-                    subtext: `${leveranciersData.length} leveranciers`,
-                    class: 'info'
-                },
-                {
-                    label: 'Nog Te Betalen',
-                    value: formatGetal(totaalOpenstaand),
-                    subtext: `${aantalOpenstaand} leveranciers wachten op betaling`,
-                    class: totaalOpenstaand > 50000 ? 'danger' : 'warning'
-                },
-                {
-                    label: 'Ons Tegoed',
-                    value: formatGetal(totaalTegoed),
-                    subtext: `Bij ${leveranciersData.filter(l => l.isTegoed).length} leveranciers`,
-                    class: 'success'
-                },
-                {
-                    label: 'Netto Balans',
-                    value: formatGetal(totaalOpenstaand - totaalTegoed),
-                    subtext: 'Te betalen min tegoed = €67.565,47',
-                    class: ''
-                }
-            ];
+                // Totalen uit PDF
+                const totaalCredit = 666536.82;
+                const totaalOpenstaand = 68246.00;
+                const totaalTegoed = 680.53;
 
-            const grid = document.getElementById('kpi-grid');
-            grid.innerHTML = kpis.map(kpi => `
-                <div class="kpi-card ${kpi.class}">
-                    <div class="kpi-label">${kpi.label}</div>
-                    <div class="kpi-value">${kpi.value}</div>
-                    <div class="kpi-subtext">${kpi.subtext}</div>
-                </div>
-            `).join('');
-        }
+                // Create KPIs
+                const kpiGrid = document.getElementById('kpi-grid');
+                kpiGrid.innerHTML = `
+                    <div class="kpi-card info">
+                        <div class="kpi-label">Totaal Gefactureerd</div>
+                        <div class="kpi-value">${formatGetal(totaalCredit)}</div>
+                        <div class="kpi-subtext">77 leveranciers</div>
+                    </div>
+                    <div class="kpi-card warning">
+                        <div class="kpi-label">Nog Te Betalen</div>
+                        <div class="kpi-value">${formatGetal(totaalOpenstaand)}</div>
+                        <div class="kpi-subtext">Openstaande facturen</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Ons Tegoed</div>
+                        <div class="kpi-value">${formatGetal(totaalTegoed)}</div>
+                        <div class="kpi-subtext">Te verrekenen</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Netto Balans</div>
+                        <div class="kpi-value">${formatGetal(totaalOpenstaand - totaalTegoed)}</div>
+                        <div class="kpi-subtext">Effectief te betalen</div>
+                    </div>
+                `;
 
-        function createAlerts() {
-            const totaalOpenstaand = _.sumBy(leveranciersData.filter(l => l.isOpenstaand), 'nettoSaldo');
-            const grootsteOpenstaand = _.maxBy(leveranciersData.filter(l => l.isOpenstaand), 'nettoSaldo');
-            const alertContainer = document.getElementById('alert-container');
-            
-            if (totaalOpenstaand > 50000) {
+                // Alert
+                const alertContainer = document.getElementById('alert-container');
                 alertContainer.innerHTML = `
                     <div class="alert alert-warning">
                         <span>⚠️</span>
-                        <span><strong>Aandacht vereist:</strong> Er staat momenteel ${formatGetal(totaalOpenstaand)} open (correcte totaal uit de balans). 
-                        Het grootste bedrag is voor ${grootsteOpenstaand.Leverancier} (${formatGetal(grootsteOpenstaand.nettoSaldo)}). 
-                        Controleer of deze facturen correct zijn en plan de betalingen.</span>
+                        <span><strong>Aandacht:</strong> Er staat ${formatGetal(totaalOpenstaand)} open. 
+                        Het grootste bedrag is voor IMMO BEACH - beheer (${formatGetal(30543.78)}).</span>
                     </div>
                 `;
-            } else if (totaalOpenstaand > 30000) {
-                alertContainer.innerHTML = `
-                    <div class="alert alert-info">
-                        <span>ℹ️</span>
-                        <span>Er staat ${formatGetal(totaalOpenstaand)} aan facturen open. Dit is binnen normale grenzen.</span>
-                    </div>
-                `;
-            }
-        }
 
-        function createCharts() {
-            // Top openstaande leveranciers
-            const openstaandeLeveranciers = leveranciersData
-                .filter(l => l.isOpenstaand)
-                .sort((a, b) => b.nettoSaldo - a.nettoSaldo)
-                .slice(0, 10);
-
-            const ctx1 = document.getElementById('openstaandChart').getContext('2d');
-            charts.openstaand = new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: openstaandeLeveranciers.map(l => l.Leverancier),
-                    datasets: [{
-                        label: 'Openstaand bedrag',
-                        data: openstaandeLeveranciers.map(l => l.nettoSaldo),
-                        backgroundColor: '#ef4444',
-                        borderRadius: 5
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => formatGetal(context.parsed.x)
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: (value) => formatGetal(value)
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Verdeling per categorie
-            const categorieGroep = _.groupBy(leveranciersData, 'categorie');
-            const categorieData = Object.entries(categorieGroep)
-                .map(([cat, items]) => ({
-                    categorie: cat,
-                    totaal: _.sumBy(items, 'Credit')
-                }))
-                .sort((a, b) => b.totaal - a.totaal);
-
-            const ctx2 = document.getElementById('categorieChart').getContext('2d');
-            charts.categorie = new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: categorieData.map(c => c.categorie),
-                    datasets: [{
-                        data: categorieData.map(c => c.totaal),
-                        backgroundColor: [
-                            '#10b981', '#3b82f6', '#f59e0b', '#ef4444',
-                            '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16',
-                            '#f97316', '#64748b', '#0ea5e9', '#a855f7'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'right' },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => {
-                                    const label = context.label || '';
-                                    const value = formatGetal(context.parsed);
-                                    const totaal = _.sumBy(leveranciersData, 'Credit');
-                                    const percentage = ((context.parsed / totaal) * 100).toFixed(1);
-                                    return `${label}: ${value} (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Balans per categorie
-            const balansData = Object.entries(categorieGroep).map(([cat, items]) => ({
-                categorie: cat,
-                openstaand: _.sumBy(items.filter(i => i.isOpenstaand), 'nettoSaldo'),
-                tegoed: Math.abs(_.sumBy(items.filter(i => i.isTegoed), 'nettoSaldo'))
-            })).filter(c => c.openstaand > 0 || c.tegoed > 0);
-
-            const ctx3 = document.getElementById('balansChart').getContext('2d');
-            charts.balans = new Chart(ctx3, {
-                type: 'bar',
-                data: {
-                    labels: balansData.map(b => b.categorie),
-                    datasets: [
-                        {
-                            label: 'Openstaand',
-                            data: balansData.map(b => b.openstaand),
-                            backgroundColor: '#ef4444'
-                        },
-                        {
-                            label: 'Tegoed',
-                            data: balansData.map(b => b.tegoed),
-                            backgroundColor: '#10b981'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: (value) => formatGetal(value)
-                            }
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => `${context.dataset.label}: ${formatGetal(context.parsed.y)}`
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Risico chart
-            const risicoData = leveranciersData
-                .filter(l => l.isOpenstaand && l.nettoSaldo > 1000)
-                .map(l => ({
-                    x: l.Credit,
-                    y: l.nettoSaldo,
-                    label: l.Leverancier
-                }));
-
-            const ctx4 = document.getElementById('risicoChart');
-            if (ctx4) {
-                charts.risico = new Chart(ctx4.getContext('2d'), {
-                    type: 'scatter',
+                // Charts
+                const openstaand = leveranciers.filter(l => l.saldoCR > 0).slice(0, 10);
+                
+                const ctx1 = document.getElementById('openstaandChart').getContext('2d');
+                charts.openstaand = new Chart(ctx1, {
+                    type: 'bar',
                     data: {
+                        labels: openstaand.map(l => l.naam.substring(0, 30) + (l.naam.length > 30 ? '...' : '')),
                         datasets: [{
-                            label: 'Leveranciers',
-                            data: risicoData,
-                            backgroundColor: (context) => {
-                                const value = context.parsed.y;
-                                if (value > 10000) return '#ef4444';
-                                if (value > 5000) return '#f59e0b';
-                                return '#10b981';
-                            },
-                            pointRadius: 8
+                            label: 'Openstaand bedrag',
+                            data: openstaand.map(l => l.saldoCR),
+                            backgroundColor: '#ef4444',
+                            borderRadius: 5
                         }]
                     },
                     options: {
+                        indexAxis: 'y',
                         responsive: true,
+                        maintainAspectRatio: false,
                         plugins: {
+                            legend: { display: false },
                             tooltip: {
                                 callbacks: {
-                                    label: (context) => {
-                                        const point = risicoData[context.dataIndex];
-                                        return [
-                                            point.label,
-                                            `Omzet: ${formatGetal(context.parsed.x)}`,
-                                            `Openstaand: ${formatGetal(context.parsed.y)}`
-                                        ];
-                                    }
+                                    label: (context) => formatGetal(context.parsed.x)
                                 }
                             }
                         },
                         scales: {
                             x: {
-                                title: {
-                                    display: true,
+                                ticks: {
+                                    callback: value => '€' + value.toLocaleString('nl-BE')
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Categorie chart
+                const categorieData = {};
+                leveranciers.forEach(l => {
+                    if (!categorieData[l.categorie]) {
+                        categorieData[l.categorie] = 0;
+                    }
+                    categorieData[l.categorie] += l.credit;
+                });
+
+                const sortedCategories = Object.entries(categorieData)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 8);
+
+                const ctx2 = document.getElementById('categorieChart').getContext('2d');
+                charts.categorie = new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: sortedCategories.map(c => c[0]),
+                        datasets: [{
+                            data: sortedCategories.map(c => c[1]),
+                            backgroundColor: [
+                                '#10b981', '#3b82f6', '#f59e0b', '#ef4444',
+                                '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right' },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => {
+                                        const value = formatGetal(context.parsed);
+                                        const percentage = ((context.parsed / totaalCredit) * 100).toFixed(1);
+                                        return `${context.label}: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Tables
+                const categorieTable = document.querySelector('#categorie-table tbody');
+                const categorieStats = {};
+                
+                // Groepeer leveranciers per categorie
+                const leveranciersPerCategorie = {};
+                leveranciers.forEach(l => {
+                    if (!categorieStats[l.categorie]) {
+                        categorieStats[l.categorie] = {
+                            aantal: 0,
+                            omzet: 0,
+                            openstaand: 0
+                        };
+                        leveranciersPerCategorie[l.categorie] = [];
+                    }
+                    categorieStats[l.categorie].aantal++;
+                    categorieStats[l.categorie].omzet += l.credit;
+                    categorieStats[l.categorie].openstaand += l.saldoCR;
+                    leveranciersPerCategorie[l.categorie].push(l);
+                });
+
+                // Sorteer categorieën op omzet
+                const sortedCategories = Object.entries(categorieStats)
+                    .sort((a, b) => b[1].omzet - a[1].omzet);
+
+                // Maak de tabel met uitklapbare rijen
+                categorieTable.innerHTML = '';
+                
+                sortedCategories.forEach(([cat, stats], index) => {
+                    // Hoofdrij voor categorie
+                    const hoofdRij = document.createElement('tr');
+                    hoofdRij.className = 'expandable';
+                    hoofdRij.innerHTML = `
+                        <td>
+                            <span class="expand-icon">▶</span>
+                            <strong>${cat}</strong>
+                        </td>
+                        <td>${stats.aantal}</td>
+                        <td>${formatGetal(stats.omzet)}</td>
+                        <td>${stats.openstaand > 0 ? formatGetal(stats.openstaand) : '-'}</td>
+                        <td>
+                            ${(stats.omzet / totaalCredit * 100).toFixed(1)}%
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${stats.omzet / totaalCredit * 100}%"></div>
+                            </div>
+                        </td>
+                    `;
+                    
+                    // Voeg click handler toe
+                    hoofdRij.addEventListener('click', function() {
+                        const icon = this.querySelector('.expand-icon');
+                        icon.classList.toggle('expanded');
+                        icon.textContent = icon.classList.contains('expanded') ? '▼' : '▶';
+                        
+                        // Toggle alle sub-rijen voor deze categorie
+                        let nextRow = this.nextElementSibling;
+                        while (nextRow && nextRow.classList.contains('sub-row')) {
+                            nextRow.style.display = nextRow.style.display === 'none' ? '' : 'none';
+                            nextRow = nextRow.nextElementSibling;
+                        }
+                    });
+                    
+                    categorieTable.appendChild(hoofdRij);
+                    
+                    // Voeg sub-rijen toe voor elke leverancier in deze categorie
+                    const leveranciersInCat = leveranciersPerCategorie[cat]
+                        .sort((a, b) => b.credit - a.credit);
+                    
+                    leveranciersInCat.forEach(lev => {
+                        const subRij = document.createElement('tr');
+                        subRij.className = 'sub-row';
+                        subRij.style.display = 'none';
+                        
+                        let status = '';
+                        if (lev.saldoCR > 0) {
+                            status = '<span class="status-badge status-openstaand">Openstaand</span>';
+                        } else if (lev.saldoDB > 0) {
+                            status = '<span class="status-badge status-tegoed">Tegoed</span>';
+                        } else {
+                            status = '<span class="status-badge status-ok">✓</span>';
+                        }
+                        
+                        subRij.innerHTML = `
+                            <td>${lev.naam}</td>
+                            <td>-</td>
+                            <td>${formatGetal(lev.credit)}</td>
+                            <td>${lev.saldoCR > 0 ? formatGetal(lev.saldoCR) : '-'}</td>
+                            <td>${status}</td>
+                        `;
+                        
+                        categorieTable.appendChild(subRij);
+                    });
+                });
+
+                // Details table
+                const detailsTable = document.querySelector('#details-table tbody');
+                detailsTable.innerHTML = leveranciers.map(l => {
+                    let status = '';
+                    if (l.saldoCR > 0) {
+                        status = '<span class="status-badge status-openstaand">Openstaand</span>';
+                    } else if (l.saldoDB > 0) {
+                        status = '<span class="status-badge status-tegoed">Tegoed</span>';
+                    } else {
+                        status = '<span class="status-badge status-ok">In orde</span>';
+                    }
+                    
+                    return `
+                        <tr>
+                            <td>${l.naam}</td>
+                            <td>${l.categorie}</td>
+                            <td>${formatGetal(l.credit)}</td>
+                            <td>${l.nettoSaldo !== 0 ? formatGetal(Math.abs(l.nettoSaldo)) : '-'}</td>
+                            <td>${status}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                // Setup tabs
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                        document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                        
+                        this.classList.add('active');
+                        const tabName = this.getAttribute('data-tab');
+                        document.getElementById(`tab-${tabName}`).classList.add('active');
+                    });
+                });
+
+                // Hide loading, show dashboard
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loading').innerHTML = 'Er is een fout opgetreden: ' + error.message;
+            }
+        }
+
+        // Fullscreen functionaliteit
+        function openChartModal(chartId, title) {
+            const modal = document.getElementById('chartModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalCanvas = document.getElementById('modalChart');
+            const originalChart = charts[chartId.replace('Chart', '')];
+            
+            if (!originalChart) return;
+            
+            // Set title
+            modalTitle.textContent = title;
+            
+            // Clone chart configuration
+            const config = JSON.parse(JSON.stringify(originalChart.config));
+            
+            // Adjust for fullscreen
+            if (config.options) {
+                config.options.maintainAspectRatio = false;
+                config.options.responsive = true;
+            }
+            
+            // Destroy previous modal chart if exists
+            if (modalChart) {
+                modalChart.destroy();
+            }
+            
+            // Create new chart in modal
+            modalChart = new Chart(modalCanvas, config);
+            
+            // Show modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeChartModal() {
+            const modal = document.getElementById('chartModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            
+            if (modalChart) {
+                modalChart.destroy();
+                modalChart = null;
+            }
+        }
+
+        // ESC key to close modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeChartModal();
+            }
+        });
+
+        // Click outside to close modal
+        document.getElementById('chartModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closeChartModal();
+            }
+        });
+
+        // Start when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDashboard);
+        } else {
+            initDashboard();
+        }
+    </script>
+</body>
+</html>
