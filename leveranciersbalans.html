@@ -512,14 +512,14 @@
     <header>
         <div class="container">
             <h1>Leveranciersbalans</h1>
-            <p class="subtitle">Wie betalen we, hoeveel en waarom? Een transparant overzicht</p>
+            <p class="subtitle">Wie krijgt nog geld van ons? En hoeveel hebben we al betaald?</p>
         </div>
     </header>
 
     <div class="container">
         <div class="explanation-banner">
             <div class="explanation-banner-icon">💡</div>
-            <p>Dit dashboard toont alle leveranciers waar we mee werken. Je ziet direct wie nog geld krijgt (openstaand) en waar we eventueel teveel betaald hebben (tegoed).</p>
+            <p>Hier zie je met welke firma's we werken. Wie moeten we nog betalen? En waar hebben we misschien te veel betaald? Alles staat hier duidelijk opgelijst.</p>
         </div>
         
         <div id="loading" class="loading">Dashboard wordt geladen...</div>
@@ -542,7 +542,7 @@
                                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
                             </svg>
                         </button>
-                        <h3 class="chart-title">Top 10 Openstaande Leveranciers</h3>
+                        <h3 class="chart-title">Wie moet nog geld krijgen? (Top 10 leveranciers)</h3>
                         <div class="chart-wrapper">
                             <canvas id="openstaandChart"></canvas>
                         </div>
@@ -553,7 +553,7 @@
                                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
                             </svg>
                         </button>
-                        <h3 class="chart-title">Verdeling per Categorie</h3>
+                        <h3 class="chart-title">Waar gaat het geld naartoe? (per categorie)</h3>
                         <div class="chart-wrapper">
                             <canvas id="categorieChart"></canvas>
                         </div>
@@ -766,22 +766,22 @@
                 
                 kpiGrid.innerHTML = `
                     <div class="kpi-card info">
-                        <div class="kpi-label">Totaal Gefactureerd</div>
+                        <div class="kpi-label">Totaal ontvangen facturen</div>
                         <div class="kpi-value">${formatGetal(totaalCredit)}</div>
                         <div class="kpi-subtext">77 leveranciers</div>
                     </div>
                     <div class="kpi-card success">
-                        <div class="kpi-label">Reeds Betaald</div>
+                        <div class="kpi-label">Betaald tot nu toe</div>
                         <div class="kpi-value">${formatGetal(reedsBetaald)}</div>
                         <div class="kpi-subtext">${percentageBetaald}% afgehandeld</div>
                     </div>
                     <div class="kpi-card warning">
-                        <div class="kpi-label">Nog Te Betalen</div>
+                        <div class="kpi-label">Openstaande facturen</div>
                         <div class="kpi-value">${formatGetal(totaalOpenstaand)}</div>
-                        <div class="kpi-subtext">Openstaande facturen</div>
+                        <div class="kpi-subtext">Nog te betalen</div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-label">Grootste Openstaand</div>
+                        <div class="kpi-label">Leverancier met hoogste openstaand bedrag</div>
                         <div class="kpi-value">${formatGetal(30543.78)}</div>
                         <div class="kpi-subtext">IMMO BEACH beheer</div>
                     </div>
@@ -792,7 +792,7 @@
                 alertContainer.innerHTML = `
                     <div class="alert alert-warning">
                         <span>⚠️</span>
-                        <span><strong>Aandacht:</strong> Er staat ${formatGetal(totaalOpenstaand)} open. 
+                        <span><strong>Aandacht:</strong> We moeten nog ${formatGetal(totaalOpenstaand)} betalen aan leveranciers. 
                         Het grootste bedrag is voor IMMO BEACH - beheer (${formatGetal(30543.78)}).</span>
                     </div>
                 `;
@@ -1026,8 +1026,16 @@
             
             if (!originalChart) return;
             
+            // Update title for modal
+            let modalTitleText = title;
+            if (title === 'Top 10 Openstaande Leveranciers') {
+                modalTitleText = 'Wie moet nog geld krijgen? (Top 10 leveranciers)';
+            } else if (title === 'Verdeling per Categorie') {
+                modalTitleText = 'Waar gaat het geld naartoe? (per categorie)';
+            }
+            
             // Set title
-            modalTitle.textContent = title;
+            modalTitle.textContent = modalTitleText;
             
             // Clone chart configuration
             const config = JSON.parse(JSON.stringify(originalChart.config));
