@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nazicht Bankafschriften - Residentie HELIX</title>
+    <title>Uitgaande Betalingen - Residentie HELIX</title>
     
     <!-- External Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -66,29 +66,35 @@
             font-weight: 500;
         }
 
-        /* Explanation banner */
-        .explanation-banner {
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
+        /* Information banner - grey style */
+        .info-banner {
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 20px 30px;
             margin-bottom: 30px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 15px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
-        .explanation-banner-icon {
-            font-size: 1.5rem;
-            color: #0284c7;
+        .info-banner-icon {
+            font-size: 1.3rem;
+            color: #64748b;
             flex-shrink: 0;
+            margin-top: 2px;
         }
 
-        .explanation-banner-text {
+        .info-banner-text {
             font-size: 0.95rem;
-            color: #075985;
-            line-height: 1.5;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .info-banner-text strong {
+            color: #334155;
+            font-weight: 600;
         }
         
         /* KPI Cards - New Style */
@@ -677,8 +683,8 @@
     <header>
         <div class="container">
             <div class="header-content">
-                <h1>Nazicht Bankafschriften</h1>
-                <p class="subtitle">Een helder overzicht van alle uitgaven per kostensoort</p>
+                <h1>Uitgaande Betalingen</h1>
+                <p class="subtitle">Overzicht van alle betalingen via de gemeenschappelijke bankrekening, per kostensoort</p>
                 <div class="period-info">
                     <strong>Periode:</strong> 14 maart 2024 - 14 maart 2025
                 </div>
@@ -687,11 +693,12 @@
     </header>
     
     <div class="container">
-        <!-- Explanation Banner -->
-        <div class="explanation-banner">
-            <div class="explanation-banner-icon">ℹ️</div>
-            <div class="explanation-banner-text">
-                Toont elke betaling die van de bankrekening gebeurde, ook als daar geen factuur voor beschikbaar is
+        <!-- Information Banner -->
+        <div class="info-banner">
+            <div class="info-banner-icon">ℹ️</div>
+            <div class="info-banner-text">
+                <strong>Dit dashboard toont alle kasstromen:</strong> wat effectief van de gemeenschappelijke bankrekening is gegaan.<br>
+                De gegevens zijn gebaseerd op de bankafschriften en omvatten ook betalingen waarvoor geen factuur beschikbaar is.
             </div>
         </div>
         
@@ -2308,6 +2315,5 @@
             }
         }
     </script>
-    <script src="nav.js"></script>
 </body>
 </html>
