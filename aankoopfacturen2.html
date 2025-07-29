@@ -202,8 +202,8 @@
             padding-right: 40px;
         }
 
-        /* Fullscreen button */
-        .fullscreen-btn {
+        /* Fullscreen button - alleen binnen chart containers! */
+        .chart-container .fullscreen-btn {
             position: absolute;
             top: 20px;
             right: 20px;
@@ -220,12 +220,12 @@
             color: #64748b;
         }
 
-        .fullscreen-btn:hover {
+        .chart-container .fullscreen-btn:hover {
             background: #e2e8f0;
             color: #1e293b;
         }
 
-        .fullscreen-btn svg {
+        .chart-container .fullscreen-btn svg {
             width: 18px;
             height: 18px;
         }
@@ -712,6 +712,24 @@
                         <canvas id="categorieChart"></canvas>
                     </div>
                 </div>
+                        <button class="fullscreen-btn" onclick="openChartModal('topLeveranciersChart', 'Top 10 Grootste Kostenposten')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                        <h3 class="chart-title">Top 10 Grootste Kostenposten</h3>
+                        <canvas id="topLeveranciersChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <button class="fullscreen-btn" onclick="openChartModal('categorieChart', 'Verdeling per Categorie')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                        <h3 class="chart-title">Verdeling per Categorie</h3>
+                        <canvas id="categorieChart"></canvas>
+                    </div>
+                </div>
 
                 <div class="table-container">
                     <div class="table-header">
@@ -1090,6 +1108,12 @@
         function createAlerts() {
             const openstaand = _.sumBy(factuurData, 'openstaand');
             const alertContainer = document.getElementById('alert-container');
+            
+            // Check of alertContainer bestaat voordat we proberen te schrijven
+            if (!alertContainer) {
+                console.warn('Alert container not found - skipping alert creation');
+                return;
+            }
             
             if (openstaand > 30000) {
                 const grootste = _.maxBy(factuurData.filter(f => f.openstaand > 0), 'openstaand');
