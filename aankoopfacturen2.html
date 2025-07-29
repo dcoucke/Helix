@@ -66,11 +66,8 @@
             flex-shrink: 0;
         }
 
-        .explanation-banner p {
-            color: #0369a1;
-            margin: 0;
-            font-size: 0.95rem;
-            line-height: 1.5;
+        .explanation-banner div {
+            flex: 1;
         }
 
         /* Tabs */
@@ -797,6 +794,15 @@
                     <canvas id="categorieDetailChart"></canvas>
                 </div>
                 
+                <div class="explanation-banner" style="margin-bottom: 20px;">
+                    <div class="explanation-banner-icon">💡</div>
+                    <div>
+                        <p style="margin-bottom: 8px;"><strong>Noot:</strong> De originele boekhouding bevat <strong>geen categorie per factuur</strong>.</p>
+                        <p style="margin-bottom: 8px;">Om toch een duidelijker beeld te geven, hebben we met de computer een <strong>automatische indeling</strong> gemaakt. Die klopt meestal goed voor grote posten zoals <strong>energie</strong> of <strong>beheer</strong>, maar kan bij kleinere uitgaven soms wat minder precies zijn.</p>
+                        <p style="margin: 0;">Zie het dus als een <strong>ruwe richtlijn</strong> — handig om het grote geheel te begrijpen, maar niet altijd 100% sluitend per factuur.</p>
+                    </div>
+                </div>
+                
                 <div class="table-container">
                     <div class="table-header">
                         <h3 class="table-title">Categorie Breakdown</h3>
@@ -922,11 +928,51 @@
         }
 
         function bepaalCategorie(leverancier) {
-            for (const [cat, keywords] of Object.entries(categorieMapping)) {
-                if (keywords.some(kw => leverancier.toUpperCase().includes(kw))) {
+            if (!leverancier) return 'Overige';
+            
+            const leverancierUpper = leverancier.toUpperCase();
+            
+            // Fuzzy matching voor veelvoorkomende variaties
+            const fuzzyMatches = {
+                'Schoonmaak': [
+                    'CLEAN', 'CLAEN', 'SCHOONMAAK', 'KARCHER', 'KARCHTER', 'KÄRCHER',
+                    'AB CLEANING', 'AB CLAENING', 'APM CLEAN', 'APM CLAEN',
+                    'DVV CLEANING', 'DVV CLAENING', 'EVERCLEAN', 'EVERCLAEN',
+                    'AARON DEHOTTAY', 'FRANNE NAGELS'
+                ],
+                'Onderhoud': [
+                    'DAKWERK', 'LIFT', 'ELEKTRO', 'ELECTRO', 'VEOLIA', 'VERCON',
+                    'LEFEVRE', 'LEFEVER', 'DOCHY', 'WEEMAES', 'VINCOTTE', 'ANSUL',
+                    'BRANDBEVEILIGING', 'BRANDBLUS', 'SARRAZIJN', 'SARAZIJN',
+                    'HOUTHANDEL', 'VANDAELE', 'ZEHNDER'
+                ],
+                'Gas en Elektriciteit': ['LUMINUS', 'LUMINOUS'],
+                'Water': ['FARYS', 'FARIS'],
+                'TV en Internet': ['TELENET', 'SAECOM', 'PROXIMUS'],
+                'Verzekeringen': ['VIVIUM', 'AXA', 'MENSURA', 'ETHIAS', 'ETIAS'],
+                'Tellers': ['TECHEM', 'CALORIBEL', 'ISTA']
+            };
+            
+            // Check fuzzy matches eerst
+            for (const [cat, patterns] of Object.entries(fuzzyMatches)) {
+                if (patterns.some(pattern => leverancierUpper.includes(pattern))) {
                     return cat;
                 }
             }
+            
+            // Dan exacte matches voor specifieke leveranciers
+            for (const [cat, keywords] of Object.entries(categorieMapping)) {
+                if (keywords.some(kw => leverancierUpper.includes(kw.toUpperCase()))) {
+                    return cat;
+                }
+            }
+            
+            // Speciale gevallen
+            if (leverancierUpper.includes('GROEP S')) return 'Personeel';
+            if (leverancierUpper.includes('DETRE')) return 'Personeel';
+            if (leverancierUpper.includes('IMMO') || leverancierUpper.includes('COAST')) return 'Beheer';
+            if (leverancierUpper.includes('KLEINE UITGAVEN') || leverancierUpper.includes('STOCKARTIKEL')) return 'Algemene kosten';
+            
             return 'Overige';
         }
 
