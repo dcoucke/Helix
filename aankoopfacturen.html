@@ -48,20 +48,29 @@
             font-size: 1.1rem;
         }
 
-        /* Info banner */
-        .info-banner {
-            background: #f8fafc;
-            padding: 15px 25px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #cbd5e1;
+        /* Info banner - consistent met andere pagina's */
+        .explanation-banner {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 12px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
-        .info-banner p {
-            color: #64748b;
-            font-style: italic;
+        .explanation-banner-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .explanation-banner p {
+            color: #0369a1;
             margin: 0;
             font-size: 0.95rem;
+            line-height: 1.5;
         }
 
         /* Tabs */
@@ -657,7 +666,8 @@
     </header>
 
     <div class="container">
-        <div class="info-banner">
+        <div class="explanation-banner">
+            <div class="explanation-banner-icon">ℹ️</div>
             <p>Hier zie je welke facturen officieel zijn geregistreerd, ongeacht of ze al betaald zijn</p>
         </div>
         
