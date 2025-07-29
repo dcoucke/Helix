@@ -74,8 +74,12 @@
             text-align: left !important;
         }
 
-        .explanation-banner div {
+        .explanation-banner > div {
             flex: 1;
+            text-align: left !important;
+        }
+        
+        .explanation-banner * {
             text-align: left !important;
         }
 
@@ -674,7 +678,9 @@
     <div class="container">
         <div class="explanation-banner">
             <div class="explanation-banner-icon">ℹ️</div>
-            <p style="text-align: left; margin: 0;">Hier zie je welke facturen officieel zijn geregistreerd, ongeacht of ze al betaald zijn</p>
+            <div style="flex: 1; text-align: left;">
+                <p style="text-align: left; margin: 0;">Hier zie je welke facturen officieel zijn geregistreerd, ongeacht of ze al betaald zijn</p>
+            </div>
         </div>
         
         <div id="loading" class="loading">Dashboard wordt geladen...</div>
@@ -808,23 +814,25 @@
 
             <!-- Tab: Categorieën -->
             <div id="tab-categorien" class="tab-content" style="display: none;">
-                <div class="explanation-banner" style="margin-bottom: 20px;">
+                <div class="explanation-banner" style="margin-bottom: 30px;">
                     <div class="explanation-banner-icon">💡</div>
-                    <div style="flex: 1;">
-                        <p style="margin-bottom: 8px; text-align: left;"><strong>Noot:</strong> De originele boekhouding bevat <strong>geen categorie per factuur</strong>.</p>
-                        <p style="margin-bottom: 8px; text-align: left;">Om toch een duidelijker beeld te geven, hebben we met de computer een <strong>automatische indeling</strong> gemaakt. Die klopt meestal goed voor grote posten zoals <strong>energie</strong> of <strong>beheer</strong>, maar kan bij kleinere uitgaven soms wat minder precies zijn.</p>
+                    <div style="flex: 1; text-align: left;">
+                        <p style="margin: 0 0 8px 0; text-align: left;"><strong>Noot:</strong> De originele boekhouding bevat <strong>geen categorie per factuur</strong>.</p>
+                        <p style="margin: 0 0 8px 0; text-align: left;">Om toch een duidelijker beeld te geven, hebben we met de computer een <strong>automatische indeling</strong> gemaakt. Die klopt meestal goed voor grote posten zoals <strong>energie</strong> of <strong>beheer</strong>, maar kan bij kleinere uitgaven soms wat minder precies zijn.</p>
                         <p style="margin: 0; text-align: left;">Zie het dus als een <strong>ruwe richtlijn</strong> — handig om het grote geheel te begrijpen, maar niet altijd 100% sluitend per factuur.</p>
                     </div>
                 </div>
                 
-                <div class="chart-container" style="margin-bottom: 25px;">
-                    <button class="fullscreen-btn" onclick="openChartModal('categorieDetailChart', 'Uitgaven per Categorie - Detailview')">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-                        </svg>
-                    </button>
-                    <h3 class="chart-title">Uitgaven per Categorie - Detailview</h3>
-                    <canvas id="categorieDetailChart"></canvas>
+                <div class="chart-grid">
+                    <div class="chart-container" style="grid-column: 1 / -1;">
+                        <button class="fullscreen-btn" onclick="openChartModal('categorieDetailChart', 'Uitgaven per Categorie - Detailview')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
+                        <h3 class="chart-title">Uitgaven per Categorie - Detailview</h3>
+                        <canvas id="categorieDetailChart"></canvas>
+                    </div>
                 </div>
                 
                 <div class="table-container">
