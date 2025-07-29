@@ -56,7 +56,7 @@
             padding: 20px 30px;
             margin-bottom: 30px;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 15px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
@@ -71,16 +71,7 @@
             margin: 0;
             font-size: 0.95rem;
             line-height: 1.5;
-            text-align: left !important;
-        }
-
-        .explanation-banner > div {
             flex: 1;
-            text-align: left !important;
-        }
-        
-        .explanation-banner * {
-            text-align: left !important;
         }
 
         /* Tabs */
@@ -678,9 +669,7 @@
     <div class="container">
         <div class="explanation-banner">
             <div class="explanation-banner-icon">ℹ️</div>
-            <div style="flex: 1; text-align: left;">
-                <p style="text-align: left; margin: 0;">Hier zie je welke facturen officieel zijn geregistreerd, ongeacht of ze al betaald zijn</p>
-            </div>
+            <p>Hier zie je welke facturen officieel zijn geregistreerd, ongeacht of ze al betaald zijn</p>
         </div>
         
         <div id="loading" class="loading">Dashboard wordt geladen...</div>
@@ -816,11 +805,9 @@
             <div id="tab-categorien" class="tab-content" style="display: none;">
                 <div class="explanation-banner" style="margin-bottom: 30px;">
                     <div class="explanation-banner-icon">💡</div>
-                    <div style="flex: 1; text-align: left;">
-                        <p style="margin: 0 0 8px 0; text-align: left;"><strong>Noot:</strong> De originele boekhouding bevat <strong>geen categorie per factuur</strong>.</p>
-                        <p style="margin: 0 0 8px 0; text-align: left;">Om toch een duidelijker beeld te geven, hebben we met de computer een <strong>automatische indeling</strong> gemaakt. Die klopt meestal goed voor grote posten zoals <strong>energie</strong> of <strong>beheer</strong>, maar kan bij kleinere uitgaven soms wat minder precies zijn.</p>
-                        <p style="margin: 0; text-align: left;">Zie het dus als een <strong>ruwe richtlijn</strong> — handig om het grote geheel te begrijpen, maar niet altijd 100% sluitend per factuur.</p>
-                    </div>
+                    <p><strong>Noot:</strong> De originele boekhouding bevat <strong>geen categorie per factuur</strong>.<br><br>
+                    Om toch een duidelijker beeld te geven, hebben we met de computer een <strong>automatische indeling</strong> gemaakt. Die klopt meestal goed voor grote posten zoals <strong>energie</strong> of <strong>beheer</strong>, maar kan bij kleinere uitgaven soms wat minder precies zijn.<br><br>
+                    Zie het dus als een <strong>ruwe richtlijn</strong> — handig om het grote geheel te begrijpen, maar niet altijd 100% sluitend per factuur.</p>
                 </div>
                 
                 <div class="chart-grid">
@@ -1840,6 +1827,5 @@
         // Start applicatie
         loadData();
     </script>
-    <script src="nav.js"></script>
 </body>
 </html>
