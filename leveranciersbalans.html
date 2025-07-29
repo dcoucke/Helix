@@ -293,6 +293,11 @@
         .chart-modal-body {
             flex: 1;
             position: relative;
+            min-height: 400px;
+        }
+
+        .chart-modal canvas {
+            max-height: 100% !important;
         }
 
         .table-container {
@@ -955,7 +960,7 @@
                         if (lev.saldoCR > 0) {
                             status = '<span class="status-badge status-openstaand">Openstaand</span>';
                         } else if (lev.saldoDB > 0) {
-                            status = '<span class="status-badge status-tegoed">Tegoed</span>';
+                            status = `<span class="status-badge status-tegoed">Tegoed: ${formatGetal(lev.saldoDB)}</span>`;
                         } else {
                             status = '<span class="status-badge status-ok">✓</span>';
                         }
@@ -979,7 +984,7 @@
                     if (l.saldoCR > 0) {
                         status = '<span class="status-badge status-openstaand">Openstaand</span>';
                     } else if (l.saldoDB > 0) {
-                        status = '<span class="status-badge status-tegoed">Tegoed</span>';
+                        status = `<span class="status-badge status-tegoed">Tegoed: ${formatGetal(l.saldoDB)}</span>`;
                     } else {
                         status = '<span class="status-badge status-ok">In orde</span>';
                     }
@@ -1022,9 +1027,19 @@
             const modal = document.getElementById('chartModal');
             const modalTitle = document.getElementById('modalTitle');
             const modalCanvas = document.getElementById('modalChart');
-            const originalChart = charts[chartId.replace('Chart', '')];
             
-            if (!originalChart) return;
+            // Get the chart instance directly by ID
+            let originalChart;
+            if (chartId === 'openstaandChart') {
+                originalChart = charts.openstaand;
+            } else if (chartId === 'categorieChart') {
+                originalChart = charts.categorie;
+            }
+            
+            if (!originalChart) {
+                console.error('Chart not found:', chartId);
+                return;
+            }
             
             // Update title for modal
             let modalTitleText = title;
@@ -1037,26 +1052,34 @@
             // Set title
             modalTitle.textContent = modalTitleText;
             
-            // Clone chart configuration
-            const config = JSON.parse(JSON.stringify(originalChart.config));
-            
-            // Adjust for fullscreen
-            if (config.options) {
-                config.options.maintainAspectRatio = false;
-                config.options.responsive = true;
-            }
-            
             // Destroy previous modal chart if exists
             if (modalChart) {
                 modalChart.destroy();
+                modalChart = null;
             }
             
-            // Create new chart in modal
-            modalChart = new Chart(modalCanvas, config);
-            
-            // Show modal
+            // Show modal first
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            // Create new chart in modal with a slight delay to ensure canvas is rendered
+            setTimeout(() => {
+                const ctx = modalCanvas.getContext('2d');
+                
+                // Get original chart config
+                const config = {
+                    type: originalChart.config.type,
+                    data: JSON.parse(JSON.stringify(originalChart.config.data)),
+                    options: JSON.parse(JSON.stringify(originalChart.config.options))
+                };
+                
+                // Adjust options for fullscreen
+                config.options.maintainAspectRatio = false;
+                config.options.responsive = true;
+                
+                // Create the modal chart
+                modalChart = new Chart(ctx, config);
+            }, 100);
         }
 
         function closeChartModal() {
