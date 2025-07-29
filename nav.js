@@ -8,7 +8,8 @@
         { href: 'bankafschriften.html', text: 'Bankafschriften' },
         { href: 'aankoopfacturen.html', text: 'Aankoopfacturen' },
         { href: 'wanbetalers.html', text: 'Wanbetalers' },
-        { href: 'boekhouding.html', text: 'Boekhouding', badge: 'Beta' }
+        { href: 'leveranciersbalans.html', text: 'Leveranciers'},
+        { href: 'boekhouding.html', text: 'Boekhouding'}
     ];
 
     // CSS Styles - Hypermodern minimalistisch design
