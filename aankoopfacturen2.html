@@ -894,15 +894,23 @@
         let charts = {};
         let modalChart = null;
 
-        // Categorieën mapping
+        // Categorieën mapping - gebaseerd op hoofdcategorieën uit banktransacties analyse
         const categorieMapping = {
-            'Energie': ['LUMINUS', 'FARYS'],
-            'Beheer': ['IMMO BEACH', 'WEST COAST INVESTMENTS'],
-            'Onderhoud & Schoonmaak': ['EQUANS', 'AB CLAENING', 'ELEKTRO POWER', 'DE LIFT', 'VEOLIA', 'GROEP S'],
-            'Telecom': ['TELENET'],
-            'Bouw & Renovatie': ['DAKWERKEN', 'BOUWMAT', 'PEETERS'],
-            'Verzekeringen': ['ETHIAS', 'SECURITAS'],
-            'Algemene kosten': ['KLEINE UITGAVEN', 'STOCKARTIKELEN']
+            'Gas en Elektriciteit': ['LUMINUS'],
+            'Water': ['FARYS'],
+            'Beheer': ['IMMO BEACH', 'LA NOUVELLE AGENCE', 'WEST COAST INVESTMENTS'],
+            'Onderhoud': ['EQUANS', 'DE LIFT', 'LEFEVRE DANNY', 'ELEKTRO POWER', 'VEOLIA', 'VERCON CONSTRUCT', 'LEFEVRE LIEVEN', 'DOCHY GLAS', 'WEEMAES', 'VINCOTTE', 'ANSUL', 'BRANDBEVEILIGINGSDIENST', 'SARRAZIJN', 'PLAATJES', 'HOUTHANDEL TAVERNIER', 'VANDAELE', 'ZEHNDER GROUP'],
+            'Schoonmaak': ['AB CLEANING', 'APM CLEAN', 'KARCHER', 'AARON DEHOTTAY', 'FRANNE NAGELS', 'EVER CLEAN', 'DVV CLEANING', 'EVERCLEAN4U'],
+            'Personeel': ['GROEP S', 'DETRE RUDY'],
+            'Verzekeringen': ['VIVIUM', 'AXA', 'MENSURA', 'ETHIAS'],
+            'TV en Internet': ['TELENET', 'SAECOM COMMV'],
+            'Tellers': ['TECHEM'],
+            'Prive Werken': ['CERTI CHECK', 'GEMEENTEBESTUUR', 'ACA KEURING', 'VANSTEEN BV'],
+            'Algemene Vergadering': ['VERTALERS', 'STEMBAKJES', 'STOELEN EN TAFELS'],
+            'Bloemen en Decoratie': ['RUDY & PATRICIA', 'TUINCENTER DEFEVER'],
+            'Diversen': ['RECHTSZAAK', 'IDOCTA', 'MIDDELKERKE', 'DUMON DRUKKERIJ', 'BLOEMEN', 'GARAGE CASSELMAN', 'KAARTBIJDRAGE'],
+            'Reservefonds': ['RESERVEFONDS', 'TRUONG', 'COUCKE'],
+            'Algemene kosten': ['KLEINE UITGAVEN', 'STOCKARTIKELEN', 'BETALING MET KAART']
         };
 
         // Helper functies
