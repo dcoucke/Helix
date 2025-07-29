@@ -776,15 +776,21 @@ ZEHNDER GROUP BELGIUM,151.00,151.00,0,0`;
 
         // Initialize dashboard
         function initDashboard() {
-            parseData();
-            createKPIs();
-            createAlerts();
-            createCharts();
-            createTables();
-            setupSearch();
-            
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('dashboard').style.display = 'block';
+            try {
+                parseData();
+                createKPIs();
+                createAlerts();
+                createCharts();
+                createTables();
+                setupSearch();
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+                document.getElementById('loading').innerHTML = 
+                    'Er is een fout opgetreden bij het laden van het dashboard. Probeer de pagina te verversen.';
+            }
         }
 
         function createKPIs() {
