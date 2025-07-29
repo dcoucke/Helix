@@ -56,7 +56,7 @@
             padding: 20px 30px;
             margin-bottom: 30px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 15px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
@@ -71,10 +71,12 @@
             margin: 0;
             font-size: 0.95rem;
             line-height: 1.5;
+            text-align: left !important;
         }
 
         .explanation-banner div {
             flex: 1;
+            text-align: left !important;
         }
 
         /* Tabs */
@@ -791,6 +793,15 @@
 
             <!-- Tab: Categorieën -->
             <div id="tab-categorien" class="tab-content" style="display: none;">
+                <div class="explanation-banner" style="margin-bottom: 20px;">
+                    <div class="explanation-banner-icon">💡</div>
+                    <div>
+                        <p style="margin-bottom: 8px;"><strong>Noot:</strong> De originele boekhouding bevat <strong>geen categorie per factuur</strong>.</p>
+                        <p style="margin-bottom: 8px;">Om toch een duidelijker beeld te geven, hebben we met de computer een <strong>automatische indeling</strong> gemaakt. Die klopt meestal goed voor grote posten zoals <strong>energie</strong> of <strong>beheer</strong>, maar kan bij kleinere uitgaven soms wat minder precies zijn.</p>
+                        <p style="margin: 0;">Zie het dus als een <strong>ruwe richtlijn</strong> — handig om het grote geheel te begrijpen, maar niet altijd 100% sluitend per factuur.</p>
+                    </div>
+                </div>
+                
                 <div class="chart-container" style="margin-bottom: 25px;">
                     <button class="fullscreen-btn" onclick="openChartModal('categorieDetailChart', 'Uitgaven per Categorie - Detailview')">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -799,15 +810,6 @@
                     </button>
                     <h3 class="chart-title">Uitgaven per Categorie - Detailview</h3>
                     <canvas id="categorieDetailChart"></canvas>
-                </div>
-                
-                <div class="explanation-banner" style="margin-bottom: 20px;">
-                    <div class="explanation-banner-icon">💡</div>
-                    <div style="text-align: left;">
-                        <p style="margin-bottom: 8px; text-align: left;"><strong>Noot:</strong> De originele boekhouding bevat <strong>geen categorie per factuur</strong>.</p>
-                        <p style="margin-bottom: 8px; text-align: left;">Om toch een duidelijker beeld te geven, hebben we met de computer een <strong>automatische indeling</strong> gemaakt. Die klopt meestal goed voor grote posten zoals <strong>energie</strong> of <strong>beheer</strong>, maar kan bij kleinere uitgaven soms wat minder precies zijn.</p>
-                        <p style="margin: 0; text-align: left;">Zie het dus als een <strong>ruwe richtlijn</strong> — handig om het grote geheel te begrijpen, maar niet altijd 100% sluitend per factuur.</p>
-                    </div>
                 </div>
                 
                 <div class="table-container">
