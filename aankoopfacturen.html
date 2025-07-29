@@ -1,29 +1,9 @@
-function updateDetailsTable(data) {
-            console.log('UpdateDetailsTable called with', data.length, 'records');
-            const tbody = document.querySelector('#details-table tbody');
-            if (!tbody) {
-                console.error('Details table tbody not found');
-                return;
-            }
-            
-            tbody.innerHTML = data.map(f => `
-                <tr>
-                    <td>${f.Nummer || '-'}</td>
-                    <td>${f.Leverancier || '-'}</td>
-                    <td>${f.Factuur_Nummer ? `<span class="factuur-link" onclick="openFactuurModal('${f.Factuur_Nummer}')">${f.Factuur_Nummer}</span>` : '-'}</td>
-                    <td>${f.Factuur_Datum || '-'}</td>
-                    <td>${formatGetal(f.Totaal || 0)}</td>
-                    <td>${formatGetal(f.Betaald || 0)}</td>
-                    <td>${f.openstaand > 0 ? formatGetal(f.openstaand) : '-'}</td>
-                </tr>
-            `).join('');
-        }
-                <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facturen Dashboard - Residentie HELIX</title>
+    <title>Analyse Aankoopfacturen - Residentie HELIX</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
@@ -66,6 +46,22 @@ function updateDetailsTable(data) {
             opacity: 0.9;
             margin-top: 10px;
             font-size: 1.1rem;
+        }
+
+        /* Info banner */
+        .info-banner {
+            background: #f8fafc;
+            padding: 15px 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #cbd5e1;
+        }
+
+        .info-banner p {
+            color: #64748b;
+            font-style: italic;
+            margin: 0;
+            font-size: 0.95rem;
         }
 
         /* Tabs */
@@ -219,76 +215,6 @@ function updateDetailsTable(data) {
             height: 18px;
         }
 
-        /* Fullscreen modal */
-        .chart-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: 2000;
-            padding: 40px;
-        }
-
-        .chart-modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .chart-modal-content {
-            background: white;
-            width: 90%;
-            height: 90%;
-            max-width: 1200px;
-            border-radius: 12px;
-            padding: 30px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chart-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .chart-modal-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        .chart-modal-close {
-            background: #f1f5f9;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-
-        .chart-modal-close:hover {
-            background: #e2e8f0;
-        }
-
-        .chart-modal-body {
-            flex: 1;
-            position: relative;
-        }
-
-        .chart-modal canvas {
-            max-height: 100% !important;
-        }
-
         /* Tables */
         .table-container {
             background: white;
@@ -395,57 +321,10 @@ function updateDetailsTable(data) {
             gap: 10px;
         }
 
-        .alert-warning {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fcd34d;
-        }
-
         .alert-info {
             background: #dbeafe;
             color: #1e40af;
             border: 1px solid #93c5fd;
-        }
-
-        /* Info banner */
-        .info-banner {
-            background: #f8fafc;
-            padding: 15px 25px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #cbd5e1;
-        }
-
-        .info-banner p {
-            color: #64748b;
-            font-style: italic;
-            margin: 0;
-            font-size: 0.95rem;
-        }
-
-        .info-note {
-            background: #f1f5f9;
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 30px;
-            border-left: 4px solid #3b82f6;
-        }
-
-        .info-note h4 {
-            color: #1e293b;
-            margin-bottom: 10px;
-            font-size: 1.1rem;
-        }
-
-        .info-note ul {
-            margin: 0;
-            padding-left: 20px;
-            color: #475569;
-        }
-
-        .info-note li {
-            margin-bottom: 8px;
-            line-height: 1.5;
         }
 
         /* Loading */
@@ -454,35 +333,6 @@ function updateDetailsTable(data) {
             padding: 50px;
             font-size: 1.25rem;
             color: #64748b;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .chart-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .kpi-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            h1 {
-                font-size: 1.75rem;
-            }
-            
-            .tabs {
-                flex-direction: column;
-            }
-            
-            .tab {
-                width: 100%;
-                text-align: center;
-            }
-        }
-
-        /* Highlight rows above threshold */
-        .above-threshold {
-            background: #fef3c7 !important;
         }
 
         /* Progress bars */
@@ -501,34 +351,111 @@ function updateDetailsTable(data) {
             transition: width 1s ease;
         }
 
-        /* Tooltips */
-        .tooltip {
+        /* Export button */
+        .export-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            float: right;
+        }
+
+        .export-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Clickable factuur nummer styling */
+        .factuur-link {
+            color: #2563eb;
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 2px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .factuur-link:hover {
+            color: #1d4ed8;
+            text-decoration-style: solid;
+            text-decoration-thickness: 2px;
+        }
+
+        /* Modals */
+        .chart-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            padding: 40px;
+        }
+
+        .chart-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-modal-content {
+            background: white;
+            width: 90%;
+            height: 90%;
+            max-width: 1200px;
+            border-radius: 12px;
+            padding: 30px;
             position: relative;
-            display: inline-block;
-            cursor: help;
+            display: flex;
+            flex-direction: column;
         }
 
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 200px;
-            background-color: #1e293b;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 10px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -100px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.875rem;
+        .chart-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
+        .chart-modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .chart-modal-close {
+            background: #f1f5f9;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .chart-modal-close:hover {
+            background: #e2e8f0;
+        }
+
+        .chart-modal-body {
+            flex: 1;
+            position: relative;
+        }
+
+        .chart-modal canvas {
+            max-height: 100% !important;
         }
 
         /* Factuur Detail Modal */
@@ -671,41 +598,53 @@ function updateDetailsTable(data) {
             color: #991b1b;
         }
 
-        /* Clickable factuur nummer styling */
-        .factuur-link {
-            color: #2563eb;
-            cursor: pointer;
-            text-decoration: underline;
-            text-decoration-style: dotted;
-            text-underline-offset: 2px;
-            transition: all 0.2s ease;
-            font-weight: 500;
-        }
-
-        .factuur-link:hover {
-            color: #1d4ed8;
-            text-decoration-style: solid;
-            text-decoration-thickness: 2px;
-        }
-
-        /* Export button */
-        .export-btn {
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 10px 20px;
+        .info-note {
+            background: #f1f5f9;
+            padding: 20px;
             border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            float: right;
+            margin-top: 30px;
+            border-left: 4px solid #3b82f6;
         }
 
-        .export-btn:hover {
-            background: #059669;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        .info-note h4 {
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .info-note ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #475569;
+        }
+
+        .info-note li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.75rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                width: 100%;
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -742,10 +681,20 @@ function updateDetailsTable(data) {
                 
                 <div class="chart-grid">
                     <div class="chart-container">
+                        <button class="fullscreen-btn" onclick="openChartModal('topLeveranciersChart', 'Top 10 Grootste Kostenposten')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
                         <h3 class="chart-title">Top 10 Grootste Kostenposten</h3>
                         <canvas id="topLeveranciersChart"></canvas>
                     </div>
                     <div class="chart-container">
+                        <button class="fullscreen-btn" onclick="openChartModal('categorieChart', 'Verdeling per Categorie')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                            </svg>
+                        </button>
                         <h3 class="chart-title">Verdeling per Categorie</h3>
                         <canvas id="categorieChart"></canvas>
                     </div>
@@ -934,159 +883,6 @@ function updateDetailsTable(data) {
         let factuurData = [];
         let charts = {};
         let modalChart = null;
-
-        // Fullscreen functionaliteit
-        function openChartModal(chartId, title) {
-            const modal = document.getElementById('chartModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalCanvas = document.getElementById('modalChart');
-            const originalChart = charts[chartId.replace('Chart', '')];
-            
-            // Set title
-            modalTitle.textContent = title;
-            
-            // Clone chart configuration
-            const config = JSON.parse(JSON.stringify(originalChart.config));
-            
-            // Adjust for fullscreen
-            if (config.options) {
-                config.options.maintainAspectRatio = false;
-                config.options.responsive = true;
-            }
-            
-            // Destroy previous modal chart if exists
-            if (modalChart) {
-                modalChart.destroy();
-            }
-            
-            // Create new chart in modal
-            modalChart = new Chart(modalCanvas, config);
-            
-            // Show modal
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeChartModal() {
-            const modal = document.getElementById('chartModal');
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-            
-            if (modalChart) {
-                modalChart.destroy();
-                modalChart = null;
-            }
-        }
-
-        // Factuur detail modal functionaliteit
-        function openFactuurModal(factuurNummer) {
-            const factuur = factuurData.find(f => 
-                f.Factuur_Nummer && f.Factuur_Nummer.toString() === factuurNummer.toString()
-            );
-            
-            if (!factuur) return;
-            
-            const modalBody = document.getElementById('factuurModalBody');
-            const status = factuur.openstaand > 0 ? 'openstaand' : 'betaald';
-            const statusText = factuur.openstaand > 0 ? 'Openstaand' : 'Betaald';
-            
-            modalBody.innerHTML = `
-                <div class="factuur-detail-section">
-                    <h3 class="factuur-section-title">Factuur Informatie</h3>
-                    <div class="factuur-detail-row">
-                        <span class="factuur-detail-label">Factuurnummer</span>
-                        <span class="factuur-detail-value">${factuur.Factuur_Nummer}</span>
-                    </div>
-                    <div class="factuur-detail-row">
-                        <span class="factuur-detail-label">Intern Nummer</span>
-                        <span class="factuur-detail-value">${factuur.Nummer}</span>
-                    </div>
-                    <div class="factuur-detail-row">
-                        <span class="factuur-detail-label">Datum</span>
-                        <span class="factuur-detail-value">${factuur.Factuur_Datum}</span>
-                    </div>
-                    <div class="factuur-detail-row">
-                        <span class="factuur-detail-label">Boekingsdatum</span>
-                        <span class="factuur-detail-value">${factuur.Boeking}</span>
-                    </div>
-                </div>
-
-                <div class="factuur-detail-section">
-                    <h3 class="factuur-section-title">Leverancier Details</h3>
-                    <div class="factuur-detail-row">
-                        <span class="factuur-detail-label">Naam Leverancier</span>
-                        <span class="factuur-detail-value">${factuur.Leverancier}</span>
-                    </div>
-                    <div class="factuur-detail-row">
-                        <span class="factuur-detail-label">Categorie</span>
-                        <span class="factuur-detail-value">${factuur.categorie}</span>
-                    </div>
-                </div>
-
-                <div class="factuur-detail-section">
-                    <h3 class="factuur-section-title">Financiële Details</h3>
-                    <div class="factuur-detail-row">
-                        <span class="factuur-detail-label">Totaal Bedrag</span>
-                        <span class="factuur-detail-value large">${formatGetal(factuur.Totaal)}</span>
-                    </div>
-                    <div class="factuur-detail-row">
-                        <span class="factuur-detail-label">Reeds Betaald</span>
-                        <span class="factuur-detail-value">${formatGetal(factuur.Betaald)}</span>
-                    </div>
-                    ${factuur.openstaand > 0 ? `
-                    <div class="factuur-detail-row">
-                        <span class="factuur-detail-label">Nog Te Betalen</span>
-                        <span class="factuur-detail-value" style="color: #ef4444;">${formatGetal(factuur.openstaand)}</span>
-                    </div>
-                    ` : ''}
-                    <div class="factuur-detail-row">
-                        <span class="factuur-detail-label">Status</span>
-                        <span class="factuur-detail-value">
-                            <span class="factuur-status ${status}">${statusText}</span>
-                        </span>
-                    </div>
-                </div>
-
-                ${factuur.Laatst_Betaald_Op ? `
-                <div class="factuur-detail-section">
-                    <h3 class="factuur-section-title">Betalingsinformatie</h3>
-                    <div class="factuur-detail-row">
-                        <span class="factuur-detail-label">Laatste Betaling</span>
-                        <span class="factuur-detail-value">${factuur.Laatst_Betaald_Op}</span>
-                    </div>
-                    ${factuur.Limietdatum ? `
-                    <div class="factuur-detail-row">
-                        <span class="factuur-detail-label">Limietdatum</span>
-                        <span class="factuur-detail-value">${factuur.Limietdatum}</span>
-                    </div>
-                    ` : ''}
-                </div>
-                ` : ''}
-            `;
-            
-            document.getElementById('factuurModal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeFactuurModal() {
-            document.getElementById('factuurModal').classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        // ESC key om modals te sluiten
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeChartModal();
-                closeFactuurModal();
-            }
-        });
-
-        // Click outside to close factuur modal
-        document.getElementById('factuurModal').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) {
-                closeFactuurModal();
-            }
-        });
 
         // Categorieën mapping
         const categorieMapping = {
@@ -1520,6 +1316,8 @@ function updateDetailsTable(data) {
         }
 
         function createTables() {
+            const totaal = _.sumBy(factuurData, 'Totaal');
+            
             // Anomalie tabel
             const gemiddeld = _.meanBy(factuurData, 'Totaal');
             const stdDev = Math.sqrt(_.sumBy(factuurData, f => Math.pow(f.Totaal - gemiddeld, 2)) / factuurData.length);
@@ -1531,14 +1329,16 @@ function updateDetailsTable(data) {
                 .slice(0, 10);
 
             const anomalieTbody = document.querySelector('#anomalie-table tbody');
-            anomalieTbody.innerHTML = anomalieën.map(f => `
-                <tr>
-                    <td>${f.Leverancier}</td>
-                    <td>${formatGetal(f.Totaal)}</td>
-                    <td>${f.Factuur_Datum}</td>
-                    <td>${f.openstaand > 0 ? 'Openstaand' : 'Betaald'}</td>
-                </tr>
-            `).join('');
+            if (anomalieTbody) {
+                anomalieTbody.innerHTML = anomalieën.map(f => `
+                    <tr>
+                        <td>${f.Leverancier}</td>
+                        <td>${formatGetal(f.Totaal)}</td>
+                        <td>${f.Factuur_Datum}</td>
+                        <td>${f.openstaand > 0 ? 'Openstaand' : 'Betaald'}</td>
+                    </tr>
+                `).join('');
+            }
 
             // Leveranciers tabel met drill-down
             const leveranciersGroep = _.groupBy(factuurData, 'Leverancier');
@@ -1554,61 +1354,67 @@ function updateDetailsTable(data) {
                 }))
                 .sort((a, b) => b.totaal - a.totaal);
 
-            const totaal = _.sumBy(factuurData, 'Totaal');
             const leveranciersTbody = document.querySelector('#leveranciers-table tbody');
-            
-            leveranciersData.forEach((lev, index) => {
-                const mainRow = document.createElement('tr');
-                mainRow.className = 'expandable';
-                mainRow.innerHTML = `
-                    <td>
-                        <span class="expand-icon">▶</span>
-                        ${lev.leverancier}
-                    </td>
-                    <td>${lev.aantal}</td>
-                    <td>${formatGetal(lev.totaal)}</td>
-                    <td>${formatGetal(lev.gemiddeld)}</td>
-                    <td>
-                        ${((lev.totaal / totaal) * 100).toFixed(1)}%
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${(lev.totaal / totaal) * 100}%"></div>
-                        </div>
-                    </td>
-                    <td>${lev.openstaand > 0 ? formatGetal(lev.openstaand) : '-'}</td>
-                `;
+            if (leveranciersTbody) {
+                leveranciersTbody.innerHTML = ''; // Clear existing
                 
-                mainRow.addEventListener('click', function() {
-                    const icon = this.querySelector('.expand-icon');
-                    icon.classList.toggle('expanded');
-                    
-                    // Toggle sub-rows
-                    let nextRow = this.nextElementSibling;
-                    while (nextRow && nextRow.classList.contains('sub-row')) {
-                        nextRow.style.display = nextRow.style.display === 'none' ? '' : 'none';
-                        nextRow = nextRow.nextElementSibling;
-                    }
-                });
-                
-                leveranciersTbody.appendChild(mainRow);
-                
-                // Add sub-rows (initially hidden)
-                lev.facturen.forEach(f => {
-                    const subRow = document.createElement('tr');
-                    subRow.className = 'sub-row';
-                    subRow.style.display = 'none';
-                    subRow.innerHTML = `
-                        <td>${f.Factuur_Nummer}</td>
-                        <td>${f.Factuur_Datum}</td>
-                        <td>${formatGetal(f.Totaal)}</td>
-                        <td>-</td>
-                        <td>-</td>
-                    <td>${f.openstaand > 0 ? formatGetal(f.openstaand) : '✓'}</td>
+                leveranciersData.forEach((lev) => {
+                    // Create main row
+                    const mainRow = document.createElement('tr');
+                    mainRow.className = 'expandable';
+                    mainRow.innerHTML = `
+                        <td>
+                            <span class="expand-icon">▶</span>
+                            ${lev.leverancier}
+                        </td>
+                        <td>${lev.aantal}</td>
+                        <td>${formatGetal(lev.totaal)}</td>
+                        <td>${formatGetal(lev.gemiddeld)}</td>
+                        <td>
+                            ${((lev.totaal / totaal) * 100).toFixed(1)}%
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${(lev.totaal / totaal) * 100}%"></div>
+                            </div>
+                        </td>
+                        <td>${lev.openstaand > 0 ? formatGetal(lev.openstaand) : '-'}</td>
                     `;
-                    leveranciersTbody.appendChild(subRow);
+                    
+                    leveranciersTbody.appendChild(mainRow);
+                    
+                    // Add click handler
+                    mainRow.addEventListener('click', function() {
+                        const icon = this.querySelector('.expand-icon');
+                        icon.classList.toggle('expanded');
+                        icon.textContent = icon.classList.contains('expanded') ? '▼' : '▶';
+                        
+                        // Toggle sub-rows
+                        let nextRow = this.nextElementSibling;
+                        while (nextRow && nextRow.classList.contains('sub-row')) {
+                            nextRow.style.display = nextRow.style.display === 'none' ? '' : 'none';
+                            nextRow = nextRow.nextElementSibling;
+                        }
+                    });
+                    
+                    // Add sub-rows (initially hidden)
+                    lev.facturen.forEach(f => {
+                        const subRow = document.createElement('tr');
+                        subRow.className = 'sub-row';
+                        subRow.style.display = 'none';
+                        subRow.innerHTML = `
+                            <td><span class="factuur-link" onclick="openFactuurModal('${f.Factuur_Nummer}')">${f.Factuur_Nummer}</span></td>
+                            <td>${f.Factuur_Datum}</td>
+                            <td>${formatGetal(f.Totaal)}</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>${f.openstaand > 0 ? formatGetal(f.openstaand) : '✓'}</td>
+                        `;
+                        leveranciersTbody.appendChild(subRow);
+                    });
                 });
-            });
+            }
 
             // Categorie tabel
+            const categorieGroep = _.groupBy(factuurData, 'categorie');
             const categorieTableData = Object.entries(categorieGroep)
                 .map(([cat, facturen]) => ({
                     categorie: cat,
@@ -1619,32 +1425,32 @@ function updateDetailsTable(data) {
                 .sort((a, b) => b.totaal - a.totaal);
 
             const categorieTbody = document.querySelector('#categorie-table tbody');
-            categorieTbody.innerHTML = categorieTableData.map(cat => {
-                const percentage = ((cat.totaal / totaal) * 100).toFixed(1);
-                return `
-                    <tr>
-                        <td>${cat.categorie}</td>
-                        <td>${cat.aantal}</td>
-                        <td>${formatGetal(cat.totaal)}</td>
-                        <td>${formatGetal(cat.gemiddeld)}</td>
-                        <td>
-                            ${percentage}%
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${percentage}%"></div>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
+            if (categorieTbody) {
+                categorieTbody.innerHTML = categorieTableData.map(cat => {
+                    const percentage = ((cat.totaal / totaal) * 100).toFixed(1);
+                    return `
+                        <tr>
+                            <td>${cat.categorie}</td>
+                            <td>${cat.aantal}</td>
+                            <td>${formatGetal(cat.totaal)}</td>
+                            <td>${formatGetal(cat.gemiddeld)}</td>
+                            <td>
+                                ${percentage}%
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${percentage}%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
 
             // Details tabel
             updateDetailsTable(factuurData);
-            
-            // Maak factuurnummers klikbaar na het laden van tabellen
-            setTimeout(makeFactuurLinksClickable, 100);
         }
 
         function updateDetailsTable(data) {
+            console.log('UpdateDetailsTable called with', data.length, 'records');
             const tbody = document.querySelector('#details-table tbody');
             if (!tbody) {
                 console.error('Details table tbody not found');
@@ -1681,6 +1487,165 @@ function updateDetailsTable(data) {
                 updateDetailsTable(filtered);
             });
         }
+
+        // Fullscreen functionaliteit
+        function openChartModal(chartId, title) {
+            const modal = document.getElementById('chartModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalCanvas = document.getElementById('modalChart');
+            const originalChart = charts[chartId.replace('Chart', '')];
+            
+            // Set title
+            modalTitle.textContent = title;
+            
+            // Clone chart configuration
+            const config = JSON.parse(JSON.stringify(originalChart.config));
+            
+            // Adjust for fullscreen
+            if (config.options) {
+                config.options.maintainAspectRatio = false;
+                config.options.responsive = true;
+            }
+            
+            // Destroy previous modal chart if exists
+            if (modalChart) {
+                modalChart.destroy();
+            }
+            
+            // Create new chart in modal
+            modalChart = new Chart(modalCanvas, config);
+            
+            // Show modal
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeChartModal() {
+            const modal = document.getElementById('chartModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            
+            if (modalChart) {
+                modalChart.destroy();
+                modalChart = null;
+            }
+        }
+
+        // Factuur detail modal functionaliteit
+        function openFactuurModal(factuurNummer) {
+            const factuur = factuurData.find(f => 
+                f.Factuur_Nummer && f.Factuur_Nummer.toString() === factuurNummer.toString()
+            );
+            
+            if (!factuur) return;
+            
+            const modalBody = document.getElementById('factuurModalBody');
+            const status = factuur.openstaand > 0 ? 'openstaand' : 'betaald';
+            const statusText = factuur.openstaand > 0 ? 'Openstaand' : 'Betaald';
+            
+            modalBody.innerHTML = `
+                <div class="factuur-detail-section">
+                    <h3 class="factuur-section-title">Factuur Informatie</h3>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Factuurnummer</span>
+                        <span class="factuur-detail-value">${factuur.Factuur_Nummer}</span>
+                    </div>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Intern Nummer</span>
+                        <span class="factuur-detail-value">${factuur.Nummer}</span>
+                    </div>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Datum</span>
+                        <span class="factuur-detail-value">${factuur.Factuur_Datum}</span>
+                    </div>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Boekingsdatum</span>
+                        <span class="factuur-detail-value">${factuur.Boeking}</span>
+                    </div>
+                </div>
+
+                <div class="factuur-detail-section">
+                    <h3 class="factuur-section-title">Leverancier Details</h3>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Naam Leverancier</span>
+                        <span class="factuur-detail-value">${factuur.Leverancier}</span>
+                    </div>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Categorie</span>
+                        <span class="factuur-detail-value">${factuur.categorie}</span>
+                    </div>
+                </div>
+
+                <div class="factuur-detail-section">
+                    <h3 class="factuur-section-title">Financiële Details</h3>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Totaal Bedrag</span>
+                        <span class="factuur-detail-value large">${formatGetal(factuur.Totaal)}</span>
+                    </div>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Reeds Betaald</span>
+                        <span class="factuur-detail-value">${formatGetal(factuur.Betaald)}</span>
+                    </div>
+                    ${factuur.openstaand > 0 ? `
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Nog Te Betalen</span>
+                        <span class="factuur-detail-value" style="color: #ef4444;">${formatGetal(factuur.openstaand)}</span>
+                    </div>
+                    ` : ''}
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Status</span>
+                        <span class="factuur-detail-value">
+                            <span class="factuur-status ${status}">${statusText}</span>
+                        </span>
+                    </div>
+                </div>
+
+                ${factuur.Laatst_Betaald_Op ? `
+                <div class="factuur-detail-section">
+                    <h3 class="factuur-section-title">Betalingsinformatie</h3>
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Laatste Betaling</span>
+                        <span class="factuur-detail-value">${factuur.Laatst_Betaald_Op}</span>
+                    </div>
+                    ${factuur.Limietdatum ? `
+                    <div class="factuur-detail-row">
+                        <span class="factuur-detail-label">Limietdatum</span>
+                        <span class="factuur-detail-value">${factuur.Limietdatum}</span>
+                    </div>
+                    ` : ''}
+                </div>
+                ` : ''}
+            `;
+            
+            document.getElementById('factuurModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFactuurModal() {
+            document.getElementById('factuurModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // ESC key om modals te sluiten
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeChartModal();
+                closeFactuurModal();
+            }
+        });
+
+        // Click outside to close modals
+        document.getElementById('chartModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closeChartModal();
+            }
+        });
+
+        document.getElementById('factuurModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closeFactuurModal();
+            }
+        });
 
         function exportToExcel() {
             // Prepare data for Excel export
