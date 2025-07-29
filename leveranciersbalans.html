@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leveranciersbalans - Residentie HELIX</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            opacity: 0.9;
+            margin-top: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* Info banner */
+        .explanation-banner {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 12px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .explanation-banner-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .explanation-banner p {
+            color: #166534;
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: #475569;
+        }
+
+        .tab:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        .tab.active {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #10b981;
+        }
+
+        .kpi-card.warning::before {
+            background: #f59e0b;
+        }
+
+        .kpi-card.success::before {
+            background: #10b981;
+        }
+
+        .kpi-card.danger::before {
+            background: #ef4444;
+        }
+
+        .kpi-card.info::before {
+            background: #3b82f6;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .kpi-label {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .kpi-subtext {
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        /* Charts Section */
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .chart-container.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1e293b;
+            padding-right: 40px;
+        }
+
+        /* Tables */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .table-header {
+            padding: 20px 25px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f1f5f9;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        /* Status badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-openstaand {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-tegoed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-ok {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        /* Progress bars */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #10b981;
+            transition: width 1s ease;
+        }
+
+        .progress-fill.warning {
+            background: #f59e0b;
+        }
+
+        .progress-fill.danger {
+            background: #ef4444;
+        }
+
+        /* Info note */
+        .info-note {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border-left: 4px solid #10b981;
+        }
+
+        .info-note h4 {
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .info-note ul {
+            margin: 0;
+            padding-left: 20px;
+            color: #475569;
+        }
+
+        .info-note li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        /* Search */
+        .search-container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #10b981;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.25rem;
+            color: #64748b;
+        }
+
+        /* Risk indicator */
+        .risk-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .risk-high {
+            background: #ef4444;
+        }
+
+        .risk-medium {
+            background: #f59e0b;
+        }
+
+        .risk-low {
+            background: #10b981;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.75rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Leveranciersbalans</h1>
+            <p class="subtitle">Wie betalen we, hoeveel en waarom? Een transparant overzicht</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="explanation-banner">
+            <div class="explanation-banner-icon">💡</div>
+            <p>Dit dashboard toont alle leveranciers waar we mee werken. Je ziet direct wie nog geld krijgt (openstaand) en waar we eventueel teveel betaald hebben (tegoed).</p>
+        </div>
+        
+        <div id="loading" class="loading">Dashboard wordt geladen...</div>
+        <div id="dashboard" style="display: none;">
+            <!-- Alert voor belangrijke openstaande bedragen -->
+            <div id="alert-container"></div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('overzicht')">Overzicht</button>
+                <button class="tab" onclick="showTab('openstaand')">Openstaande Bedragen</button>
+                <button class="tab" onclick="showTab('categorien')">Per Categorie</button>
+                <button class="tab" onclick="showTab('risico')">Risico Analyse</button>
+                <button class="tab" onclick="showTab('details')">Alle Leveranciers</button>
+            </div>
+
+            <!-- Tab: Overzicht -->
+            <div id="tab-overzicht" class="tab-content">
+                <div class="kpi-grid" id="kpi-grid"></div>
+                
+                <div class="chart-grid">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Top 10 Openstaande Leveranciers</h3>
+                        <canvas id="openstaandChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="chart-title">Verdeling per Categorie</h3>
+                        <canvas id="categorieChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container full-width">
+                    <h3 class="chart-title">Balans per Categorie</h3>
+                    <canvas id="balansChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Tab: Openstaand -->
+            <div id="tab-openstaand" class="tab-content" style="display: none;">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">Leveranciers met Openstaande Bedragen</h3>
+                        <span id="totaal-openstaand"></span>
+                    </div>
+                    <table id="openstaand-table">
+                        <thead>
+                            <tr>
+                                <th>Leverancier</th>
+                                <th>Categorie</th>
+                                <th>Totaal Gefactureerd</th>
+                                <th>Openstaand Bedrag</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">Leveranciers met Tegoed</h3>
+                    </div>
+                    <table id="tegoed-table">
+                        <thead>
+                            <tr>
+                                <th>Leverancier</th>
+                                <th>Categorie</th>
+                                <th>Tegoed Bedrag</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Categorieën -->
+            <div id="tab-categorien" class="tab-content" style="display: none;">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">Overzicht per Categorie</h3>
+                    </div>
+                    <table id="categorie-table">
+                        <thead>
+                            <tr>
+                                <th>Categorie</th>
+                                <th>Aantal Leveranciers</th>
+                                <th>Totaal Omzet</th>
+                                <th>Openstaand</th>
+                                <th>% van Totaal</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="chart-container full-width">
+                    <h3 class="chart-title">Top 5 Leveranciers per Categorie</h3>
+                    <canvas id="topPerCategorieChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Tab: Risico -->
+            <div id="tab-risico" class="tab-content" style="display: none;">
+                <div class="chart-grid">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Risico Matrix</h3>
+                        <canvas id="risicoChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="chart-title">Concentratie Risico</h3>
+                        <canvas id="concentratieChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">Hoogste Risico Leveranciers</h3>
+                    </div>
+                    <table id="risico-table">
+                        <thead>
+                            <tr>
+                                <th>Risico</th>
+                                <th>Leverancier</th>
+                                <th>Openstaand</th>
+                                <th>% van Totaal Openstaand</th>
+                                <th>Actiepunt</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Details -->
+            <div id="tab-details" class="tab-content" style="display: none;">
+                <div class="search-container">
+                    <input type="text" class="search-input" id="search-input" 
+                           placeholder="🔍 Zoek op leverancier, categorie of bedrag...">
+                </div>
+                
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">Alle Leveranciers</h3>
+                    </div>
+                    <table id="details-table">
+                        <thead>
+                            <tr>
+                                <th>Leverancier</th>
+                                <th>Categorie</th>
+                                <th>Debet</th>
+                                <th>Credit</th>
+                                <th>Saldo</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Informatie nota -->
+            <div class="info-note">
+                <h4>Leeswijzer:</h4>
+                <ul>
+                    <li><strong>Openstaand bedrag:</strong> Dit moeten we nog betalen aan de leverancier</li>
+                    <li><strong>Tegoed:</strong> We hebben teveel betaald of een voorschot gegeven</li>
+                    <li><strong>Debet/Credit:</strong> Boekhoudkundige termen voor wat we verschuldigd zijn (debet) en wat gefactureerd is (credit)</li>
+                    <li>Een gezonde balans heeft zo min mogelijk grote openstaande bedragen</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Leveranciers data (uit de PDF)
+        const leveranciersDataRaw = `Leverancier,Debet,Credit,Saldo_DB,Saldo_CR
+A MODE,358.48,358.48,0,0
+Aaron Dehottay A-P-M CLAEN,1815.00,1815.00,0,0
+AB CLAENING,10537.24,10537.24,0,0
+ACA KEURING,1461.08,1461.08,0,0
+ADVOCATENKANTOOR EQUATOR - ADVOCAAT CARETTE,2075.95,2075.95,0,0
+ANSUL,1737.80,1737.80,0,0
+A-P-M-CLAEN,8076.75,8076.75,0,0
+AVA Papierwaren,120.80,120.80,0,0
+AXA - verzekeringen,2268.28,2268.28,0,0
+B T C BELGIAN TRANSLATION CENTER,211.75,211.75,0,0
+BRANDEBEVEILIGINGSCHOP,497.56,497.56,0,0
+BRENNTAG,1080.38,1080.38,0,0
+BRICO,288.13,288.13,0,0
+BTC BELGIAN TRANSLATION CENTRE,4881.14,4881.14,0,0
+Casselman,145.20,145.20,0,0
+Certi- Check,4054.99,4054.99,0,0
+Colorpoint,1771.90,1771.90,0,0
+DAKWERKEN LEFEVRE Danny,8574.97,8574.97,0,0
+DE LIFT,8814.57,14110.96,0,5296.39
+DECATHLON,48.00,48.00,0,0
+DEFEVER,856.15,856.15,0,0
+DEPOORTER-DEJAEGHERE,1743.20,1743.20,0,0
+DIGITAV,2904.00,2904.00,0,0
+DOCHY & ZONEN ( glashandel ),2731.22,2731.22,0,0
+DRUKKERIJ DUMON PRINT,153.19,153.19,0,0
+DVV CLAENING,608.03,608.03,0,0
+ELEKTRO POWER,8511.08,10159.54,0,1648.46
+EQUANS,51335.85,50727.82,608.03,0
+EURO SCHOP,300.40,300.40,0,0
+EVER CLEAN.,848.94,848.94,0,0
+EVERCLEAN4U,572.34,572.34,0,0
+FARYS,37751.34,37751.34,0,0
+FLORALUX,389.57,389.57,0,0
+Franne Nagels,220.00,220.00,0,0
+GASTRO SERVICE,1675.85,1675.85,0,0
+GEMEENTE CONTAINERPARK,16.00,16.00,0,0
+GEMEENTE MIDDELKERKE,3300.00,5800.00,0,2500.00
+GROEP S,19118.39,21857.90,0,2739.51
+Houthandel Tavernier,276.85,276.85,0,0
+HUURLAND,350.00,350.00,0,0
+IMMO BEACH - drukwerk,6789.09,9210.86,0,2421.77
+IMMO BEACH - ereloon beheer,137702.07,168245.85,0,30543.78
+IMMO BEACH - schoonmaak,1575.00,1575.00,0,0
+IMMO BEACH - telefoon,2270.86,2843.01,0,572.15
+Karchter nv,6644.17,6644.17,0,0
+KLEINE UITGAVEN,16207.60,17525.60,0,1318.00
+Kraanwerken Vandaele VOF,240.29,240.29,0,0
+LEFEVRE LIEVEN,2899.65,3584.94,0,685.29
+LUMINUS,4016.00,4016.00,0,0
+LUMINUS - ALG DELEN,18669.44,18669.44,0,0
+LUMINUS - CONCIERGERIE,3539.78,3539.78,0,0
+LUMINUS - D.VERL.,9996.04,9996.04,0,0
+LUMINUS - ELEC PRIVATIEF,25847.59,25847.59,0,0
+LUMINUS - GAS,76972.36,83718.82,0,6746.46
+LUMINUS - LIFT 1,1616.44,1616.44,0,0
+LUMINUS - LIFT 2,2095.02,2095.02,0,0
+LUMINUS - LIFT 3,1485.16,1485.16,0,0
+MENSURA,236.52,301.83,0,65.31
+NOTAS,3025.00,3025.00,0,0
+Odrada meubelen,654.00,654.00,0,0
+POST,663.29,1224.45,0,561.16
+PRIMA Woonidee,3614.00,3614.00,0,0
+SARRAZIJN,561.80,561.80,0,0
+SCHOONMAAK/PRIVATE WERKEN,2215.00,2215.00,0,0
+Seacom .be,2720.08,4123.08,0,1403.00
+STEYAERT Geert,1087.56,1087.56,0,0
+STOCKARTIKELEN,287.86,287.86,0,0
+TECHEM Caloribel,9162.14,9162.14,0,0
+TELENET,12290.70,12290.70,0,0
+VANSTEEN BV,822.80,822.80,0,0
+VEOLIA,11335.42,12229.66,0,894.24
+Vercon Construct,3049.62,3049.62,0,0
+VINCOTTE BELGIUM,1213.45,1213.45,0,0
+VIVIUM,29734.10,29661.60,72.50,0
+Weemaes,1905.00,1905.00,0,0
+WEST COAST INVESTMENTS,7112.55,14043.56,0,6931.01
+ZEHNDER GROUP BELGIUM,151.00,151.00,0,0`;
+
+        let leveranciersData = [];
+        let charts = {};
+
+        // Helper functies
+        function formatGetal(num) {
+            return new Intl.NumberFormat('nl-BE', { 
+                style: 'currency', 
+                currency: 'EUR' 
+            }).format(num);
+        }
+
+        function bepaalCategorie(leverancier) {
+            const naam = leverancier.toUpperCase();
+            
+            if (naam.includes('IMMO BEACH')) return 'Beheerder';
+            else if (naam.includes('LUMINUS') || naam.includes('FARYS')) return 'Nutsvoorzieningen';
+            else if (naam.includes('TELENET') || naam.includes('SEACOM')) return 'Telecom';
+            else if (naam.includes('CLAENING') || naam.includes('CLEAN') || naam.includes('SCHOONMAAK')) return 'Schoonmaak';
+            else if (naam.includes('LIFT') || naam.includes('EQUANS') || naam.includes('ELEKTRO')) return 'Technisch Onderhoud';
+            else if (naam.includes('VERZEKERING') || naam.includes('AXA') || naam.includes('VIVIUM')) return 'Verzekeringen';
+            else if (naam.includes('GEMEENTE')) return 'Gemeente';
+            else if (naam.includes('GROEP S')) return 'Sociale Secretariaat';
+            else if (naam.includes('DAKWERK') || naam.includes('CONSTRUCT')) return 'Werken & Renovatie';
+            else if (naam.includes('VEOLIA') || naam.includes('TECHEM')) return 'Afval & Meterstanden';
+            else if (naam.includes('VINCOTTE') || naam.includes('KEURING') || naam.includes('CERTI')) return 'Keuringen & Controles';
+            else if (naam.includes('ADVOCAAT') || naam.includes('NOTAS')) return 'Juridisch';
+            else if (naam.includes('KLEINE UITGAVEN') || naam.includes('STOCKARTIKELEN')) return 'Algemene Kosten';
+            
+            return 'Overige';
+        }
+
+        function bepaalRisico(leverancier) {
+            const openstaand = leverancier.nettoSaldo;
+            const totaalOmzet = leverancier.Credit;
+            
+            if (openstaand > 10000) return 'hoog';
+            else if (openstaand > 5000) return 'medium';
+            else if (openstaand > 1000) return 'laag';
+            return 'geen';
+        }
+
+        // Parse CSV data
+        function parseData() {
+            const lines = leveranciersDataRaw.trim().split('\n');
+            const headers = lines[0].split(',');
+            
+            leveranciersData = lines.slice(1).map(line => {
+                const values = line.split(',');
+                const debet = parseFloat(values[1]) || 0;
+                const credit = parseFloat(values[2]) || 0;
+                const saldoDB = parseFloat(values[3]) || 0;
+                const saldoCR = parseFloat(values[4]) || 0;
+                
+                const nettoSaldo = saldoCR - saldoDB;
+                
+                return {
+                    Leverancier: values[0],
+                    Debet: debet,
+                    Credit: credit,
+                    Saldo_DB: saldoDB,
+                    Saldo_CR: saldoCR,
+                    nettoSaldo: nettoSaldo,
+                    categorie: bepaalCategorie(values[0]),
+                    isOpenstaand: nettoSaldo > 0,
+                    isTegoed: nettoSaldo < 0,
+                    risico: bepaalRisico({ nettoSaldo, Credit: credit })
+                };
+            });
+        }
+
+        // Tab switching
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
+            event.target.classList.add('active');
+        }
+
+        // Initialize dashboard
+        function initDashboard() {
+            parseData();
+            createKPIs();
+            createAlerts();
+            createCharts();
+            createTables();
+            setupSearch();
+            
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+
+        function createKPIs() {
+            const totaalCredit = _.sumBy(leveranciersData, 'Credit');
+            const totaalOpenstaand = _.sumBy(leveranciersData.filter(l => l.isOpenstaand), 'nettoSaldo');
+            const totaalTegoed = Math.abs(_.sumBy(leveranciersData.filter(l => l.isTegoed), 'nettoSaldo'));
+            const aantalOpenstaand = leveranciersData.filter(l => l.isOpenstaand).length;
+            
+            const kpis = [
+                {
+                    label: 'Totaal Gefactureerd',
+                    value: formatGetal(totaalCredit),
+                    subtext: `${leveranciersData.length} leveranciers`,
+                    class: 'info'
+                },
+                {
+                    label: 'Nog Te Betalen',
+                    value: formatGetal(totaalOpenstaand),
+                    subtext: `${aantalOpenstaand} leveranciers wachten op betaling`,
+                    class: totaalOpenstaand > 50000 ? 'danger' : 'warning'
+                },
+                {
+                    label: 'Ons Tegoed',
+                    value: formatGetal(totaalTegoed),
+                    subtext: `Bij ${leveranciersData.filter(l => l.isTegoed).length} leveranciers`,
+                    class: 'success'
+                },
+                {
+                    label: 'Netto Balans',
+                    value: formatGetal(totaalOpenstaand - totaalTegoed),
+                    subtext: 'Te betalen min tegoed',
+                    class: ''
+                }
+            ];
+
+            const grid = document.getElementById('kpi-grid');
+            grid.innerHTML = kpis.map(kpi => `
+                <div class="kpi-card ${kpi.class}">
+                    <div class="kpi-label">${kpi.label}</div>
+                    <div class="kpi-value">${kpi.value}</div>
+                    <div class="kpi-subtext">${kpi.subtext}</div>
+                </div>
+            `).join('');
+        }
+
+        function createAlerts() {
+            const totaalOpenstaand = _.sumBy(leveranciersData.filter(l => l.isOpenstaand), 'nettoSaldo');
+            const grootsteOpenstaand = _.maxBy(leveranciersData.filter(l => l.isOpenstaand), 'nettoSaldo');
+            const alertContainer = document.getElementById('alert-container');
+            
+            if (totaalOpenstaand > 50000) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-warning">
+                        <span>⚠️</span>
+                        <span><strong>Aandacht vereist:</strong> Er staat momenteel ${formatGetal(totaalOpenstaand)} open. 
+                        Het grootste bedrag is voor ${grootsteOpenstaand.Leverancier} (${formatGetal(grootsteOpenstaand.nettoSaldo)}). 
+                        Controleer of deze facturen correct zijn en plan de betalingen.</span>
+                    </div>
+                `;
+            } else if (totaalOpenstaand > 30000) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-info">
+                        <span>ℹ️</span>
+                        <span>Er staat ${formatGetal(totaalOpenstaand)} aan facturen open. Dit is binnen normale grenzen.</span>
+                    </div>
+                `;
+            }
+        }
+
+        function createCharts() {
+            // Top openstaande leveranciers
+            const openstaandeLeveranciers = leveranciersData
+                .filter(l => l.isOpenstaand)
+                .sort((a, b) => b.nettoSaldo - a.nettoSaldo)
+                .slice(0, 10);
+
+            const ctx1 = document.getElementById('openstaandChart').getContext('2d');
+            charts.openstaand = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: openstaandeLeveranciers.map(l => l.Leverancier),
+                    datasets: [{
+                        label: 'Openstaand bedrag',
+                        data: openstaandeLeveranciers.map(l => l.nettoSaldo),
+                        backgroundColor: '#ef4444',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => formatGetal(context.parsed.x)
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => formatGetal(value)
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Verdeling per categorie
+            const categorieGroep = _.groupBy(leveranciersData, 'categorie');
+            const categorieData = Object.entries(categorieGroep)
+                .map(([cat, items]) => ({
+                    categorie: cat,
+                    totaal: _.sumBy(items, 'Credit')
+                }))
+                .sort((a, b) => b.totaal - a.totaal);
+
+            const ctx2 = document.getElementById('categorieChart').getContext('2d');
+            charts.categorie = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: categorieData.map(c => c.categorie),
+                    datasets: [{
+                        data: categorieData.map(c => c.totaal),
+                        backgroundColor: [
+                            '#10b981', '#3b82f6', '#f59e0b', '#ef4444',
+                            '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16',
+                            '#f97316', '#64748b', '#0ea5e9', '#a855f7'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'right' },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = formatGetal(context.parsed);
+                                    const totaal = _.sumBy(leveranciersData, 'Credit');
+                                    const percentage = ((context.parsed / totaal) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Balans per categorie
+            const balansData = Object.entries(categorieGroep).map(([cat, items]) => ({
+                categorie: cat,
+                openstaand: _.sumBy(items.filter(i => i.isOpenstaand), 'nettoSaldo'),
+                tegoed: Math.abs(_.sumBy(items.filter(i => i.isTegoed), 'nettoSaldo'))
+            })).filter(c => c.openstaand > 0 || c.tegoed > 0);
+
+            const ctx3 = document.getElementById('balansChart').getContext('2d');
+            charts.balans = new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: balansData.map(b => b.categorie),
+                    datasets: [
+                        {
+                            label: 'Openstaand',
+                            data: balansData.map(b => b.openstaand),
+                            backgroundColor: '#ef4444'
+                        },
+                        {
+                            label: 'Tegoed',
+                            data: balansData.map(b => b.tegoed),
+                            backgroundColor: '#10b981'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => formatGetal(value)
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `${context.dataset.label}: ${formatGetal(context.parsed.y)}`
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Risico chart
+            const risicoData = leveranciersData
+                .filter(l => l.isOpenstaand && l.nettoSaldo > 1000)
+                .map(l => ({
+                    x: l.Credit,
+                    y: l.nettoSaldo,
+                    label: l.Leverancier
+                }));
+
+            const ctx4 = document.getElementById('risicoChart');
+            if (ctx4) {
+                charts.risico = new Chart(ctx4.getContext('2d'), {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'Leveranciers',
+                            data: risicoData,
+                            backgroundColor: (context) => {
+                                const value = context.parsed.y;
+                                if (value > 10000) return '#ef4444';
+                                if (value > 5000) return '#f59e0b';
+                                return '#10b981';
+                            },
+                            pointRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => {
+                                        const point = risicoData[context.dataIndex];
+                                        return [
+                                            point.label,
+                                            `Omzet: ${formatGetal(context.parsed.x)}`,
+                                            `Openstaand: ${formatGetal(context.parsed.y)}`
+                                        ];
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
