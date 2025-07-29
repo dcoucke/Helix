@@ -469,6 +469,30 @@
             display: block;
         }
 
+        /* Download section - subtle */
+        .source-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .source-link {
+            color: #64748b;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 2px;
+            transition: color 0.2s ease;
+        }
+
+        .source-link:hover {
+            color: #475569;
+            text-decoration-style: solid;
+        }
+
         @media (max-width: 768px) {
             .chart-grid {
                 grid-template-columns: 1fr;
@@ -584,6 +608,13 @@
                     <li><strong>Saldo CR (rood):</strong> Dit bedrag moeten we nog betalen</li>
                     <li><strong>Saldo DB (groen):</strong> We hebben een tegoed bij deze leverancier</li>
                 </ul>
+            </div>
+
+            <!-- Bronvermelding -->
+            <div class="source-section">
+                <strong>Bron:</strong> Dit dashboard is een visualisatie van de officiële 
+                <a href="Leveranciersbalans.pdf" class="source-link">leveranciersbalans van 14/07/2025</a> 
+                (periode: 15/03/2024 - 14/03/2025). De cijfers zijn rechtstreeks overgenomen uit het boekhoudkundig document.
             </div>
         </div>
     </div>
@@ -809,7 +840,7 @@
                     categorieData[l.categorie] += l.credit;
                 });
 
-                const sortedCategories = Object.entries(categorieData)
+                const sortedCategoriesChart = Object.entries(categorieData)
                     .sort((a, b) => b[1] - a[1])
                     .slice(0, 8);
 
@@ -817,9 +848,9 @@
                 charts.categorie = new Chart(ctx2, {
                     type: 'doughnut',
                     data: {
-                        labels: sortedCategories.map(c => c[0]),
+                        labels: sortedCategoriesChart.map(c => c[0]),
                         datasets: [{
-                            data: sortedCategories.map(c => c[1]),
+                            data: sortedCategoriesChart.map(c => c[1]),
                             backgroundColor: [
                                 '#10b981', '#3b82f6', '#f59e0b', '#ef4444',
                                 '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
