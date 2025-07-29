@@ -46,29 +46,32 @@
             font-size: 1.1rem;
         }
 
-        /* Info banner - consistent met andere pagina's */
+        /* Info banner - neutral professional style */
         .explanation-banner {
-            background: #f0f9ff;
-            border: 1px solid #bae6fd;
-            border-radius: 12px;
-            padding: 20px 30px;
-            margin-bottom: 30px;
+            background: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px 24px;
+            margin-bottom: 24px;
             display: flex;
-            align-items: center;
-            gap: 15px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            align-items: flex-start;
+            gap: 12px;
+            box-shadow: none;
         }
 
         .explanation-banner-icon {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             flex-shrink: 0;
+            margin-top: 2px;
+            opacity: 0.6;
         }
 
         .explanation-banner p {
-            color: #0369a1;
+            color: #666666;
             margin: 0;
-            font-size: 0.95rem;
+            font-size: 0.875rem;
             line-height: 1.5;
+            font-style: normal;
         }
 
         /* Meeting info */
@@ -277,6 +280,28 @@
             font-size: 1.25rem;
             color: #1e293b;
             font-weight: 700;
+        }
+
+        /* Download link styling */
+        .download-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.95rem;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .download-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+            text-decoration: none;
+            color: white;
         }
 
         /* Tables */
@@ -730,22 +755,26 @@
 <body>
     <header>
         <div class="container">
-            <h1>Financieel Dashboard</h1>
-            <p class="subtitle">Residentie HELIX - Volledig Overzicht Dienstjaar 2024/2025</p>
-            <p class="subtitle">Zeedijk 286, B-8430 Middelkerke</p>
+            <h1>Boekhouding</h1>
+            <p class="subtitle">Visualisatie van het verslag van de syndicus</p>
         </div>
     </header>
 
     <div class="container">
         <div class="explanation-banner">
             <div class="explanation-banner-icon">ℹ️</div>
-            <p>Dit dashboard geeft een volledig overzicht van alle inkomsten, uitgaven en de huidige financiële status van de residentie</p>
+            <div>
+                <p style="margin-bottom: 8px;">Dit dashboard is een visuele weergave van het officiële boekhoudkundig verslag dat werd opgesteld door de boekhouder van de syndicus bij de afsluiting van het dienstjaar 2024–2025.</p>
+                <p style="margin: 0;">De gegevens zijn onveranderd weergegeven zoals aangeleverd, zonder inhoudelijke bewerking of tussenkomst.</p>
+            </div>
         </div>
 
         <div class="meeting-info">
             <h3>Raad van Mede-eigendom</h3>
-            <p>Vergadering voorzien op zaterdag 02/08/2025</p>
-            <p>Voorschot budget 2025/2026: € 255.000,00 (opgevraagd per 17/03/2025)</p>
+            <p style="font-size: 1.05rem; margin-bottom: 15px;">Officieel verslag zoals gedeeld met de Raad van Mede-eigendom op 2 augustus 2025</p>
+            <a href="JaarAfsluitingSyndicus.pdf" class="download-link" download>
+                📎 Download het originele PDF-verslag
+            </a>
         </div>
 
         <!-- KPI Cards -->
