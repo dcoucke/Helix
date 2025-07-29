@@ -674,14 +674,11 @@
     <div class="container">
         <div class="explanation-banner">
             <div class="explanation-banner-icon">ℹ️</div>
-            <p>Hier zie je welke facturen officieel zijn geregistreerd, ongeacht of ze al betaald zijn</p>
+            <p style="text-align: left; margin: 0;">Hier zie je welke facturen officieel zijn geregistreerd, ongeacht of ze al betaald zijn</p>
         </div>
         
         <div id="loading" class="loading">Dashboard wordt geladen...</div>
         <div id="dashboard" style="display: none;">
-            <!-- Alert voor openstaande facturen -->
-            <div id="alert-container"></div>
-
             <!-- Tabs -->
             <div class="tabs">
                 <button class="tab active" onclick="showTab('overzicht')">Overzicht</button>
@@ -795,10 +792,10 @@
             <div id="tab-categorien" class="tab-content" style="display: none;">
                 <div class="explanation-banner" style="margin-bottom: 20px;">
                     <div class="explanation-banner-icon">💡</div>
-                    <div>
-                        <p style="margin-bottom: 8px;"><strong>Noot:</strong> De originele boekhouding bevat <strong>geen categorie per factuur</strong>.</p>
-                        <p style="margin-bottom: 8px;">Om toch een duidelijker beeld te geven, hebben we met de computer een <strong>automatische indeling</strong> gemaakt. Die klopt meestal goed voor grote posten zoals <strong>energie</strong> of <strong>beheer</strong>, maar kan bij kleinere uitgaven soms wat minder precies zijn.</p>
-                        <p style="margin: 0;">Zie het dus als een <strong>ruwe richtlijn</strong> — handig om het grote geheel te begrijpen, maar niet altijd 100% sluitend per factuur.</p>
+                    <div style="flex: 1;">
+                        <p style="margin-bottom: 8px; text-align: left;"><strong>Noot:</strong> De originele boekhouding bevat <strong>geen categorie per factuur</strong>.</p>
+                        <p style="margin-bottom: 8px; text-align: left;">Om toch een duidelijker beeld te geven, hebben we met de computer een <strong>automatische indeling</strong> gemaakt. Die klopt meestal goed voor grote posten zoals <strong>energie</strong> of <strong>beheer</strong>, maar kan bij kleinere uitgaven soms wat minder precies zijn.</p>
+                        <p style="margin: 0; text-align: left;">Zie het dus als een <strong>ruwe richtlijn</strong> — handig om het grote geheel te begrijpen, maar niet altijd 100% sluitend per factuur.</p>
                     </div>
                 </div>
                 
@@ -1811,6 +1808,5 @@
         // Start applicatie
         loadData();
     </script>
-     <script src="nav.js"></script>
 </body>
 </html>
