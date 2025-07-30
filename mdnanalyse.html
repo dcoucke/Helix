@@ -201,6 +201,35 @@
             transform: translateX(-50%);
         }
 
+        /* Month markers */
+        .month-marker {
+            position: relative;
+            margin: 30px 0;
+            text-align: center;
+            color: #1e293b;
+            font-weight: 600;
+            font-size: 1.1rem;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .month-marker::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 1px;
+            background: #e2e8f0;
+            z-index: -1;
+        }
+
+        .month-marker span {
+            background: #f8fafc;
+            padding: 0 20px;
+            position: relative;
+        }
+
         .timeline-item {
             position: relative;
             margin-bottom: 40px;
@@ -252,6 +281,11 @@
             border: 1px solid #86efac;
         }
 
+        .timeline-content.orphan {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            border: 1px solid #f87171;
+        }
+
         .timeline-dot {
             position: absolute;
             left: 50%;
@@ -278,6 +312,11 @@
         .timeline-dot.matched {
             background: #10b981;
             border-color: #10b981;
+        }
+
+        .timeline-dot.orphan {
+            background: #ef4444;
+            border-color: #ef4444;
         }
 
         .timeline-item:hover .timeline-dot {
@@ -315,7 +354,26 @@
         .timeline-description {
             font-size: 0.875rem;
             color: #64748b;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
+        }
+
+        .timeline-description strong {
+            color: #475569;
+        }
+
+        .timeline-payment-info {
+            font-size: 0.8rem;
+            color: #10b981;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        .timeline-payment-info.slow {
+            color: #f59e0b;
+        }
+
+        .timeline-payment-info.very-slow {
+            color: #ef4444;
         }
 
         .timeline-warning {
@@ -633,30 +691,107 @@
     </div>
 
     <script>
-        // MDN Timeline Data
+        // MDN Timeline Data - ALLEEN ECHTE DATA UIT CSV BESTANDEN
         const mdnData = {
             betalingen: [
-                {datum: "16/09/2024", bedrag: 142.78, vennootschap: "IMMO BEACH", omschrijving: "IMMO BEACH"},
-                {datum: "27/08/2024", bedrag: 142.78, vennootschap: "IMMO BEACH", omschrijving: ""},
-                {datum: "27/08/2024", bedrag: 693, vennootschap: "LA NOUVELLE AGENCE", omschrijving: "LA NOUVELLE AGENCE"},
-                {datum: "27/08/2024", bedrag: 142.78, vennootschap: "IMMO BEACH", omschrijving: ""},
-                {datum: "22/07/2024", bedrag: 142.78, vennootschap: "IMMO BEACH", omschrijving: "BEV NR 20240037"},
-                {datum: "01/07/2024", bedrag: 142.78, vennootschap: "IMMO BEACH", omschrijving: "BEV NR 202400"},
-                {datum: "19/06/2024", bedrag: 693, vennootschap: "LA NOUVELLE AGENCE", omschrijving: "LA NOUVELLE AGENCE"},
-                {datum: "30/05/2024", bedrag: 6931.01, vennootschap: "WEST COAST INVESTMENTS", omschrijving: "WEST COAST INVESTMENTS"},
-                {datum: "30/04/2024", bedrag: 4156.34, vennootschap: "IMMO BEACH", omschrijving: ""},
-                {datum: "29/04/2024", bedrag: 4156.34, vennootschap: "IMMO BEACH", omschrijving: ""},
-                {datum: "18/04/2024", bedrag: 1815, vennootschap: "IMMO BEACH", omschrijving: ""},
-                {datum: "18/04/2024", bedrag: 2421.77, vennootschap: "IMMO BEACH", omschrijving: ""},
-                {datum: "27/03/2024", bedrag: 40000, vennootschap: "IMMO BEACH", omschrijving: "IMMO BEACH"},
-                {datum: "26/03/2024", bedrag: 25312.68, vennootschap: "IMMO BEACH", omschrijving: "IMMO BEACH"},
-                {datum: "15/03/2024", bedrag: 69069.45, vennootschap: "IMMO BEACH", omschrijving: "IMMO BEACH"},
-                {datum: "15/03/2025", bedrag: 16561.02, vennootschap: "IMMO BEACH", omschrijving: "IMMO BEACH"},
-                {datum: "11/02/2025", bedrag: 142.78, vennootschap: "IMMO BEACH", omschrijving: "BEV NR 202500"},
-                {datum: "03/02/2025", bedrag: 142.78, vennootschap: "IMMO BEACH", omschrijving: "BEV NR 202500002"},
-                {datum: "22/01/2025", bedrag: 35703.9, vennootschap: "IMMO BEACH", omschrijving: "Helix"},
-                {datum: "17/01/2025", bedrag: 142.78, vennootschap: "IMMO BEACH", omschrijving: "BEV NR 2024002"},
-                {datum: "17/01/2025", bedrag: 572.15, vennootschap: "IMMO BEACH", omschrijving: "IMMO BEACH"}
+                // Deze data komt uit BANKAFSCHRIFTEN_DATA_ENRICHED.csv
+                // Gesorteerd op datum (oud naar nieuw)
+                {
+                    datum: "10/05/2024", 
+                    bedrag: 25000, 
+                    vennootschap: "IMMO BEACH", 
+                    omschrijving: "HELIX L/R NAAR IMMO BEACH",
+                    rekeningTegenpartij: "BE XXXX XXXX XXXX 3074 (Tegenpartij #005)",
+                    saldoNaTransactie: 13093.89
+                },
+                {
+                    datum: "25/06/2024", 
+                    bedrag: 18150, 
+                    vennootschap: "IMMO BEACH", 
+                    omschrijving: "RECHTZETTING",
+                    rekeningTegenpartij: "BE XXXX XXXX XXXX 3074 (Tegenpartij #005)",
+                    saldoNaTransactie: 2089.51
+                },
+                {
+                    datum: "22/07/2024", 
+                    bedrag: 142.78, 
+                    vennootschap: "IMMO BEACH", 
+                    omschrijving: "VERKOOP LARIDON/VAN DEN BERGEN NR. B0102",
+                    rekeningTegenpartij: "BE XXXX XXXX XXXX 3074 (Tegenpartij #005)",
+                    saldoNaTransactie: 44540.27
+                },
+                {
+                    datum: "27/08/2024", 
+                    bedrag: 142.78, 
+                    vennootschap: "IMMO BEACH", 
+                    omschrijving: "HONNORE B0507/1 VERKOOP",
+                    rekeningTegenpartij: "BE XXXX XXXX XXXX 0277 (Tegenpartij #037)",
+                    saldoNaTransactie: 19610.08
+                },
+                {
+                    datum: "27/08/2024", 
+                    bedrag: 693, 
+                    vennootschap: "LA NOUVELLE AGENCE", 
+                    omschrijving: "NOTARIS VANHIMBEECK VERKOOP ROELANDS",
+                    rekeningTegenpartij: "BE XXXX XXXX XXXX 1648 (Tegenpartij #038)",
+                    saldoNaTransactie: 19752.86
+                },
+                {
+                    datum: "16/09/2024", 
+                    bedrag: 142.78, 
+                    vennootschap: "IMMO BEACH", 
+                    omschrijving: "VERKOOP NOTARIS INL C210 DE WIT MARTENS",
+                    rekeningTegenpartij: "BE XXXX XXXX XXXX 1749 (Tegenpartij #014)",
+                    saldoNaTransactie: 39267.93
+                },
+                {
+                    datum: "4/11/2024", 
+                    bedrag: 40000, 
+                    vennootschap: "IMMO BEACH", 
+                    omschrijving: "ERELOON IMMO BEACH .",
+                    rekeningTegenpartij: "BE XXXX XXXX XXXX 3074 (Tegenpartij #005)",
+                    saldoNaTransactie: 1848.55
+                },
+                {
+                    datum: "2/12/2024", 
+                    bedrag: 20000, 
+                    vennootschap: "IMMO BEACH", 
+                    omschrijving: "ERELOON IMMO BEACH",
+                    rekeningTegenpartij: "BE XXXX XXXX XXXX 3074 (Tegenpartij #005)",
+                    saldoNaTransactie: 2173.60
+                },
+                {
+                    datum: "23/01/2025", 
+                    bedrag: 35000, 
+                    vennootschap: "IMMO BEACH", 
+                    omschrijving: "NAAR IMMO BEACH.",
+                    rekeningTegenpartij: "BE XXXX XXXX XXXX 3074 (Tegenpartij #005)",
+                    saldoNaTransactie: 4678.66
+                },
+                {
+                    datum: "30/01/2025", 
+                    bedrag: 142.78, 
+                    vennootschap: "IMMO BEACH", 
+                    omschrijving: "NAAR IMMO BEACH",
+                    rekeningTegenpartij: "BE XXXX XXXX XXXX 3074 (Tegenpartij #005)",
+                    saldoNaTransactie: 8905.13
+                },
+                {
+                    datum: "11/02/2025", 
+                    bedrag: 142.78, 
+                    vennootschap: "IMMO BEACH", 
+                    omschrijving: "VERKOOP B02010 GOETHALS",
+                    rekeningTegenpartij: "BE XXXX XXXX XXXX 1749 (Tegenpartij #014)",
+                    saldoNaTransactie: 25028.08
+                },
+                {
+                    datum: "15/03/2025", 
+                    bedrag: 16561.02, 
+                    vennootschap: "IMMO BEACH", 
+                    omschrijving: "IMMO BEACH PROV",
+                    rekeningTegenpartij: "BE XXXX XXXX XXXX 3074 (Tegenpartij #005)",
+                    saldoNaTransactie: 8609.84
+                }
             ],
             facturen: [
                 {datum: "21/01/2025", bedrag: 66247.68, vennootschap: "IMMO BEACH - ereloon beheer", factuurnr: "25/00001", betaald: 35703.9},
@@ -720,23 +855,16 @@
             document.getElementById('kpi-grid').innerHTML = kpiHTML;
         }
 
-        // R/C explanations from bookkeeper
+        // R/C explanations from bookkeeper - ALLEEN voor bedragen die echt bestaan
         const rcExplanations = {
             40000: "Zie R/C - Factuur 25/0001",
             35000: "Zie R/C - Factuur 25/0001", 
             25000: "Zie R/C - Factuur 25/0001",
             20000: "Zie R/C - Factuur 25/0001",
-            18150: "Zie R/C - Factuur 25/0001",
-            17009.25: "50% nieuwe ketel",
-            8817.34: "Voorschot waterverbruik",
-            8574: "Nieuwe afzuigkappen",
-            8214.11: "Jaarlijks abonnement",
-            6931.01: "Onkostennota huur kantoor",
-            6868: "Zie R/C",
-            693: "Zie R/C"
+            18150: "Zie R/C - Factuur 25/0001"
         };
 
-        // Create timeline
+        // Create timeline with month markers and payment terms
         function createTimeline() {
             const timeline = [];
             
@@ -771,7 +899,7 @@
                 });
             });
 
-            // Add invoices with match checking
+            // Add invoices with match checking and payment terms
             mdnData.facturen.forEach(f => {
                 // Check for matching payments
                 const matchingBetalingen = mdnData.betalingen.filter(b => {
@@ -780,6 +908,18 @@
                     if (b.bedrag === 142.78 && f.bedrag === 142.78) return true;
                     return false;
                 });
+
+                // Calculate payment term if paid
+                let paymentTerm = null;
+                if (f.betaald > 0 && matchingBetalingen.length > 0) {
+                    const factuurDate = parseDate(f.datum);
+                    const earliestPayment = matchingBetalingen
+                        .map(b => parseDate(b.datum))
+                        .sort((a, b) => a - b)[0];
+                    
+                    const daysDiff = Math.floor((earliestPayment - factuurDate) / (1000 * 60 * 60 * 24));
+                    paymentTerm = daysDiff;
+                }
 
                 timeline.push({
                     type: 'factuur',
@@ -792,6 +932,7 @@
                     openstaand: f.bedrag - f.betaald,
                     hasMatch: matchingBetalingen.length > 0,
                     matchingBetalingen: matchingBetalingen,
+                    paymentTerm: paymentTerm,
                     raw: f
                 });
             });
@@ -799,14 +940,30 @@
             // Sort by date (oldest first)
             timeline.sort((a, b) => a.datum - b.datum);
 
-            // Render timeline
+            // Render timeline with month markers
             const timelineEl = document.getElementById('timeline');
             timelineEl.innerHTML = '<div class="timeline-line"></div>';
 
+            let currentMonth = null;
+            let animationDelay = 0;
+
             timeline.forEach((item, index) => {
+                // Add month marker if new month
+                const itemMonth = item.datum.toLocaleDateString('nl-BE', { month: 'long', year: 'numeric' });
+                if (itemMonth !== currentMonth) {
+                    currentMonth = itemMonth;
+                    const monthMarker = document.createElement('div');
+                    monthMarker.className = 'month-marker';
+                    monthMarker.style.animationDelay = `${animationDelay * 0.05}s`;
+                    monthMarker.innerHTML = `<span>${itemMonth}</span>`;
+                    timelineEl.appendChild(monthMarker);
+                    animationDelay++;
+                }
+
                 const itemEl = document.createElement('div');
                 itemEl.className = `timeline-item ${item.type}`;
-                itemEl.style.animationDelay = `${index * 0.05}s`;
+                itemEl.style.animationDelay = `${animationDelay * 0.05}s`;
+                animationDelay++;
 
                 // Create badges
                 let badges = '';
@@ -823,7 +980,23 @@
                     if (item.hasMatch) {
                         badges = '<span class="badge badge-success">✓ Betaald</span>';
                     } else if (item.openstaand > 0) {
-                        badges = '<span class="badge badge-info">€' + formatCurrency(item.openstaand) + ' open</span>';
+                        badges = '<span class="badge badge-info">€' + item.openstaand.toFixed(2) + ' open</span>';
+                    }
+                }
+
+                // Payment term info
+                let paymentInfo = '';
+                if (item.type === 'factuur' && item.paymentTerm !== null) {
+                    if (item.paymentTerm < 0) {
+                        paymentInfo = `<div class="timeline-payment-info">⚡ Betaald ${Math.abs(item.paymentTerm)} dagen VOOR factuurdatum!</div>`;
+                    } else if (item.paymentTerm === 0) {
+                        paymentInfo = '<div class="timeline-payment-info">✓ Betaald op factuurdatum</div>';
+                    } else if (item.paymentTerm <= 30) {
+                        paymentInfo = `<div class="timeline-payment-info">✓ Betaald na ${item.paymentTerm} dagen</div>`;
+                    } else if (item.paymentTerm <= 60) {
+                        paymentInfo = `<div class="timeline-payment-info slow">⚠ Betaald na ${item.paymentTerm} dagen</div>`;
+                    } else {
+                        paymentInfo = `<div class="timeline-payment-info very-slow">⚠️ Betaald na ${item.paymentTerm} dagen!</div>`;
                     }
                 }
 
@@ -832,8 +1005,13 @@
                     warning = `<div class="timeline-warning">⚠️ Boekhouder: "${item.rcExplanation}"</div>`;
                 }
 
+                // Determine if this is an orphan
+                const isOrphan = (item.type === 'betaling' && !item.hasMatch && !item.hasRC && item.bedrag > 1000);
+                const contentClass = isOrphan ? 'orphan' : '';
+                const dotClass = isOrphan ? 'orphan' : (item.hasMatch ? 'matched' : '');
+
                 itemEl.innerHTML = `
-                    <div class="timeline-content" onclick="showDetails('${item.type}', ${index})">
+                    <div class="timeline-content ${contentClass}" onclick="showDetails('${item.type}', ${index})">
                         <div class="timeline-header-info">
                             <div class="timeline-date">${item.datumStr}</div>
                             ${badges}
@@ -842,13 +1020,14 @@
                         <div class="timeline-company">${item.vennootschap}</div>
                         <div class="timeline-description">
                             ${item.type === 'factuur' ? 
-                                `Factuur: ${item.factuurnr}` : 
-                                item.omschrijving
+                                `<strong>Factuur:</strong> ${item.factuurnr}` : 
+                                `<strong>Omschrijving:</strong> ${item.omschrijving}`
                             }
                         </div>
+                        ${paymentInfo}
                         ${warning}
                     </div>
-                    <div class="timeline-dot ${item.hasMatch ? 'matched' : ''}"></div>
+                    <div class="timeline-dot ${dotClass}"></div>
                 `;
 
                 timelineEl.appendChild(itemEl);
@@ -858,7 +1037,7 @@
             window.timelineData = timeline;
         }
 
-        // Show details modal
+        // Show details modal with complete bank information
         function showDetails(type, index) {
             const item = window.timelineData[index];
             const modal = document.getElementById('detailModal');
@@ -894,8 +1073,20 @@
                         <span class="detail-label">Nog Openstaand</span>
                         <span class="detail-value">${formatCurrency(item.openstaand)}</span>
                     </div>
+                    ${item.paymentTerm !== null ? `
+                    <div class="detail-row">
+                        <span class="detail-label">Betaaltermijn</span>
+                        <span class="detail-value">${item.paymentTerm < 0 ? 
+                            `<span style="color: #ef4444;">Betaald ${Math.abs(item.paymentTerm)} dagen VOOR factuurdatum!</span>` : 
+                            `${item.paymentTerm} dagen`
+                        }</span>
+                    </div>
+                    ` : ''}
                 `;
             } else {
+                // Payment details with all bank information
+                const payment = item.raw;
+                
                 // Check for matching invoice
                 const matchingFactuur = mdnData.facturen.find(f => 
                     Math.abs(f.bedrag - item.bedrag) < 1 || 
@@ -904,34 +1095,88 @@
 
                 content = `
                     <div class="detail-row">
-                        <span class="detail-label">Datum</span>
+                        <span class="detail-label">Transactiedatum</span>
                         <span class="detail-value">${item.datumStr}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Begunstigde</span>
-                        <span class="detail-value">${item.vennootschap}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Bedrag</span>
                         <span class="detail-value">${formatCurrency(item.bedrag)}</span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">Omschrijving</span>
-                        <span class="detail-value">${item.omschrijving}</span>
+                        <span class="detail-label">Begunstigde</span>
+                        <span class="detail-value">${item.vennootschap}</span>
                     </div>
+                    ${payment.rekeningTegenpartij ? `
+                    <div class="detail-row">
+                        <span class="detail-label">Rekening Tegenpartij</span>
+                        <span class="detail-value" style="font-family: monospace;">${payment.rekeningTegenpartij.substring(0, 17)}...</span>
+                    </div>
+                    ` : ''}
+                    <div class="detail-row">
+                        <span class="detail-label">Transactie Omschrijving</span>
+                        <span class="detail-value">${item.omschrijving || 'Geen omschrijving'}</span>
+                    </div>
+                    ${payment.boekhoudkundigType ? `
+                    <div class="detail-row">
+                        <span class="detail-label">Boekhoudkundig Type</span>
+                        <span class="detail-value">${payment.boekhoudkundigType}</span>
+                    </div>
+                    ` : ''}
+                    ${payment.typeBetaling ? `
+                    <div class="detail-row">
+                        <span class="detail-label">Type Betaling</span>
+                        <span class="detail-value">${payment.typeBetaling}</span>
+                    </div>
+                    ` : ''}
+                    ${payment.hoofdcategorie ? `
+                    <div class="detail-row">
+                        <span class="detail-label">Hoofdcategorie</span>
+                        <span class="detail-value">${payment.hoofdcategorie}</span>
+                    </div>
+                    ` : ''}
+                    ${payment.subcategorie ? `
+                    <div class="detail-row">
+                        <span class="detail-label">Subcategorie</span>
+                        <span class="detail-value">${payment.subcategorie}</span>
+                    </div>
+                    ` : ''}
+                    ${payment.saldoNaTransactie !== undefined ? `
+                    <div class="detail-row">
+                        <span class="detail-label">Saldo na Transactie</span>
+                        <span class="detail-value" style="${payment.saldoNaTransactie < 0 ? 'color: #ef4444;' : ''}">${formatCurrency(payment.saldoNaTransactie)}</span>
+                    </div>
+                    ` : ''}
                     <div class="detail-row">
                         <span class="detail-label">Corresponderende Factuur</span>
                         <span class="detail-value">${matchingFactuur ? 
-                            `Gevonden: ${matchingFactuur.factuurnr}` : 
+                            `Gevonden: ${matchingFactuur.factuurnr} (${formatCurrency(matchingFactuur.bedrag)})` : 
                             '<span style="color: #ef4444;">Geen factuur gevonden</span>'
                         }</span>
                     </div>
                 `;
 
+                // Add warnings for suspicious patterns
                 if (!matchingFactuur && item.bedrag > 1000) {
                     content += `
                         <div class="timeline-warning" style="margin-top: 20px;">
                             ⚠️ Deze betaling van ${formatCurrency(item.bedrag)} heeft geen corresponderende factuur in de boekhouding
+                        </div>
+                    `;
+                }
+                
+                if (item.hasRC && item.rcExplanation) {
+                    content += `
+                        <div class="timeline-warning" style="margin-top: 20px;">
+                            📝 Uitleg boekhouder: "${item.rcExplanation}"
+                        </div>
+                    `;
+                }
+                
+                // Alert for negative balance
+                if (payment.saldoNaTransactie !== undefined && payment.saldoNaTransactie < 0) {
+                    content += `
+                        <div class="timeline-warning" style="margin-top: 20px; background: #fee2e2; color: #991b1b;">
+                            ⚠️ Let op: Negatief saldo na deze transactie!
                         </div>
                     `;
                 }
