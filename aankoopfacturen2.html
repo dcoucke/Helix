@@ -674,6 +674,9 @@
         
         <div id="loading" class="loading">Dashboard wordt geladen...</div>
         <div id="dashboard" style="display: none;">
+            <!-- Alert voor openstaande facturen -->
+            <div id="alert-container"></div>
+
             <!-- Tabs -->
             <div class="tabs">
                 <button class="tab active" onclick="showTab('overzicht')">Overzicht</button>
@@ -685,28 +688,13 @@
 
             <!-- Tab: Overzicht -->
             <div id="tab-overzicht" class="tab-content">
+                <!-- Alert container voor openstaande facturen -->
+                <div id="alert-container"></div>
+                
                 <div class="kpi-grid" id="kpi-grid"></div>
                 
                 <div class="chart-grid">
                     <div class="chart-container">
-                        <button class="fullscreen-btn" onclick="openChartModal('topLeveranciersChart', 'Top 10 Grootste Kostenposten')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-                            </svg>
-                        </button>
-                        <h3 class="chart-title">Top 10 Grootste Kostenposten</h3>
-                        <canvas id="topLeveranciersChart"></canvas>
-                    </div>
-                    <div class="chart-container">
-                        <button class="fullscreen-btn" onclick="openChartModal('categorieChart', 'Verdeling per Categorie')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-                            </svg>
-                        </button>
-                        <h3 class="chart-title">Verdeling per Categorie</h3>
-                        <canvas id="categorieChart"></canvas>
-                    </div>
-                </div>
                         <button class="fullscreen-btn" onclick="openChartModal('topLeveranciersChart', 'Top 10 Grootste Kostenposten')">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
@@ -1104,12 +1092,6 @@
             const openstaand = _.sumBy(factuurData, 'openstaand');
             const alertContainer = document.getElementById('alert-container');
             
-            // Check of alertContainer bestaat voordat we proberen te schrijven
-            if (!alertContainer) {
-                console.warn('Alert container not found - skipping alert creation');
-                return;
-            }
-            
             if (openstaand > 30000) {
                 const grootste = _.maxBy(factuurData.filter(f => f.openstaand > 0), 'openstaand');
                 alertContainer.innerHTML = `
@@ -1184,7 +1166,9 @@
                         data: categorieData.map(c => c.totaal),
                         backgroundColor: [
                             '#3b82f6', '#10b981', '#f59e0b', '#ef4444',
-                            '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
+                            '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16',
+                            '#6366f1', '#14b8a6', '#f97316', '#dc2626',
+                            '#7c3aed', '#db2777', '#0891b2', '#65a30d'
                         ]
                     }]
                 },
@@ -1373,7 +1357,9 @@
                         data: categorieData.map(c => c.totaal),
                         backgroundColor: [
                             '#3b82f6', '#10b981', '#f59e0b', '#ef4444',
-                            '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
+                            '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16',
+                            '#6366f1', '#14b8a6', '#f97316', '#dc2626',
+                            '#7c3aed', '#db2777', '#0891b2', '#65a30d'
                         ],
                         borderRadius: 5
                     }]
