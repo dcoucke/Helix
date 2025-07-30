@@ -275,15 +275,26 @@
             border-color: #10b981;
         }
 
+        .timeline-dot.matched {
+            background: #10b981;
+            border-color: #10b981;
+        }
+
         .timeline-item:hover .timeline-dot {
             transform: translate(-50%, -50%) scale(1.5);
             box-shadow: 0 0 0 8px rgba(0, 0, 0, 0.1);
         }
 
+        .timeline-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
         .timeline-date {
             font-size: 0.875rem;
             color: #64748b;
-            margin-bottom: 8px;
             font-weight: 500;
         }
 
@@ -317,6 +328,37 @@
             display: flex;
             align-items: center;
             gap: 6px;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
         }
 
         /* Analysis cards */
@@ -678,12 +720,42 @@
             document.getElementById('kpi-grid').innerHTML = kpiHTML;
         }
 
+        // R/C explanations from bookkeeper
+        const rcExplanations = {
+            40000: "Zie R/C - Factuur 25/0001",
+            35000: "Zie R/C - Factuur 25/0001", 
+            25000: "Zie R/C - Factuur 25/0001",
+            20000: "Zie R/C - Factuur 25/0001",
+            18150: "Zie R/C - Factuur 25/0001",
+            17009.25: "50% nieuwe ketel",
+            8817.34: "Voorschot waterverbruik",
+            8574: "Nieuwe afzuigkappen",
+            8214.11: "Jaarlijks abonnement",
+            6931.01: "Onkostennota huur kantoor",
+            6868: "Zie R/C",
+            693: "Zie R/C"
+        };
+
         // Create timeline
         function createTimeline() {
             const timeline = [];
             
-            // Add payments
+            // Add payments with match checking
             mdnData.betalingen.forEach(b => {
+                // Check for matching invoice
+                const matchingFactuur = mdnData.facturen.find(f => {
+                    // Check exact match
+                    if (Math.abs(f.bedrag - b.bedrag) < 0.01) return true;
+                    // Check if payment matches what was paid on invoice
+                    if (Math.abs(f.betaald - b.bedrag) < 0.01) return true;
+                    // Check common amounts like 142.78
+                    if (b.bedrag === 142.78 && f.bedrag === 142.78) return true;
+                    return false;
+                });
+
+                // Check if bookkeeper said "Zie R/C"
+                const hasRC = rcExplanations[b.bedrag] || (b.bedrag > 5000 && !matchingFactuur);
+
                 timeline.push({
                     type: 'betaling',
                     datum: parseDate(b.datum),
@@ -691,12 +763,24 @@
                     bedrag: b.bedrag,
                     vennootschap: b.vennootschap,
                     omschrijving: b.omschrijving || 'Geen omschrijving',
+                    hasMatch: !!matchingFactuur,
+                    matchingFactuur: matchingFactuur,
+                    hasRC: hasRC,
+                    rcExplanation: rcExplanations[b.bedrag],
                     raw: b
                 });
             });
 
-            // Add invoices
+            // Add invoices with match checking
             mdnData.facturen.forEach(f => {
+                // Check for matching payments
+                const matchingBetalingen = mdnData.betalingen.filter(b => {
+                    if (Math.abs(f.bedrag - b.bedrag) < 0.01) return true;
+                    if (Math.abs(f.betaald - b.bedrag) < 0.01) return true;
+                    if (b.bedrag === 142.78 && f.bedrag === 142.78) return true;
+                    return false;
+                });
+
                 timeline.push({
                     type: 'factuur',
                     datum: parseDate(f.datum),
@@ -706,12 +790,14 @@
                     factuurnr: f.factuurnr,
                     betaald: f.betaald,
                     openstaand: f.bedrag - f.betaald,
+                    hasMatch: matchingBetalingen.length > 0,
+                    matchingBetalingen: matchingBetalingen,
                     raw: f
                 });
             });
 
-            // Sort by date
-            timeline.sort((a, b) => b.datum - a.datum);
+            // Sort by date (oldest first)
+            timeline.sort((a, b) => a.datum - b.datum);
 
             // Render timeline
             const timelineEl = document.getElementById('timeline');
@@ -720,33 +806,49 @@
             timeline.forEach((item, index) => {
                 const itemEl = document.createElement('div');
                 itemEl.className = `timeline-item ${item.type}`;
-                itemEl.style.animationDelay = `${index * 0.1}s`;
+                itemEl.style.animationDelay = `${index * 0.05}s`;
+
+                // Create badges
+                let badges = '';
+                if (item.type === 'betaling') {
+                    if (item.hasMatch) {
+                        badges = '<span class="badge badge-success">✓ Match</span>';
+                    } else if (item.hasRC) {
+                        badges = '<span class="badge badge-warning">Zie R/C</span>';
+                    } else if (item.bedrag > 1000) {
+                        badges = '<span class="badge badge-danger">Geen factuur</span>';
+                    }
+                } else {
+                    // For invoices
+                    if (item.hasMatch) {
+                        badges = '<span class="badge badge-success">✓ Betaald</span>';
+                    } else if (item.openstaand > 0) {
+                        badges = '<span class="badge badge-info">€' + formatCurrency(item.openstaand) + ' open</span>';
+                    }
+                }
 
                 let warning = '';
-                if (item.type === 'betaling' && item.bedrag > 10000) {
-                    const matchingFactuur = mdnData.facturen.find(f => 
-                        Math.abs(f.bedrag - item.bedrag) < 1 || 
-                        Math.abs(f.betaald - item.bedrag) < 1
-                    );
-                    if (!matchingFactuur) {
-                        warning = '<div class="timeline-warning">⚠️ Geen corresponderende factuur gevonden</div>';
-                    }
+                if (item.type === 'betaling' && item.hasRC && item.rcExplanation) {
+                    warning = `<div class="timeline-warning">⚠️ Boekhouder: "${item.rcExplanation}"</div>`;
                 }
 
                 itemEl.innerHTML = `
                     <div class="timeline-content" onclick="showDetails('${item.type}', ${index})">
-                        <div class="timeline-date">${item.datumStr}</div>
+                        <div class="timeline-header-info">
+                            <div class="timeline-date">${item.datumStr}</div>
+                            ${badges}
+                        </div>
                         <div class="timeline-amount">${formatCurrency(item.bedrag)}</div>
                         <div class="timeline-company">${item.vennootschap}</div>
                         <div class="timeline-description">
                             ${item.type === 'factuur' ? 
-                                `Factuur: ${item.factuurnr}<br>Betaald: ${formatCurrency(item.betaald)}` : 
+                                `Factuur: ${item.factuurnr}` : 
                                 item.omschrijving
                             }
                         </div>
                         ${warning}
                     </div>
-                    <div class="timeline-dot"></div>
+                    <div class="timeline-dot ${item.hasMatch ? 'matched' : ''}"></div>
                 `;
 
                 timelineEl.appendChild(itemEl);
