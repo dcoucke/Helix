@@ -686,10 +686,14 @@
         // Initialize dashboard
         window.addEventListener('DOMContentLoaded', async function() {
             try {
+                console.log('Starting dashboard initialization...');
                 await loadData();
+                console.log('Data loaded, starting analysis...');
                 analyzeBalanceData();
+                console.log('Analysis complete!');
             } catch (error) {
                 console.error('Error initializing dashboard:', error);
+                console.error('Stack trace:', error.stack);
                 document.getElementById('kpiSection').innerHTML = 
                     `<div class="alert alert-danger">
                         <span>⚠️</span>
@@ -750,9 +754,13 @@
         
         // Analyze balance data
         function analyzeBalanceData() {
+            console.log('Starting analyzeBalanceData...');
+            
             // Find negative balance periods
             const negativePeriods = [];
             let currentNegativePeriod = null;
+            
+            console.log('Processing', allData.length, 'rows for negative periods...');
             
             allData.forEach((row, index) => {
                 // Handle different formats for balance
@@ -809,18 +817,36 @@
                 negativePeriods.push(currentNegativePeriod);
             }
             
+            console.log('Found', negativePeriods.length, 'negative periods');
+            
             // Calculate statistics
+            console.log('Calculating statistics...');
             const stats = calculateStatistics(negativePeriods);
+            console.log('Stats:', stats);
             
             // Render components
-            renderKPIs(stats, negativePeriods);
-            renderThermometer(stats);
-            renderAlerts(stats, negativePeriods);
-            renderBalanceChart();
-            renderTimeline(negativePeriods);
-            renderMonthlyRangeChart();
-            renderNegativeDaysChart(negativePeriods);
-            renderNegativeTable(negativePeriods);
+            try {
+                console.log('Rendering KPIs...');
+                renderKPIs(stats, negativePeriods);
+                console.log('Rendering Thermometer...');
+                renderThermometer(stats);
+                console.log('Rendering Alerts...');
+                renderAlerts(stats, negativePeriods);
+                console.log('Rendering Balance Chart...');
+                renderBalanceChart();
+                console.log('Rendering Timeline...');
+                renderTimeline(negativePeriods);
+                console.log('Rendering Monthly Range Chart...');
+                renderMonthlyRangeChart();
+                console.log('Rendering Negative Days Chart...');
+                renderNegativeDaysChart(negativePeriods);
+                console.log('Rendering Negative Table...');
+                renderNegativeTable(negativePeriods);
+                console.log('All rendering complete!');
+            } catch (renderError) {
+                console.error('Error during rendering:', renderError);
+                console.error('Stack trace:', renderError.stack);
+            }
         }
         
         // Calculate duration between dates
