@@ -3,842 +3,371 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Residentie HELIX - Reconciliatie Tool</title>
+    <title>Residentie HELIX - Matching Analyse</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #16a34a;
-            --primary-dark: #15803d;
-            --primary-light: #4ade80;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --gray-50: #f8fafc;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --gray-900: #111827;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #f8fafc;
             color: #1e293b;
             line-height: 1.6;
         }
-
-        /* Layout */
-        .app-container {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 320px;
-            background: white;
-            border-right: 1px solid var(--gray-200);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .sidebar-header h1 {
-            font-size: 1.5rem;
-            color: var(--primary-dark);
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .stat-card {
-            padding: 12px;
-            background: var(--gray-50);
-            border-radius: 8px;
+        
+        header {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            color: white;
+            padding: 40px 0;
             text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--gray-900);
+        
+        h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 10px; }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
         }
-
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--gray-600);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Filter Section */
-        .filter-section {
-            padding: 20px;
-            border-bottom: 1px solid var(--gray-200);
-            background: var(--gray-50);
-        }
-
-        .filter-section h3 {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--gray-700);
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .filter-group {
-            margin-bottom: 15px;
-        }
-
-        .filter-group label {
-            display: block;
-            font-size: 0.875rem;
-            color: var(--gray-700);
-            margin-bottom: 5px;
-        }
-
-        .filter-group input,
-        .filter-group select {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid var(--gray-300);
-            border-radius: 6px;
-            font-size: 0.875rem;
+        
+        .progress-section {
             background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-
-        .filter-group input:focus,
-        .filter-group select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .date-range {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .status-filter {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .status-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid var(--gray-300);
-            background: white;
-            color: var(--gray-700);
-        }
-
-        .status-badge.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .status-badge:hover {
-            border-color: var(--primary);
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+        
+        .progress-bar {
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
             overflow: hidden;
+            margin: 20px 0;
         }
-
-        /* Toolbar */
-        .toolbar {
-            padding: 15px 20px;
-            background: white;
-            border-bottom: 1px solid var(--gray-200);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .search-box {
-            flex: 1;
-            max-width: 400px;
-            position: relative;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 8px 12px 8px 36px;
-            border: 1px solid var(--gray-300);
-            border-radius: 8px;
-            font-size: 0.875rem;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--gray-400);
-        }
-
-        .toolbar-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-        }
-
-        .btn-secondary {
-            background: white;
-            color: var(--gray-700);
-            border: 1px solid var(--gray-300);
-        }
-
-        .btn-secondary:hover {
-            background: var(--gray-50);
-        }
-
-        /* Split View */
-        .split-view {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-        }
-
-        .split-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .split-divider {
-            width: 4px;
-            background: var(--gray-200);
-            cursor: col-resize;
-            position: relative;
-        }
-
-        .split-divider:hover {
-            background: var(--primary);
-        }
-
-        .panel-header {
-            padding: 15px 20px;
-            background: var(--gray-50);
-            border-bottom: 1px solid var(--gray-200);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .panel-title {
-            font-weight: 600;
-            color: var(--gray-800);
-        }
-
-        .panel-count {
-            font-size: 0.875rem;
-            color: var(--gray-600);
-        }
-
-        /* Transaction Lists */
-        .transaction-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-        }
-
-        .transaction-item {
-            background: white;
-            border: 1px solid var(--gray-200);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        .transaction-item:hover {
-            border-color: var(--primary);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .transaction-item.selected {
-            border-color: var(--primary);
-            background: rgba(59, 130, 246, 0.05);
-        }
-
-        .transaction-item.matched {
-            border-left: 4px solid var(--success);
-            background: rgba(16, 185, 129, 0.02);
-        }
-
-        .transaction-item.partial-match {
-            border-left: 4px solid var(--warning);
-        }
-
-        .transaction-item.no-match {
-            border-left: 4px solid var(--danger);
-            background: rgba(239, 68, 68, 0.02);
-        }
-
-        .transaction-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .transaction-date {
-            font-size: 0.875rem;
-            color: var(--gray-600);
-        }
-
-        .transaction-amount {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--gray-900);
-        }
-
-        .transaction-details {
-            font-size: 0.875rem;
-            color: var(--gray-700);
-            margin-bottom: 4px;
-        }
-
-        .transaction-description {
-            font-size: 0.8rem;
-            color: var(--gray-500);
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid var(--gray-100);
-        }
-
-        .match-score {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--success);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        /* Match Suggestions */
-        .match-suggestions {
-            padding: 15px;
-            background: var(--gray-50);
-            border-top: 1px solid var(--gray-200);
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .suggestion-item {
-            background: white;
-            border: 1px solid var(--gray-200);
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .suggestion-item:hover {
-            border-color: var(--primary);
-            transform: translateX(2px);
-        }
-
-        .suggestion-score {
-            background: var(--gray-100);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--gray-700);
-        }
-
-        /* Loading State */
-        .loading {
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #16a34a 0%, #10b981 100%);
+            transition: width 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100%;
-            color: var(--gray-500);
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
         }
-
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #16a34a;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        .stat-detail {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        
+        .results-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .match-type {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .match-type h3 {
+            color: #16a34a;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .match-count {
+            background: #16a34a;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .match-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .match-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: white;
+        }
+        
+        .match-item:hover {
+            border-color: #16a34a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .match-side {
+            font-size: 0.875rem;
+        }
+        
+        .match-amount {
+            font-weight: 700;
+            color: #16a34a;
+            font-size: 1.1rem;
+        }
+        
+        .match-date {
+            color: #6b7280;
+            font-size: 0.8rem;
+        }
+        
+        .match-description {
+            color: #374151;
+            margin: 4px 0;
+        }
+        
+        .confidence-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        
+        .confidence-high {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .confidence-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .confidence-low {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .export-section {
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: #16a34a;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #15803d;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #6b7280;
+        }
+        
         .spinner {
-            border: 3px solid var(--gray-200);
-            border-top: 3px solid var(--primary);
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #16a34a;
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
         }
-
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        /* Progress Bar */
-        .progress-bar {
-            height: 4px;
-            background: var(--gray-200);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            background: var(--primary);
-            transition: width 0.3s ease;
-        }
-
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
+        
+        .filter-controls {
             display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
-
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
+        
+        .filter-control {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+            flex-direction: column;
+            gap: 5px;
         }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--gray-900);
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--gray-400);
-            cursor: pointer;
-        }
-
-        .modal-close:hover {
-            color: var(--gray-600);
-        }
-
-        /* Import Section */
-        .import-section {
-            padding: 60px 40px;
-            text-align: center;
-            background: white;
-            border-radius: 12px;
-            margin: 40px auto;
-            max-width: 600px;
-            border: 2px solid var(--gray-200);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-
-        .import-section h2 {
-            margin-bottom: 20px;
-            color: var(--primary-dark);
-            font-size: 2rem;
-        }
-
-        .file-input-container {
-            margin: 20px 0;
-        }
-
-        .file-input-label {
-            display: inline-block;
-            padding: 12px 24px;
-            background: var(--primary);
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
+        
+        .filter-control label {
+            font-size: 0.875rem;
+            color: #6b7280;
             font-weight: 500;
-            transition: all 0.2s;
         }
-
-        .file-input-label:hover {
-            background: var(--primary-dark);
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        /* Match Actions */
-        .match-actions {
-            padding: 15px;
-            background: white;
-            border-top: 1px solid var(--gray-200);
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #059669;
-        }
-
-        /* Keyboard Shortcuts */
-        .shortcuts-hint {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--gray-800);
-            color: white;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            opacity: 0.8;
-        }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .sidebar {
-                width: 280px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .app-container {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                height: auto;
-                border-right: none;
-                border-bottom: 1px solid var(--gray-200);
-            }
-            
-            .split-view {
-                flex-direction: column;
-            }
-            
-            .split-divider {
-                width: 100%;
-                height: 4px;
-                cursor: row-resize;
-            }
+        
+        .filter-control input,
+        .filter-control select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
         }
     </style>
 </head>
 <body>
-    <!-- Header toevoegen zoals in de hoofdpagina -->
-    <header style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: white; padding: 40px 0; text-align: center; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-        <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 10px;">Residentie HELIX</h1>
-        <p style="font-size: 1.1rem; opacity: 0.9;">Reconciliatie Tool - Bankafschriften vs Facturen</p>
+    <header>
+        <h1>Residentie HELIX</h1>
+        <p style="font-size: 1.1rem; opacity: 0.9;">Matching Analyse - Intelligente Koppeling</p>
     </header>
-
-    <div class="app-container">
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h1>🧮 Reconciliatie Tool</h1>
-                <p style="font-size: 0.875rem; color: var(--gray-600);">Bankafschriften matchen met facturen</p>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalTransactions">0</div>
-                        <div class="stat-label">Transacties</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalInvoices">0</div>
-                        <div class="stat-label">Facturen</div>
-                    </div>
-                    <div class="stat-card" style="background: #d1fae5;">
-                        <div class="stat-value" id="matchedCount">0</div>
-                        <div class="stat-label">Gematcht</div>
-                    </div>
-                    <div class="stat-card" style="background: #fee2e2;">
-                        <div class="stat-value" id="unmatchedCount">0</div>
-                        <div class="stat-label">Onbekend</div>
-                    </div>
-                </div>
+    
+    <div class="container">
+        <div class="progress-section">
+            <h2>🔍 Analyse Voortgang</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
             </div>
-
-            <div class="filter-section">
-                <h3>Filters</h3>
-                
-                <div class="filter-group">
-                    <label>Datum bereik</label>
-                    <div class="date-range">
-                        <input type="date" id="dateFrom" />
-                        <input type="date" id="dateTo" />
-                    </div>
-                </div>
-
-                <div class="filter-group">
-                    <label>Bedrag bereik</label>
-                    <div class="date-range">
-                        <input type="number" id="amountFrom" placeholder="Min" step="0.01" />
-                        <input type="number" id="amountTo" placeholder="Max" step="0.01" />
-                    </div>
-                </div>
-
-                <div class="filter-group">
-                    <label>Leverancier</label>
-                    <select id="supplierFilter">
-                        <option value="">Alle leveranciers</option>
-                    </select>
-                </div>
-
-                <div class="filter-group">
-                    <label>Match status</label>
-                    <div class="status-filter">
-                        <span class="status-badge active" data-status="all">Alles</span>
-                        <span class="status-badge" data-status="matched">Gematcht</span>
-                        <span class="status-badge" data-status="partial">Gedeeltelijk</span>
-                        <span class="status-badge" data-status="unmatched">Onbekend</span>
-                    </div>
-                </div>
-
-                <div class="filter-group">
-                    <label>Match strategie</label>
-                    <select id="matchStrategy">
-                        <option value="smart">Intelligent (aanbevolen)</option>
-                        <option value="exact">Exact bedrag</option>
-                        <option value="fuzzy">Fuzzy matching</option>
-                        <option value="date">Datum + bedrag</option>
-                    </select>
-                </div>
+            <p id="statusText" style="text-align: center; color: #6b7280;">Initialiseren...</p>
+        </div>
+        
+        <div class="filter-controls">
+            <div class="filter-control">
+                <label>Minimum vertrouwen (%)</label>
+                <input type="number" id="minConfidence" value="50" min="0" max="100" />
             </div>
-
-            <div style="padding: 20px;">
-                <button class="btn btn-primary" style="width: 100%;" onclick="runAutoMatch()">
-                    <span>🤖</span> Auto-Match Uitvoeren
-                </button>
-                <div class="progress-bar" style="margin-top: 10px; display: none;" id="matchProgress">
-                    <div class="progress-fill" style="width: 0%"></div>
-                </div>
+            <div class="filter-control">
+                <label>Maximum dagen verschil</label>
+                <input type="number" id="maxDaysDiff" value="60" min="0" />
+            </div>
+            <div class="filter-control">
+                <label>Toon alleen</label>
+                <select id="showOnly">
+                    <option value="all">Alle matches</option>
+                    <option value="unmatched">Alleen ongematchte</option>
+                    <option value="ambiguous">Alleen meerdere opties</option>
+                </select>
             </div>
         </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Loading Section -->
-            <div class="import-section" id="importSection">
-                <h2>🧮 Reconciliatie Dashboard</h2>
-                <p style="color: var(--gray-600); margin-bottom: 30px; font-size: 1.1rem;">
-                    Automatisch matchen van bankafschriften met facturen
-                </p>
-                
-                <div id="uploadStatus" style="margin-top: 20px; color: var(--gray-600);">
-                    <div class="spinner" style="margin: 0 auto;"></div>
-                </div>
+        
+        <div class="stats-grid" id="statsGrid" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-label">Totaal Bankbetalingen</div>
+                <div class="stat-value" id="totalBank">0</div>
+                <div class="stat-detail" id="bankDetail">Operationele uitgaven</div>
             </div>
-
-            <!-- Split View (hidden initially) -->
-            <div class="split-view" id="splitView" style="display: none;">
-                <!-- Toolbar -->
-                <div style="position: absolute; top: 0; left: 0; right: 0; z-index: 10;">
-            <div class="toolbar" style="background: white; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
-                <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" placeholder="Zoek op bedrag, omschrijving, leverancier..." id="searchInput" />
-                </div>
-                
-                <div class="toolbar-actions">
-                    <button class="btn btn-secondary" onclick="exportMatches()">
-                        <span>📥</span> Exporteer
-                    </button>
-                    <button class="btn btn-secondary" onclick="showHelp()">
-                        <span>❓</span> Help
-                    </button>
-                    <a href="index.html" class="btn btn-secondary" style="text-decoration: none;">
-                        <span>🏠</span> Terug
-                    </a>
-                </div>
+            <div class="stat-card">
+                <div class="stat-label">Totaal Facturen</div>
+                <div class="stat-value" id="totalInvoices">0</div>
+                <div class="stat-detail">Alle leveranciers</div>
             </div>
-                </div>
-
-                <div style="display: flex; flex: 1; margin-top: 60px;">
-                    <!-- Left Panel - Bank Transactions -->
-                    <div class="split-panel">
-                        <div class="panel-header">
-                            <span class="panel-title">🏦 Bankafschriften</span>
-                            <span class="panel-count" id="bankCount">0 transacties</span>
-                        </div>
-                        <div class="transaction-list" id="bankList">
-                            <div class="loading">
-                                <div class="spinner"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Divider -->
-                    <div class="split-divider"></div>
-
-                    <!-- Right Panel - Invoices -->
-                    <div class="split-panel">
-                        <div class="panel-header">
-                            <span class="panel-title">📋 Facturen</span>
-                            <span class="panel-count" id="invoiceCount">0 facturen</span>
-                        </div>
-                        <div class="transaction-list" id="invoiceList">
-                            <div class="loading">
-                                <div class="spinner"></div>
-                            </div>
-                        </div>
-                        
-                        <!-- Match Suggestions -->
-                        <div class="match-suggestions" id="matchSuggestions" style="display: none;">
-                            <h4 style="margin-bottom: 10px; font-size: 0.875rem; color: var(--gray-700);">
-                                🎯 Mogelijke matches
-                            </h4>
-                            <div id="suggestionsList"></div>
-                        </div>
-                        
-                        <!-- Match Actions -->
-                        <div class="match-actions" id="matchActions" style="display: none;">
-                            <button class="btn btn-success" onclick="confirmMatch()">
-                                ✓ Match bevestigen
-                            </button>
-                            <button class="btn btn-secondary" onclick="skipMatch()">
-                                → Overslaan
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <div class="stat-card" style="border-left-color: #10b981;">
+                <div class="stat-label">Perfect Gematcht</div>
+                <div class="stat-value" id="perfectMatches">0</div>
+                <div class="stat-detail" id="perfectPercent">0%</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #f59e0b;">
+                <div class="stat-label">Mogelijke Matches</div>
+                <div class="stat-value" id="possibleMatches">0</div>
+                <div class="stat-detail" id="possiblePercent">0%</div>
             </div>
         </div>
-    </div>
-
-    <!-- Footer toevoegen -->
-    <footer style="text-align: center; padding: 30px 20px; color: #64748b; border-top: 1px solid #e2e8f0; background: white;">
-        <p>© 2025 Residentie HELIX - Reconciliatie tool ontwikkeld door de rekeningcommissaris</p>
-    </footer>
-
-    <!-- Help Modal -->
-    <div class="modal" id="helpModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">📚 Hulp & Sneltoetsen</h3>
-                <button class="modal-close" onclick="closeHelp()">&times;</button>
+        
+        <div class="results-section" id="results" style="display: none;">
+            <h2 style="margin-bottom: 20px;">📊 Matching Resultaten</h2>
+            
+            <div class="match-type" id="exactMatches">
+                <h3>✅ Exacte Matches <span class="match-count" id="exactCount">0</span></h3>
+                <p style="color: #6b7280; font-size: 0.875rem;">Bedrag en leverancier komen exact overeen</p>
+                <div class="match-list" id="exactList"></div>
             </div>
             
-            <h4 style="margin-top: 20px; margin-bottom: 10px;">🎯 Matching Strategieën</h4>
-            <ul style="color: var(--gray-700); margin-left: 20px;">
-                <li><strong>Intelligent:</strong> Combineert meerdere factoren zoals bedrag, datum, omschrijving en leverancier</li>
-                <li><strong>Exact bedrag:</strong> Matcht alleen op exact hetzelfde bedrag</li>
-                <li><strong>Fuzzy matching:</strong> Gebruikt tekstovereenkomsten in omschrijvingen</li>
-                <li><strong>Datum + bedrag:</strong> Matcht binnen een datumbereik met bedrag</li>
-            </ul>
-
-            <h4 style="margin-top: 20px; margin-bottom: 10px;">⌨️ Sneltoetsen</h4>
-            <ul style="color: var(--gray-700); margin-left: 20px;">
-                <li><kbd>↑</kbd> <kbd>↓</kbd> - Navigeer door transacties</li>
-                <li><kbd>Enter</kbd> - Bevestig match</li>
-                <li><kbd>Space</kbd> - Selecteer/deselecteer</li>
-                <li><kbd>Esc</kbd> - Annuleer selectie</li>
-                <li><kbd>Ctrl+F</kbd> - Focus zoekbalk</li>
-            </ul>
-
-            <h4 style="margin-top: 20px; margin-bottom: 10px;">💡 Tips</h4>
-            <ul style="color: var(--gray-700); margin-left: 20px;">
-                <li>Klik op een banktransactie om mogelijke matches te zien</li>
-                <li>Gebruik filters om specifieke periodes of leveranciers te bekijken</li>
-                <li>De Auto-Match functie gebruikt machine learning voor de beste resultaten</li>
-                <li>Exporteer uw matches regelmatig als backup</li>
-            </ul>
+            <div class="match-type" id="fuzzyMatches">
+                <h3>🔄 Fuzzy Matches <span class="match-count" id="fuzzyCount">0</span></h3>
+                <p style="color: #6b7280; font-size: 0.875rem;">Bedrag klopt, leveranciersnaam lijkt overeen te komen</p>
+                <div class="match-list" id="fuzzyList"></div>
+            </div>
+            
+            <div class="match-type" id="amountMatches">
+                <h3>💰 Alleen Bedrag Matches <span class="match-count" id="amountCount">0</span></h3>
+                <p style="color: #6b7280; font-size: 0.875rem;">Alleen het bedrag komt overeen</p>
+                <div class="match-list" id="amountList"></div>
+            </div>
+            
+            <div class="match-type" id="unmatchedBank">
+                <h3>❌ Ongematchte Betalingen <span class="match-count" id="unmatchedBankCount">0</span></h3>
+                <p style="color: #6b7280; font-size: 0.875rem;">Bankbetalingen zonder corresponderende factuur</p>
+                <div class="match-list" id="unmatchedBankList"></div>
+            </div>
+            
+            <div class="match-type" id="unmatchedInvoices">
+                <h3>📄 Ongematchte Facturen <span class="match-count" id="unmatchedInvoiceCount">0</span></h3>
+                <p style="color: #6b7280; font-size: 0.875rem;">Facturen zonder corresponderende betaling</p>
+                <div class="match-list" id="unmatchedInvoiceList"></div>
+            </div>
         </div>
-    </div>
-
-    <!-- Keyboard shortcuts hint -->
-    <div class="shortcuts-hint">
-        💡 Druk op <kbd>?</kbd> voor hulp
+        
+        <div class="export-section" id="exportSection" style="display: none;">
+            <button class="btn btn-primary" onclick="exportResults()">
+                📥 Exporteer Matching Resultaten
+            </button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Bezig met laden van data...</p>
+        </div>
     </div>
 
     <script>
@@ -846,477 +375,502 @@
         let state = {
             bankTransactions: [],
             invoices: [],
-            matches: new Map(), // bankId -> invoiceId
-            selectedBank: null,
-            selectedInvoice: null,
-            filters: {
-                dateFrom: null,
-                dateTo: null,
-                amountFrom: null,
-                amountTo: null,
-                supplier: '',
-                status: 'all',
-                searchTerm: ''
+            matches: {
+                exact: [],
+                fuzzy: [],
+                amountOnly: [],
+                unmatched: {
+                    bank: [],
+                    invoices: []
+                }
             }
         };
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            setupEventListeners();
-            setupKeyboardShortcuts();
-            // Automatically try to load CSV files from folder
-            checkForUploadedFiles();
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                await loadData();
+                runMatching();
+                setupEventListeners();
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('statusText').textContent = 
+                    'Fout bij laden: ' + error.message;
+            }
         });
 
-        // Event Listeners
+        // Event listeners
         function setupEventListeners() {
-            // Filters
-            document.getElementById('dateFrom').addEventListener('change', updateFilters);
-            document.getElementById('dateTo').addEventListener('change', updateFilters);
-            document.getElementById('amountFrom').addEventListener('change', updateFilters);
-            document.getElementById('amountTo').addEventListener('change', updateFilters);
-            document.getElementById('supplierFilter').addEventListener('change', updateFilters);
-            document.getElementById('searchInput').addEventListener('input', updateFilters);
-            
-            // Status filter badges
-            document.querySelectorAll('.status-badge').forEach(badge => {
-                badge.addEventListener('click', function() {
-                    document.querySelectorAll('.status-badge').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    state.filters.status = this.dataset.status;
-                    renderLists();
-                });
-            });
+            document.getElementById('minConfidence').addEventListener('change', () => displayResults());
+            document.getElementById('maxDaysDiff').addEventListener('change', () => displayResults());
+            document.getElementById('showOnly').addEventListener('change', () => displayResults());
         }
 
-        // File Upload Handlers - REMOVED as we only use the two CSV files
-        
-        // UI Updates
-        function updateUI() {
-            // No longer needed as we directly show the split view
-            updateStats();
-            renderLists();
-        }
-
-        function updateStats() {
-            document.getElementById('totalTransactions').textContent = state.bankTransactions.length;
-            document.getElementById('totalInvoices').textContent = state.invoices.length;
-            document.getElementById('matchedCount').textContent = state.matches.size;
-            document.getElementById('unmatchedCount').textContent = 
-                state.bankTransactions.length + state.invoices.length - (state.matches.size * 2);
-        }
-
-        // Rendering
-        function renderLists() {
-            renderBankList();
-            renderInvoiceList();
-        }
-
-        function renderBankList() {
-            const container = document.getElementById('bankList');
-            const filtered = filterTransactions(state.bankTransactions, 'bank');
+        // Load CSV files
+        async function loadData() {
+            updateProgress(10, 'CSV bestanden laden...');
             
-            container.innerHTML = filtered.map(transaction => {
-                const matched = state.matches.has(transaction.id);
-                const matchClass = matched ? 'matched' : 'no-match';
-                const selected = state.selectedBank === transaction.id ? 'selected' : '';
-                
-                return `
-                    <div class="transaction-item ${matchClass} ${selected}" 
-                         onclick="selectBankTransaction('${transaction.id}')">
-                        <div class="transaction-header">
-                            <span class="transaction-date">${formatDate(transaction.date)}</span>
-                            <span class="transaction-amount">${formatAmount(transaction.amount)}</span>
-                        </div>
-                        <div class="transaction-details">${transaction.counterparty}</div>
-                        <div class="transaction-description">${transaction.description}</div>
-                        ${matched ? '<div class="match-score">✓</div>' : ''}
-                    </div>
-                `;
-            }).join('');
-            
-            document.getElementById('bankCount').textContent = `${filtered.length} transacties`;
-        }
-
-        function renderInvoiceList() {
-            const container = document.getElementById('invoiceList');
-            const filtered = filterTransactions(state.invoices, 'invoice');
-            
-            container.innerHTML = filtered.map(invoice => {
-                const matched = [...state.matches.values()].includes(invoice.id);
-                const matchClass = matched ? 'matched' : 'no-match';
-                const selected = state.selectedInvoice === invoice.id ? 'selected' : '';
-                
-                return `
-                    <div class="transaction-item ${matchClass} ${selected}"
-                         onclick="selectInvoice('${invoice.id}')">
-                        <div class="transaction-header">
-                            <span class="transaction-date">${formatDate(invoice.date)}</span>
-                            <span class="transaction-amount">${formatAmount(invoice.amount)}</span>
-                        </div>
-                        <div class="transaction-details">${invoice.supplier}</div>
-                        <div class="transaction-description">Factuur: ${invoice.invoiceNumber}</div>
-                        ${matched ? '<div class="match-score">✓</div>' : ''}
-                    </div>
-                `;
-            }).join('');
-            
-            document.getElementById('invoiceCount').textContent = `${filtered.length} facturen`;
-        }
-
-        // Selection Handlers
-        function selectBankTransaction(id) {
-            state.selectedBank = id;
-            state.selectedInvoice = null;
-            renderLists();
-            
-            // Show match suggestions
-            const suggestions = findMatchSuggestions(id);
-            showSuggestions(suggestions);
-        }
-
-        function selectInvoice(id) {
-            state.selectedInvoice = id;
-            showMatchActions();
-        }
-
-        // Matching Logic
-        function findMatchSuggestions(bankId) {
-            const bankTransaction = state.bankTransactions.find(t => t.id === bankId);
-            if (!bankTransaction) return [];
-            
-            const strategy = document.getElementById('matchStrategy').value;
-            const unmatched = state.invoices.filter(i => ![...state.matches.values()].includes(i.id));
-            
-            // Calculate match scores
-            const scored = unmatched.map(invoice => {
-                let score = 0;
-                
-                // Exact amount match
-                if (Math.abs(bankTransaction.amount - invoice.amount) < 0.01) {
-                    score += 50;
-                }
-                
-                // Close amount match
-                const amountDiff = Math.abs(bankTransaction.amount - invoice.amount);
-                if (amountDiff < 1) score += 30;
-                else if (amountDiff < 5) score += 20;
-                else if (amountDiff < 10) score += 10;
-                
-                // Date proximity
-                const bankDate = new Date(parseDate(bankTransaction.date));
-                const invoiceDate = new Date(parseDate(invoice.date));
-                const daysDiff = Math.abs((bankDate - invoiceDate) / (1000 * 60 * 60 * 24));
-                
-                if (daysDiff < 7) score += 20;
-                else if (daysDiff < 30) score += 10;
-                else if (daysDiff < 60) score += 5;
-                
-                // Text matching
-                const description = bankTransaction.description.toLowerCase();
-                const supplier = invoice.supplier.toLowerCase();
-                
-                if (description.includes(supplier) || supplier.includes(description)) {
-                    score += 30;
-                }
-                
-                if (description.includes(invoice.invoiceNumber)) {
-                    score += 40;
-                }
-                
-                return { invoice, score };
+            // Load bank data
+            const bankData = await window.fs.readFile('BANKAFSCHRIFTEN_DATA_ENRICHED.csv', { encoding: 'utf8' });
+            const bankParsed = Papa.parse(bankData, {
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true
             });
             
-            // Sort by score and return top matches
-            return scored
-                .filter(s => s.score > 20)
-                .sort((a, b) => b.score - a.score)
-                .slice(0, 5);
-        }
-
-        function showSuggestions(suggestions) {
-            const container = document.getElementById('matchSuggestions');
-            const list = document.getElementById('suggestionsList');
+            // Filter operational expenses
+            state.bankTransactions = bankParsed.data.filter(row => {
+                return row['Boekhoudkunidg Type'] === 'OPERATIONELE UITGAVE' &&
+                       (row['Bedrag Uitgaand'] > 0 || 
+                        (row['Bedrag (ORIGINEEL)'] && row['Bedrag (ORIGINEEL)'].toString().startsWith('-')));
+            }).map((row, index) => ({
+                id: `bank_${index}`,
+                date: parseDate(row['Transactie Datum']),
+                amount: row['Bedrag Uitgaand'] || Math.abs(row['Transactie Bedrag']) || 0,
+                description: row['Transactie Omschrijving'] || '',
+                counterparty: row['Naam tegenpartij'] || '',
+                subcategory: row['Subcategorie (Levarancier/Ontvanger)'] || '',
+                category: row['Hoofdcategorie'] || '',
+                original: row
+            }));
             
-            if (suggestions.length === 0) {
-                container.style.display = 'none';
-                return;
-            }
+            updateProgress(30, 'Facturen laden...');
             
-            container.style.display = 'block';
-            list.innerHTML = suggestions.map(({ invoice, score }) => `
-                <div class="suggestion-item" onclick="selectInvoice('${invoice.id}')">
-                    <div>
-                        <div style="font-weight: 600;">${formatAmount(invoice.amount)}</div>
-                        <div style="font-size: 0.8rem; color: var(--gray-600);">
-                            ${invoice.supplier} - ${invoice.invoiceNumber}
-                        </div>
-                    </div>
-                    <div class="suggestion-score">${score}%</div>
-                </div>
-            `).join('');
-        }
-
-        function showMatchActions() {
-            if (state.selectedBank && state.selectedInvoice) {
-                document.getElementById('matchActions').style.display = 'flex';
-            }
-        }
-
-        // Match Actions
-        function confirmMatch() {
-            if (!state.selectedBank || !state.selectedInvoice) return;
+            // Load invoice data
+            const invoiceData = await window.fs.readFile('aankoopfacturen.csv', { encoding: 'utf8' });
+            const invoiceParsed = Papa.parse(invoiceData, {
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true
+            });
             
-            state.matches.set(state.selectedBank, state.selectedInvoice);
-            state.selectedBank = null;
-            state.selectedInvoice = null;
+            state.invoices = invoiceParsed.data.map((row, index) => ({
+                id: `invoice_${index}`,
+                date: parseDate(row['Factuur_Datum']),
+                amount: row['Totaal'] || 0,
+                supplier: row['Leverancier'] || '',
+                invoiceNumber: row['Factuur_Nummer'] || '',
+                paid: row['Betaald'] || 0,
+                original: row
+            }));
             
+            updateProgress(50, 'Data geladen, matching starten...');
+            
+            // Hide loading, show stats
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('statsGrid').style.display = 'grid';
             updateStats();
-            renderLists();
-            
-            document.getElementById('matchSuggestions').style.display = 'none';
-            document.getElementById('matchActions').style.display = 'none';
         }
 
-        function skipMatch() {
-            state.selectedBank = null;
-            state.selectedInvoice = null;
-            renderLists();
+        // Matching engine
+        function runMatching() {
+            const exactMatches = [];
+            const fuzzyMatches = [];
+            const amountMatches = [];
+            const matchedBankIds = new Set();
+            const matchedInvoiceIds = new Set();
             
-            document.getElementById('matchSuggestions').style.display = 'none';
-            document.getElementById('matchActions').style.display = 'none';
-        }
-
-        // Auto-matching
-        async function runAutoMatch() {
-            const progress = document.getElementById('matchProgress');
-            const progressFill = progress.querySelector('.progress-fill');
-            progress.style.display = 'block';
+            let progress = 50;
+            const progressIncrement = 40 / state.bankTransactions.length;
             
-            const unmatchedBanks = state.bankTransactions.filter(t => !state.matches.has(t.id));
-            let processed = 0;
-            
-            for (const transaction of unmatchedBanks) {
-                const suggestions = findMatchSuggestions(transaction.id);
-                if (suggestions.length > 0 && suggestions[0].score > 70) {
-                    state.matches.set(transaction.id, suggestions[0].invoice.id);
-                }
+            // Voor elke banktransactie
+            state.bankTransactions.forEach((bank, bankIndex) => {
+                let bestMatch = null;
+                let bestScore = 0;
+                let matchType = '';
                 
-                processed++;
-                progressFill.style.width = `${(processed / unmatchedBanks.length) * 100}%`;
-                
-                // Allow UI to update
-                await new Promise(resolve => setTimeout(resolve, 10));
-            }
-            
-            setTimeout(() => {
-                progress.style.display = 'none';
-                updateStats();
-                renderLists();
-            }, 500);
-        }
-
-        // Filtering
-        function filterTransactions(transactions, type) {
-            return transactions.filter(t => {
-                // Date filter
-                if (state.filters.dateFrom) {
-                    const date = new Date(parseDate(t.date));
-                    if (date < new Date(state.filters.dateFrom)) return false;
-                }
-                
-                if (state.filters.dateTo) {
-                    const date = new Date(parseDate(t.date));
-                    if (date > new Date(state.filters.dateTo)) return false;
-                }
-                
-                // Amount filter
-                if (state.filters.amountFrom && t.amount < state.filters.amountFrom) return false;
-                if (state.filters.amountTo && t.amount > state.filters.amountTo) return false;
-                
-                // Supplier filter (invoices only)
-                if (type === 'invoice' && state.filters.supplier && t.supplier !== state.filters.supplier) {
-                    return false;
-                }
-                
-                // Status filter
-                if (state.filters.status !== 'all') {
-                    const isMatched = type === 'bank' ? 
-                        state.matches.has(t.id) : 
-                        [...state.matches.values()].includes(t.id);
+                // Zoek matches in facturen
+                state.invoices.forEach(invoice => {
+                    // Skip als factuur al gematcht
+                    if (matchedInvoiceIds.has(invoice.id)) return;
                     
-                    if (state.filters.status === 'matched' && !isMatched) return false;
-                    if (state.filters.status === 'unmatched' && isMatched) return false;
+                    // Bereken match score
+                    const score = calculateMatchScore(bank, invoice);
+                    
+                    if (score.total > bestScore) {
+                        bestScore = score.total;
+                        bestMatch = { bank, invoice, score };
+                        
+                        if (score.exactMatch) {
+                            matchType = 'exact';
+                        } else if (score.fuzzyMatch && score.amountMatch) {
+                            matchType = 'fuzzy';
+                        } else if (score.amountMatch) {
+                            matchType = 'amount';
+                        }
+                    }
+                });
+                
+                // Voeg beste match toe aan juiste categorie
+                if (bestMatch && bestScore >= 50) {
+                    matchedBankIds.add(bank.id);
+                    matchedInvoiceIds.add(bestMatch.invoice.id);
+                    
+                    switch(matchType) {
+                        case 'exact':
+                            exactMatches.push(bestMatch);
+                            break;
+                        case 'fuzzy':
+                            fuzzyMatches.push(bestMatch);
+                            break;
+                        case 'amount':
+                            amountMatches.push(bestMatch);
+                            break;
+                    }
                 }
                 
-                // Search filter
-                if (state.filters.searchTerm) {
-                    const term = state.filters.searchTerm.toLowerCase();
-                    const searchable = JSON.stringify(t).toLowerCase();
-                    if (!searchable.includes(term)) return false;
+                progress += progressIncrement;
+                if (bankIndex % 10 === 0) {
+                    updateProgress(progress, `Matching... ${bankIndex + 1}/${state.bankTransactions.length}`);
                 }
-                
-                return true;
             });
-        }
-
-        function updateFilters() {
-            state.filters = {
-                dateFrom: document.getElementById('dateFrom').value,
-                dateTo: document.getElementById('dateTo').value,
-                amountFrom: parseFloat(document.getElementById('amountFrom').value) || null,
-                amountTo: parseFloat(document.getElementById('amountTo').value) || null,
-                supplier: document.getElementById('supplierFilter').value,
-                searchTerm: document.getElementById('searchInput').value,
-                status: state.filters.status
+            
+            // Vind ongematchte items
+            const unmatchedBank = state.bankTransactions.filter(b => !matchedBankIds.has(b.id));
+            const unmatchedInvoices = state.invoices.filter(i => !matchedInvoiceIds.has(i.id));
+            
+            state.matches = {
+                exact: exactMatches,
+                fuzzy: fuzzyMatches,
+                amountOnly: amountMatches,
+                unmatched: {
+                    bank: unmatchedBank,
+                    invoices: unmatchedInvoices
+                }
             };
             
-            renderLists();
+            updateProgress(100, 'Matching voltooid!');
+            displayResults();
+            
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('exportSection').style.display = 'block';
         }
 
-        // Export
-        function exportMatches() {
-            const matches = [];
+        // Calculate match score
+        function calculateMatchScore(bank, invoice) {
+            const score = {
+                total: 0,
+                amountMatch: false,
+                nameMatch: false,
+                fuzzyMatch: false,
+                exactMatch: false,
+                dateProximity: 0
+            };
             
-            state.matches.forEach((invoiceId, bankId) => {
-                const bank = state.bankTransactions.find(t => t.id === bankId);
-                const invoice = state.invoices.find(i => i.id === invoiceId);
+            // 1. Bedrag matching (40 punten)
+            const amountDiff = Math.abs(bank.amount - invoice.amount);
+            if (amountDiff < 0.01) {
+                score.amountMatch = true;
+                score.total += 40;
+            } else if (amountDiff < 1) {
+                score.total += 30;
+            } else if (amountDiff < 5) {
+                score.total += 20;
+            }
+            
+            // 2. Naam matching (40 punten)
+            const bankName = normalizeString(bank.counterparty + ' ' + bank.description + ' ' + bank.subcategory);
+            const invoiceName = normalizeString(invoice.supplier);
+            
+            // Exact match
+            if (bankName.includes(invoiceName) || invoiceName.includes(bankName)) {
+                score.nameMatch = true;
+                score.total += 40;
                 
-                matches.push({
-                    bank_date: bank.date,
-                    bank_amount: bank.amount,
-                    bank_description: bank.description,
-                    bank_counterparty: bank.counterparty,
-                    invoice_date: invoice.date,
-                    invoice_amount: invoice.amount,
-                    invoice_supplier: invoice.supplier,
-                    invoice_number: invoice.invoiceNumber
+                if (score.amountMatch) {
+                    score.exactMatch = true;
+                }
+            } else {
+                // Fuzzy match
+                const similarity = calculateSimilarity(bankName, invoiceName);
+                if (similarity > 0.7) {
+                    score.fuzzyMatch = true;
+                    score.total += 30;
+                } else if (similarity > 0.5) {
+                    score.total += 20;
+                }
+                
+                // Check for common words
+                const bankWords = bankName.split(' ').filter(w => w.length > 3);
+                const invoiceWords = invoiceName.split(' ').filter(w => w.length > 3);
+                const commonWords = bankWords.filter(w => invoiceWords.includes(w));
+                
+                if (commonWords.length > 0) {
+                    score.total += 10 * commonWords.length;
+                    if (!score.fuzzyMatch && commonWords.length >= 2) {
+                        score.fuzzyMatch = true;
+                    }
+                }
+            }
+            
+            // 3. Datum proximity (20 punten)
+            const daysDiff = Math.abs((bank.date - invoice.date) / (1000 * 60 * 60 * 24));
+            if (daysDiff <= 7) {
+                score.dateProximity = 20;
+                score.total += 20;
+            } else if (daysDiff <= 30) {
+                score.dateProximity = 15;
+                score.total += 15;
+            } else if (daysDiff <= 60) {
+                score.dateProximity = 10;
+                score.total += 10;
+            }
+            
+            return score;
+        }
+
+        // String normalization
+        function normalizeString(str) {
+            return str.toLowerCase()
+                .replace(/[^a-z0-9\s]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        // Calculate string similarity (Levenshtein-based)
+        function calculateSimilarity(str1, str2) {
+            const longer = str1.length > str2.length ? str1 : str2;
+            const shorter = str1.length > str2.length ? str2 : str1;
+            
+            if (longer.length === 0) return 1.0;
+            
+            const editDistance = levenshteinDistance(longer, shorter);
+            return (longer.length - editDistance) / longer.length;
+        }
+
+        // Levenshtein distance
+        function levenshteinDistance(str1, str2) {
+            const matrix = [];
+            
+            for (let i = 0; i <= str2.length; i++) {
+                matrix[i] = [i];
+            }
+            
+            for (let j = 0; j <= str1.length; j++) {
+                matrix[0][j] = j;
+            }
+            
+            for (let i = 1; i <= str2.length; i++) {
+                for (let j = 1; j <= str1.length; j++) {
+                    if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            
+            return matrix[str2.length][str1.length];
+        }
+
+        // Display results
+        function displayResults() {
+            const minConfidence = parseInt(document.getElementById('minConfidence').value);
+            const maxDaysDiff = parseInt(document.getElementById('maxDaysDiff').value);
+            const showOnly = document.getElementById('showOnly').value;
+            
+            // Update counts
+            document.getElementById('exactCount').textContent = state.matches.exact.length;
+            document.getElementById('fuzzyCount').textContent = state.matches.fuzzy.length;
+            document.getElementById('amountCount').textContent = state.matches.amountOnly.length;
+            document.getElementById('unmatchedBankCount').textContent = state.matches.unmatched.bank.length;
+            document.getElementById('unmatchedInvoiceCount').textContent = state.matches.unmatched.invoices.length;
+            
+            // Display exact matches
+            displayMatchList('exactList', state.matches.exact, 'high', minConfidence, maxDaysDiff);
+            
+            // Display fuzzy matches
+            displayMatchList('fuzzyList', state.matches.fuzzy, 'medium', minConfidence, maxDaysDiff);
+            
+            // Display amount-only matches
+            displayMatchList('amountList', state.matches.amountOnly, 'low', minConfidence, maxDaysDiff);
+            
+            // Display unmatched
+            if (showOnly !== 'ambiguous') {
+                displayUnmatchedBank('unmatchedBankList', state.matches.unmatched.bank);
+                displayUnmatchedInvoices('unmatchedInvoiceList', state.matches.unmatched.invoices);
+            }
+            
+            updateStats();
+        }
+
+        // Display match list
+        function displayMatchList(elementId, matches, confidence, minConfidence, maxDaysDiff) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            
+            matches.forEach(match => {
+                if (match.score.total < minConfidence) return;
+                
+                const daysDiff = Math.abs((match.bank.date - match.invoice.date) / (1000 * 60 * 60 * 24));
+                if (daysDiff > maxDaysDiff) return;
+                
+                const item = document.createElement('div');
+                item.className = 'match-item';
+                item.innerHTML = `
+                    <div class="match-side">
+                        <div class="match-amount">€ ${match.bank.amount.toFixed(2)}</div>
+                        <div class="match-date">${formatDate(match.bank.date)}</div>
+                        <div class="match-description"><strong>Bank:</strong> ${match.bank.counterparty}</div>
+                        <div class="match-description">${match.bank.description}</div>
+                    </div>
+                    <div class="match-side">
+                        <div class="match-amount">€ ${match.invoice.amount.toFixed(2)}</div>
+                        <div class="match-date">${formatDate(match.invoice.date)}</div>
+                        <div class="match-description"><strong>Factuur:</strong> ${match.invoice.supplier}</div>
+                        <div class="match-description">Nr: ${match.invoice.invoiceNumber}</div>
+                        <span class="confidence-badge confidence-${confidence}">
+                            Score: ${match.score.total}%
+                        </span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Display unmatched bank transactions
+        function displayUnmatchedBank(elementId, transactions) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            
+            transactions.forEach(bank => {
+                const item = document.createElement('div');
+                item.className = 'match-item';
+                item.innerHTML = `
+                    <div class="match-side">
+                        <div class="match-amount">€ ${bank.amount.toFixed(2)}</div>
+                        <div class="match-date">${formatDate(bank.date)}</div>
+                        <div class="match-description"><strong>${bank.counterparty}</strong></div>
+                        <div class="match-description">${bank.description}</div>
+                    </div>
+                    <div class="match-side" style="display: flex; align-items: center; justify-content: center; color: #6b7280;">
+                        <em>Geen factuur gevonden</em>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Display unmatched invoices
+        function displayUnmatchedInvoices(elementId, invoices) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            
+            invoices.forEach(invoice => {
+                const item = document.createElement('div');
+                item.className = 'match-item';
+                item.innerHTML = `
+                    <div class="match-side" style="display: flex; align-items: center; justify-content: center; color: #6b7280;">
+                        <em>Geen betaling gevonden</em>
+                    </div>
+                    <div class="match-side">
+                        <div class="match-amount">€ ${invoice.amount.toFixed(2)}</div>
+                        <div class="match-date">${formatDate(invoice.date)}</div>
+                        <div class="match-description"><strong>${invoice.supplier}</strong></div>
+                        <div class="match-description">Factuur: ${invoice.invoiceNumber}</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalBank').textContent = state.bankTransactions.length;
+            document.getElementById('totalInvoices').textContent = state.invoices.length;
+            
+            const perfectCount = state.matches.exact.length;
+            const possibleCount = state.matches.fuzzy.length + state.matches.amountOnly.length;
+            
+            document.getElementById('perfectMatches').textContent = perfectCount;
+            document.getElementById('perfectPercent').textContent = 
+                `${((perfectCount / state.bankTransactions.length) * 100).toFixed(1)}%`;
+            
+            document.getElementById('possibleMatches').textContent = possibleCount;
+            document.getElementById('possiblePercent').textContent = 
+                `${((possibleCount / state.bankTransactions.length) * 100).toFixed(1)}%`;
+        }
+
+        // Utility functions
+        function parseDate(dateStr) {
+            if (!dateStr) return new Date();
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                return new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            }
+            return new Date(dateStr);
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('nl-BE');
+        }
+
+        function updateProgress(percent, message) {
+            document.getElementById('progressFill').style.width = percent + '%';
+            document.getElementById('progressFill').textContent = percent + '%';
+            document.getElementById('statusText').textContent = message;
+        }
+
+        // Export results
+        function exportResults() {
+            const results = [];
+            
+            // Add exact matches
+            state.matches.exact.forEach(match => {
+                results.push({
+                    match_type: 'Exact',
+                    confidence: match.score.total,
+                    bank_date: formatDate(match.bank.date),
+                    bank_amount: match.bank.amount,
+                    bank_description: match.bank.counterparty + ' - ' + match.bank.description,
+                    invoice_date: formatDate(match.invoice.date),
+                    invoice_amount: match.invoice.amount,
+                    invoice_supplier: match.invoice.supplier,
+                    invoice_number: match.invoice.invoiceNumber
                 });
             });
             
-            const csv = Papa.unparse(matches);
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `reconciliation_${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-        }
-
-        // Utilities
-        function formatAmount(amount) {
-            return new Intl.NumberFormat('nl-BE', {
-                style: 'currency',
-                currency: 'EUR'
-            }).format(amount);
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr) return '';
-            return dateStr; // Keep original format for now
-        }
-
-        function parseDate(dateStr) {
-            if (!dateStr) return '';
-            const parts = dateStr.split('/');
-            if (parts.length === 3) {
-                return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-            }
-            return dateStr;
-        }
-
-        // Check for already uploaded files
-        async function checkForUploadedFiles() {
-            try {
-                // Show loading status
-                document.getElementById('uploadStatus').innerHTML = 
-                    '<span style="color: var(--primary);">⏳ CSV bestanden laden uit folder...</span>';
-                
-                // Try to read the files if they exist
-                const bankData = await window.fs.readFile('BANKAFSCHRIFTEN_DATA_ENRICHED.csv', { encoding: 'utf8' });
-                const invoiceData = await window.fs.readFile('aankoopfacturen.csv', { encoding: 'utf8' });
-                
-                if (bankData && invoiceData) {
-                    // Parse bank data
-                    const bankParsed = Papa.parse(bankData, {
-                        header: true,
-                        dynamicTyping: true,
-                        skipEmptyLines: true
-                    });
-                    
-                    // Process bank transactions
-                    state.bankTransactions = bankParsed.data.filter(row => {
-                        return row['Bedrag Uitgaand'] > 0 || 
-                               (row['Bedrag (ORIGINEEL)'] && row['Bedrag (ORIGINEEL)'].toString().startsWith('-'));
-                    }).map((row, index) => ({
-                        id: `bank_${index}`,
-                        date: row['Transactie Datum'],
-                        amount: row['Bedrag Uitgaand'] || Math.abs(row['Transactie Bedrag']) || 0,
-                        description: row['Transactie Omschrijving'] || '',
-                        counterparty: row['Naam tegenpartij'] || '',
-                        reference: row['gestructureerde mededeling'] || '',
-                        original: row
-                    }));
-                    
-                    // Parse invoice data
-                    const invoiceParsed = Papa.parse(invoiceData, {
-                        header: true,
-                        dynamicTyping: true,
-                        skipEmptyLines: true
-                    });
-                    
-                    // Process invoices
-                    state.invoices = invoiceParsed.data.map((row, index) => ({
-                        id: `invoice_${index}`,
-                        date: row['Factuur_Datum'],
-                        amount: row['Totaal'] || 0,
-                        supplier: row['Leverancier'] || '',
-                        invoiceNumber: row['Factuur_Nummer'] || '',
-                        paid: row['Betaald'] || 0,
-                        original: row
-                    }));
-                    
-                    // Update supplier filter
-                    const suppliers = [...new Set(state.invoices.map(i => i.supplier))].sort();
-                    const supplierSelect = document.getElementById('supplierFilter');
-                    supplierSelect.innerHTML = '<option value="">Alle leveranciers</option>';
-                    suppliers.forEach(supplier => {
-                        supplierSelect.innerHTML += `<option value="${supplier}">${supplier}</option>`;
-                    });
-                    
-                    // Show success message briefly
-                    document.getElementById('uploadStatus').innerHTML = 
-                        `<span style="color: var(--success);">✓ Data geladen: ${state.bankTransactions.length} betalingen, ${state.invoices.length} facturen</span>`;
-                    
-                    // Update UI after a short delay
-                    setTimeout(() => {
-                        updateUI();
-                    }, 1000);
-                }
-            } catch (error) {
-        // Keyboard shortcuts
-        function setupKeyboardShortcuts() {
-            document.addEventListener('keydown', (e) => {
-                if (e.key === '?') {
-                    showHelp();
-                } else if (e.key === 'Escape') {
-                    state.selectedBank = null;
-                    state.selectedInvoice = null;
-                    renderLists();
-                    document.getElementById('matchSuggestions').style.display = 'none';
-                    document.getElementById('matchActions').style.display = 'none';
-                } else if (e.ctrlKey && e.key === 'f') {
-                    e.preventDefault();
-                    document.getElementById('searchInput').focus();
-                }
+            // Add fuzzy matches
+            state.matches.fuzzy.forEach(match => {
+                results.push({
+                    match_type: 'Fuzzy',
+                    confidence: match.score.total,
+                    bank_date: formatDate(match.bank.date),
+                    bank_amount: match.bank.amount,
+                    bank_description: match.bank.counterparty + ' - ' + match.bank.description,
+                    invoice_date: formatDate(match.invoice.date),
+                    invoice_amount: match.invoice.amount,
+                    invoice_supplier: match.invoice.supplier,
+                    invoice_number: match.invoice.invoiceNumber
+                });
             });
+            
+            // Add unmatched
+            state.matches.unmatched.bank.forEach(bank => {
+                results.push({
+                    match_type: 'Ongematchte Betaling',
+                    confidence: 0,
+                    bank_date: formatDate(bank.date),
+                    bank_amount: bank.amount,
+                    bank_description: bank.counterparty + ' - ' + bank.description,
+                    invoice_date: '',
+                    invoice_amount: '',
+                    invoice_supplier: '',
+                    invoice_number: ''
+                });
+            });
+            
+            const csv = Papa.unparse(results);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `helix_matching_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
         }
-
-        // Help modal
-        function showHelp() {
-            document.getElementById('helpModal').classList.add('active');
-        }
-
-        function closeHelp() {
-            document.getElementById('helpModal').classList.remove('active');
-        }
+    </script>
+</body>
+</html>
