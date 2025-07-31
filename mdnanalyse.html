@@ -517,7 +517,7 @@
             background: white;
             border-radius: 16px;
             padding: 30px;
-            max-width: 600px;
+            max-width: 700px;
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
@@ -656,29 +656,65 @@
 <body>
     <header>
         <div class="container">
-            <h1>MDN Vennootschappen - 45 Jaar Onduidelijkheid</h1>
-            <p class="subtitle">Analyse van discrepanties tussen facturen en betalingen aan de syndicus</p>
+            <h1>MDN Vennootschappen - Financiële Analyse</h1>
+            <p class="subtitle">Vergelijking tussen facturen en betalingen periode 2024-2025</p>
         </div>
     </header>
 
     <div class="container">
         <div class="critical-warning">
             <div class="critical-warning-header">
-                <div class="critical-warning-icon">🚨</div>
-                <h2>Kritieke Bevindingen na 45 Jaar</h2>
+                <div class="critical-warning-icon">📊</div>
+                <h2>Bevindingen uit de Analyse</h2>
             </div>
             <div class="critical-warning-content">
-                <p>Deze analyse toont voor het eerst de werkelijke omvang van de administratieve chaos:</p>
+                <p>Deze analyse vergelijkt de geregistreerde betalingen met de ontvangen facturen:</p>
                 <ul style="margin-top: 10px; margin-left: 20px;">
-                    <li><strong>€151.121</strong> betaald volgens bankafschriften</li>
-                    <li><strong>€95.027</strong> gefactureerd volgens de boekhouding</li>
-                    <li><strong>€56.094</strong> onverklaarbaar verschil - betaald zonder factuur!</li>
-                    <li>Facturen met "betaald" status waarvoor geen betaling te vinden is</li>
-                    <li>Grote betalingen (€40.000, €35.000, €25.000) zonder corresponderende facturen</li>
-                    <li>Geen factuurnummers in transactieomschrijvingen = onmogelijke matching</li>
+                    <li><strong>€151.121</strong> totaal betaald volgens bankafschriften</li>
+                    <li><strong>€95.027</strong> totaal gefactureerd volgens het facturenregister</li>
+                    <li><strong>€56.094</strong> verschil tussen beide bedragen</li>
+                    <li>Verschillende facturen tonen een "betaald" status zonder corresponderende bankbetaling</li>
+                    <li>Meerdere grote betalingen zonder bijhorende factuur in het register</li>
+                    <li>Afwezigheid van gestructureerde mededelingen bemoeilijkt de reconciliatie</li>
                 </ul>
             </div>
         </div>
+
+        <!-- Data Verificatie Box -->
+        <details style="background: #e0e7ff; border: 2px solid #6366f1; border-radius: 12px; padding: 20px; margin-bottom: 30px;">
+            <summary style="color: #4f46e5; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.5rem;">🔍</span>
+                Data Verificatie & Methodologie
+                <span style="font-size: 0.875rem; font-weight: normal; margin-left: auto;">(Klik voor details)</span>
+            </summary>
+            <div style="color: #4c1d95; line-height: 1.6; margin-top: 20px;">
+                <strong>Databronnen:</strong>
+                <ul style="margin: 10px 0 10px 20px;">
+                    <li><code>BANKAFSCHRIFTEN_DATA_ENRICHED.csv</code> - Officiële bankafschriften (werkelijke betalingen)</li>
+                    <li><code>aankoopfacturen.csv</code> - Facturenregister uit boekhouding</li>
+                </ul>
+                
+                <strong>Selectiecriteria:</strong>
+                <ul style="margin: 10px 0 10px 20px;">
+                    <li>Betalingen: Uitgaande betalingen aan rekeningnummers van vennootschappen van de heer Marc De Neve</li>
+                    <li>Facturen: Leverancier bevat "IMMO BEACH", "WEST COAST INVESTMENTS", of "LA NOUVELLE AGENCE"</li>
+                    <li>Deze vennootschappen zijn allen eigendom van syndicus Marc De Neve</li>
+                </ul>
+                
+                <strong>Matching methodologie:</strong>
+                <ul style="margin: 10px 0 10px 20px;">
+                    <li>Exacte bedrag matching (verschil < €0.01)</li>
+                    <li>Geen gestructureerde mededelingen beschikbaar</li>
+                    <li>Factuurnummers NIET aanwezig in betalingsomschrijvingen</li>
+                    <li>"Betaald" status komt uit facturenbestand, NIET uit bank</li>
+                </ul>
+                
+                <div style="background: #fbbf24; color: #78350f; padding: 10px; border-radius: 6px; margin-top: 15px;">
+                    <strong>⚠️ Disclaimer:</strong> Deze analyse toont feitelijke discrepanties tussen twee officiële databronnen. 
+                    Zonder gestructureerde mededelingen of andere unieke referenties is 100% zekerheid over individuele matches onmogelijk.
+                </div>
+            </div>
+        </details>
 
         <!-- KPI Section -->
         <div class="kpi-grid" id="kpi-grid"></div>
@@ -686,11 +722,11 @@
         <!-- Problem Analysis Section -->
         <div class="problem-grid">
             <div class="problem-card">
-                <h3 class="problem-card-title">🔴 Onverklaarbare Betalingen</h3>
+                <h3 class="problem-card-title">📋 Betalingen Zonder Factuur</h3>
                 <div id="unexplained-payments"></div>
             </div>
             <div class="problem-card">
-                <h3 class="problem-card-title">⚠️ Matching Problemen</h3>
+                <h3 class="problem-card-title">🔍 Reconciliatie Uitdagingen</h3>
                 <div id="matching-problems"></div>
             </div>
         </div>
@@ -698,7 +734,7 @@
         <!-- Timeline Section -->
         <div class="timeline-container">
             <div class="timeline-header">
-                <h2 class="timeline-title">Chronologische Tijdlijn - Waar Gaat Het Mis?</h2>
+                <h2 class="timeline-title">Chronologisch Overzicht Transacties</h2>
                 <div class="timeline-legend">
                     <div class="legend-item">
                         <div class="legend-dot factuur"></div>
@@ -719,7 +755,7 @@
 
         <!-- Chart Section -->
         <div class="chart-container">
-            <h3 class="chart-title">Maandelijkse Betalingen vs Facturen - Het Gat Wordt Groter</h3>
+            <h3 class="chart-title">Maandelijks Overzicht Betalingen vs Facturen</h3>
             <canvas id="monthlyChart" style="max-height: 300px;"></canvas>
         </div>
 
@@ -728,9 +764,9 @@
             <h4>Methodologie & Problemen:</h4>
             <ul>
                 <li><strong>Data bronnen:</strong> BANKAFSCHRIFTEN_DATA_ENRICHED.csv (werkelijke betalingen) vs aankoopfacturen.csv (officiële facturen)</li>
-                <li><strong>Hoofdprobleem:</strong> Geen factuurnummers in transactieomschrijvingen = matching is giswerk</li>
-                <li><strong>R/C vermoeden:</strong> Grote bedragen worden mogelijk via rekening-courant verrekend zonder factuur</li>
-                <li><strong>Datumanomalieën:</strong> Sommige facturen hebben toekomstige datums (2025) of worden betaald vóór factuurdatum</li>
+                <li><strong>Hoofdprobleem:</strong> Geen gestructureerde mededelingen of andere consistente referenties om betalingen aan facturen te koppelen</li>
+                <li><strong>R/C vermoeden:</strong> Grote bedragen worden mogelijk via rekening-courant verrekend zonder transparante koppeling</li>
+                <li><strong>Reconciliatie onmogelijk:</strong> Zonder gestructureerde mededelingen of duidelijke referenties is het giswerk welke betaling bij welke factuur hoort</li>
                 <li><strong>Transparantie:</strong> Na 45 jaar is dit de eerste keer dat deze discrepanties zichtbaar worden</li>
             </ul>
         </div>
@@ -801,7 +837,14 @@
         // Parse date
         function parseDate(dateStr) {
             const parts = dateStr.split('/');
-            return new Date(parts[2], parts[1] - 1, parts[0]);
+            // Zorg ervoor dat we een geldig Date object krijgen
+            const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            // Check of de datum geldig is
+            if (isNaN(date.getTime())) {
+                console.error('Invalid date:', dateStr);
+                return new Date(); // Return huidige datum als fallback
+            }
+            return date;
         }
 
         // Initialize KPIs
@@ -824,9 +867,9 @@
                     <div class="kpi-subtext">${mdnData.facturen.length} facturen</div>
                 </div>
                 <div class="kpi-card danger">
-                    <div class="kpi-label">❌ Onverklaarbaar Verschil</div>
+                    <div class="kpi-label">Verschil Bank - Facturen</div>
                     <div class="kpi-value">${formatCurrency(verschil)}</div>
-                    <div class="kpi-subtext">Betaald zonder factuur!</div>
+                    <div class="kpi-subtext">Te verklaren verschil</div>
                 </div>
                 <div class="kpi-card warning">
                     <div class="kpi-label">Volgens Facturen Betaald</div>
@@ -853,7 +896,7 @@
                         <div class="problem-item-detail">Omschrijving: "${b.omschrijving}"</div>
                         <div class="problem-item-detail">Naar: ${b.vennootschap}</div>
                         <div class="problem-item-detail" style="color: #dc2626; font-weight: 600;">
-                            ❌ Geen corresponderende factuur gevonden!
+                            Geen corresponderende factuur in het register
                         </div>
                     </div>
                 `;
@@ -863,20 +906,20 @@
             // Matching problemen
             const matchingProblems = [
                 {
-                    title: "Geen Factuurnummers in Omschrijvingen",
-                    detail: "Transactieomschrijvingen bevatten NOOIT factuurnummers, waardoor automatische matching onmogelijk is"
+                    title: "€142,78 - Verschil in Aantallen",
+                    detail: "Voor dit bedrag zijn 3 facturen geregistreerd maar 9 betalingen uitgevoerd. Zonder aanvullende referenties is een exacte koppeling niet mogelijk."
                 },
                 {
-                    title: "Rekening-Courant Vermoedens",
-                    detail: "Grote betalingen (€40.000, €35.000, €25.000) met vage omschrijvingen zoals 'ERELOON' of 'NAAR IMMO BEACH'"
+                    title: "Afwezigheid Gestructureerde Mededelingen",
+                    detail: "De betalingen bevatten geen gestructureerde mededelingen (+++XXX/XXXX/XXXXX+++) waardoor automatische reconciliatie niet mogelijk is"
                 },
                 {
-                    title: "Datum Anomalieën",
-                    detail: "Facturen met toekomstige datums (2025) en betalingen die gebeuren vóór factuurdatum"
+                    title: "Algemene Omschrijvingen",
+                    detail: "Grote betalingen bevatten algemene omschrijvingen zonder verwijzing naar specifieke facturen of diensten"
                 },
                 {
-                    title: "Factuur 25/00001: €66.247,68",
-                    detail: "Slechts €35.703,90 'betaald' volgens factuur, maar welke betaling is dit precies?"
+                    title: "Verschillende Betalingsmethoden",
+                    detail: "Mogelijk worden verschillende administratieve methoden gehanteerd voor de verwerking van betalingen"
                 }
             ];
 
@@ -892,76 +935,27 @@
             document.getElementById('matching-problems').innerHTML = matchingHTML;
         }
 
-        // Attempt matching with improved logic
-        function attemptMatching(betaling, facturen) {
-            // 1. Check for exact amount match
-            const exactMatch = facturen.find(f => 
-                Math.abs(f.bedrag - betaling.bedrag) < 0.01 ||
-                Math.abs(f.betaald - betaling.bedrag) < 0.01
-            );
-            if (exactMatch) return { type: 'exact', factuur: exactMatch };
-
-            // 2. Check for factuur nummer in omschrijving (unlikely but worth checking)
-            const factuurInOmschrijving = facturen.find(f => {
-                const normalized = betaling.omschrijving.replace(/\s/g, '').toUpperCase();
-                const factuurNr = f.factuurnr.replace(/\s/g, '').toUpperCase();
-                return normalized.includes(factuurNr);
-            });
-            if (factuurInOmschrijving) return { type: 'factuurnr', factuur: factuurInOmschrijving };
-
-            // 3. Check for partial payment of large invoice
-            if (betaling.bedrag >= 10000) {
-                const largeInvoice = facturen.find(f => f.factuurnr === "25/00001");
-                if (largeInvoice) {
-                    return { type: 'possible_partial', factuur: largeInvoice };
-                }
-            }
-
-            return null;
-        }
-
-        // Create timeline with matching attempts
+        // Create timeline
         function createTimeline() {
             const timeline = [];
             
-            // Process payments
+            // Add all items to timeline
             mdnData.betalingen.forEach(b => {
-                const match = attemptMatching(b, mdnData.facturen);
                 timeline.push({
+                    ...b,
                     type: 'betaling',
                     datum: parseDate(b.datum),
-                    datumStr: b.datum,
-                    bedrag: b.bedrag,
-                    vennootschap: b.vennootschap,
-                    omschrijving: b.omschrijving,
-                    rekeningTegenpartij: b.rekeningTegenpartij,
-                    saldoNaTransactie: b.saldoNaTransactie,
-                    match: match,
-                    raw: b
+                    datumStr: b.datum
                 });
             });
 
-            // Process invoices
             mdnData.facturen.forEach(f => {
-                // Check if any payment matches this invoice
-                const matchingPayments = mdnData.betalingen.filter(b => {
-                    const match = attemptMatching(b, [f]);
-                    return match !== null;
-                });
-
                 timeline.push({
+                    ...f,
                     type: 'factuur',
                     datum: parseDate(f.datum),
                     datumStr: f.datum,
-                    bedrag: f.bedrag,
-                    vennootschap: f.vennootschap,
-                    factuurnr: f.factuurnr,
-                    nummer: f.nummer,
-                    betaald: f.betaald,
-                    openstaand: f.bedrag - f.betaald,
-                    laatstBetaaldOp: f.laatstBetaaldOp,
-                    hasPayments: matchingPayments.length > 0,
-                    raw: f
+                    openstaand: f.bedrag - f.betaald
                 });
             });
 
@@ -976,6 +970,12 @@
             let animationDelay = 0;
 
             timeline.forEach((item, index) => {
+                // Debug check
+                if (!item.datum || typeof item.datum.getTime !== 'function') {
+                    console.error('Invalid date for item:', item);
+                    return; // Skip this item
+                }
+                
                 // Add month marker if new month
                 const itemMonth = item.datum.toLocaleDateString('nl-BE', { month: 'long', year: 'numeric' });
                 if (itemMonth !== currentMonth) {
@@ -993,74 +993,74 @@
                 itemEl.style.animationDelay = `${animationDelay * 0.05}s`;
                 animationDelay++;
 
-                // Determine status and badges
+                // Determine badges and matching
                 let badges = '';
                 let contentClass = '';
                 let dotClass = '';
+                let matchingInfo = '';
 
                 if (item.type === 'betaling') {
-                    if (item.match) {
-                        if (item.match.type === 'exact') {
-                            badges = '<span class="badge badge-success">✓ Exacte match</span>';
-                            dotClass = 'matched';
-                        } else if (item.match.type === 'possible_partial') {
-                            badges = '<span class="badge badge-warning">Mogelijk deelbetaling</span>';
-                            contentClass = 'suspicious';
-                            dotClass = 'suspicious';
-                        }
-                    } else if (item.bedrag >= 10000) {
-                        badges = '<span class="badge badge-danger">Grote betaling zonder factuur</span>';
+                    // Check for matching invoice
+                    const exactMatch = mdnData.facturen.find(f => 
+                        Math.abs(f.bedrag - item.bedrag) < 0.01
+                    );
+                    const betaaldMatch = mdnData.facturen.find(f => 
+                        Math.abs(f.betaald - item.bedrag) < 0.01
+                    );
+                    
+                    if (item.bedrag === 142.78) {
+                        badges = '<span class="badge badge-danger">❌ 9 betalingen vs 3 facturen</span>';
                         contentClass = 'orphan';
                         dotClass = 'orphan';
-                    } else if (item.bedrag > 1000) {
-                        badges = '<span class="badge badge-warning">Geen factuur</span>';
+                        matchingInfo = `<div class="timeline-error">
+                            ⚠️ Voor €142,78 zijn er 9 betalingen maar slechts 3 facturen!
+                        </div>`;
+                    } else if (exactMatch || betaaldMatch) {
+                        badges = '<span class="badge badge-success">✓ Factuur gevonden</span>';
+                        dotClass = 'matched';
+                    } else {
+                        badges = '<span class="badge badge-danger">❌ Geen factuur</span>';
                         contentClass = 'orphan';
                         dotClass = 'orphan';
+                    }
+                    
+                    // Check for negative balance - no separate badge, just warning content
+                    if (item.saldoNaTransactie < 0) {
+                        matchingInfo = `<div class="timeline-error">
+                            🚨 Saldo na transactie: ${formatCurrency(item.saldoNaTransactie)}
+                        </div>`;
                     }
                 } else {
-                    // Invoice
-                    if (item.openstaand === 0) {
-                        badges = '<span class="badge badge-info">Volledig betaald?</span>';
-                    } else if (item.betaald > 0) {
-                        badges = `<span class="badge badge-warning">€${item.openstaand.toFixed(2)} open</span>`;
-                    } else {
+                    // For invoices
+                    const exactMatch = mdnData.betalingen.find(b => 
+                        Math.abs(b.bedrag - item.bedrag) < 0.01
+                    );
+                    
+                    if (item.betaald === 0) {
                         badges = '<span class="badge badge-danger">Niet betaald</span>';
+                    } else if (item.betaald === item.bedrag) {
+                        badges = '<span class="badge badge-info">Volledig betaald</span>';
+                    } else {
+                        badges = `<span class="badge badge-warning">Deels: €${item.betaald.toFixed(2)}</span>`;
                     }
-
-                    // Check for future dates
-                    const today = new Date();
-                    if (item.datum > today) {
-                        badges += ' <span class="badge badge-danger">Toekomstige datum!</span>';
+                    
+                    if (exactMatch) {
+                        dotClass = 'matched';
+                    } else if (item.betaald > 0) {
+                        const betaaldMatch = mdnData.betalingen.find(b => 
+                            Math.abs(b.bedrag - item.betaald) < 0.01
+                        );
+                        if (!betaaldMatch) {
+                            contentClass = 'orphan';
+                            dotClass = 'orphan';
+                            matchingInfo = `<div style="font-size: 0.875rem; color: #dc2626; margin-top: 4px;">
+                                ❌ Betaald bedrag niet gevonden in bank!
+                            </div>`;
+                        }
                     }
                 }
 
-                // Build content
-                let warningContent = '';
-                if (item.type === 'betaling' && item.bedrag >= 20000) {
-                    warningContent = `
-                        <div class="timeline-error">
-                            ⚠️ Grote betaling zonder duidelijke factuur - mogelijk R/C verrekening?
-                        </div>
-                    `;
-                }
-
-                if (item.type === 'factuur' && item.betaald > 0 && !item.hasPayments) {
-                    warningContent = `
-                        <div class="timeline-warning">
-                            ❓ Factuur toont "betaald" maar geen matching betaling gevonden
-                        </div>
-                    `;
-                }
-
-                // Special case for invoice 25/00001
-                if (item.type === 'factuur' && item.factuurnr === '25/00001') {
-                    warningContent = `
-                        <div class="timeline-error">
-                            🚨 Grootste factuur: €${item.bedrag.toFixed(2)} waarvan slechts €${item.betaald.toFixed(2)} betaald
-                        </div>
-                    `;
-                }
-
+                // Build item HTML
                 itemEl.innerHTML = `
                     <div class="timeline-content ${contentClass}" onclick="showDetails('${item.type}', ${index})">
                         <div class="timeline-header-info">
@@ -1071,16 +1071,11 @@
                         <div class="timeline-company">${item.vennootschap}</div>
                         <div class="timeline-description">
                             ${item.type === 'factuur' ? 
-                                `<strong>Factuur:</strong> ${item.factuurnr} (Intern: ${item.nummer})` : 
+                                `<strong>Factuur:</strong> ${item.factuurnr}` : 
                                 `<strong>Omschrijving:</strong> ${item.omschrijving}`
                             }
                         </div>
-                        ${item.type === 'factuur' && item.betaald > 0 ? 
-                            `<div style="font-size: 0.875rem; color: #059669; margin-top: 4px;">
-                                Betaald: ${formatCurrency(item.betaald)} ${item.laatstBetaaldOp ? `op ${item.laatstBetaaldOp}` : ''}
-                            </div>` : ''
-                        }
-                        ${warningContent}
+                        ${matchingInfo}
                     </div>
                     <div class="timeline-dot ${dotClass}"></div>
                 `;
@@ -1101,9 +1096,10 @@
 
             modalTitle.textContent = type === 'factuur' ? 'Factuur Details' : 'Betaling Details';
 
-            let content = '';
+            let content = '<div style="margin-bottom: 20px;">';
+            
             if (type === 'factuur') {
-                content = `
+                content += `
                     <div class="detail-row">
                         <span class="detail-label">Datum</span>
                         <span class="detail-value">${item.datumStr}</span>
@@ -1111,10 +1107,6 @@
                     <div class="detail-row">
                         <span class="detail-label">Factuurnummer</span>
                         <span class="detail-value">${item.factuurnr}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Intern nummer</span>
-                        <span class="detail-value">${item.nummer}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Leverancier</span>
@@ -1125,31 +1117,16 @@
                         <span class="detail-value">${formatCurrency(item.bedrag)}</span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">Reeds betaald</span>
+                        <span class="detail-label">Betaald volgens factuur</span>
                         <span class="detail-value">${formatCurrency(item.betaald)}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Openstaand</span>
                         <span class="detail-value">${formatCurrency(item.openstaand)}</span>
                     </div>
-                    ${item.laatstBetaaldOp ? `
-                    <div class="detail-row">
-                        <span class="detail-label">Laatst betaald op</span>
-                        <span class="detail-value">${item.laatstBetaaldOp}</span>
-                    </div>` : ''}
                 `;
-
-                // Add warning for matching issues
-                if (item.betaald > 0 && !item.hasPayments) {
-                    content += `
-                        <div class="timeline-error" style="margin-top: 20px;">
-                            ❌ Deze factuur toont een betaald bedrag, maar er is geen corresponderende betaling gevonden in de bankafschriften!
-                        </div>
-                    `;
-                }
             } else {
-                // Payment details
-                content = `
+                content += `
                     <div class="detail-row">
                         <span class="detail-label">Datum</span>
                         <span class="detail-value">${item.datumStr}</span>
@@ -1163,49 +1140,86 @@
                         <span class="detail-value">${item.vennootschap}</span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">Rekening tegenpartij</span>
-                        <span class="detail-value" style="font-family: monospace;">${item.rekeningTegenpartij}</span>
-                    </div>
-                    <div class="detail-row">
                         <span class="detail-label">Omschrijving</span>
                         <span class="detail-value">${item.omschrijving}</span>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Saldo na transactie</span>
-                        <span class="detail-value" style="${item.saldoNaTransactie < 0 ? 'color: #dc2626;' : ''}">${formatCurrency(item.saldoNaTransactie)}</span>
+                        <span class="detail-value">${formatCurrency(item.saldoNaTransactie)}</span>
                     </div>
                 `;
+            }
+            
+            content += '</div>';
 
-                // Add matching analysis
-                if (item.match) {
-                    content += `
-                        <div class="detail-row">
-                            <span class="detail-label">Matching</span>
-                            <span class="detail-value">
-                                ${item.match.type === 'exact' ? '✓ Exacte match gevonden' : 
-                                  item.match.type === 'possible_partial' ? '⚠️ Mogelijk deelbetaling' : 
-                                  '❓ Onzeker'}
-                            </span>
-                        </div>
-                    `;
-                } else if (item.bedrag >= 10000) {
-                    content += `
-                        <div class="timeline-error" style="margin-top: 20px;">
-                            ❌ Deze grote betaling van ${formatCurrency(item.bedrag)} heeft geen corresponderende factuur!
-                            Dit suggereert mogelijk een rekening-courant verrekening zonder transparante facturatie.
-                        </div>
-                    `;
+            // Add matching analysis box
+            content += `
+                <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; border: 1px solid #d1d5db;">
+                    <h5 style="color: #374151; margin-bottom: 15px; font-size: 1rem; font-weight: 600;">
+                        📊 Objectieve Matching Analyse
+                    </h5>
+                    <div style="font-size: 0.9rem; color: #4b5563; line-height: 1.8;">
+            `;
+
+            if (type === 'factuur') {
+                const exactMatches = mdnData.betalingen.filter(b => 
+                    Math.abs(b.bedrag - item.bedrag) < 0.01
+                );
+                
+                content += `
+                    <strong>Te matchen:</strong> Factuur ${item.factuurnr} voor €${item.bedrag.toFixed(2)}<br><br>
+                    <strong>Vaststellingen:</strong><br>
+                    • Gezocht naar betalingen van €${item.bedrag.toFixed(2)}<br>
+                    • Aantal gevonden: ${exactMatches.length}<br><br>
+                    <strong>Conclusie:</strong><br>
+                `;
+                
+                if (exactMatches.length === 0) {
+                    content += `❌ Er kon geen betaling gevonden worden met dit bedrag.<br>
+                    Zonder gestructureerde mededeling is matching onmogelijk.`;
+                } else if (exactMatches.length === 1) {
+                    content += `✅ Er is precies één betaling met dit bedrag gevonden op ${exactMatches[0].datum}.<br>
+                    Dit is waarschijnlijk de bijhorende betaling.`;
+                } else {
+                    content += `⚠️ Er zijn ${exactMatches.length} betalingen met dit bedrag.<br>
+                    Zonder factuurnummer in de omschrijving is niet vast te stellen welke de juiste is.`;
                 }
-
-                // Check for negative balance
-                if (item.saldoNaTransactie < 0) {
-                    content += `
-                        <div class="timeline-warning" style="margin-top: 20px;">
-                            ⚠️ Let op: Negatief saldo na deze transactie!
-                        </div>
-                    `;
+            } else {
+                const exactMatches = mdnData.facturen.filter(f => 
+                    Math.abs(f.bedrag - item.bedrag) < 0.01
+                );
+                
+                content += `
+                    <strong>Te matchen:</strong> Betaling van €${item.bedrag.toFixed(2)}<br>
+                    <strong>Omschrijving:</strong> "${item.omschrijving}"<br><br>
+                    <strong>Vaststellingen:</strong><br>
+                    • Gezocht naar facturen van €${item.bedrag.toFixed(2)}<br>
+                    • Aantal gevonden: ${exactMatches.length}<br><br>
+                    <strong>Conclusie:</strong><br>
+                `;
+                
+                if (exactMatches.length === 0) {
+                    content += `❌ Geen factuur gevonden met dit bedrag.<br>`;
+                    if (item.bedrag >= 10000) {
+                        content += `Voor grote bedragen zijn verschillende administratieve verwerkingsmethoden mogelijk.`;
+                    }
+                } else if (exactMatches.length === 1) {
+                    content += `✅ Er is precies één factuur met dit bedrag: ${exactMatches[0].factuurnr}.<br>
+                    Dit is waarschijnlijk de bijhorende factuur.`;
+                } else {
+                    content += `⚠️ Er zijn ${exactMatches.length} facturen met dit bedrag.<br>
+                    De omschrijving bevat geen factuurnummer om te bepalen welke het is.`;
                 }
             }
+
+            content += `
+                    </div>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #d1d5db; font-size: 0.85rem; color: #6b7280;">
+                        <strong>Methodologie:</strong> Matching gebeurt op basis van exacte bedragen. 
+                        Zonder gestructureerde mededelingen is betrouwbare koppeling niet mogelijk.
+                    </div>
+                </div>
+            `;
 
             modalContent.innerHTML = content;
             modal.classList.add('active');
@@ -1218,7 +1232,14 @@
 
         // Create monthly chart
         function createMonthlyChart() {
-            // Group by month
+            // Check if Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.warn('Chart.js not loaded, skipping chart creation');
+                document.getElementById('monthlyChart').parentElement.innerHTML = 
+                    '<p style="text-align: center; color: #666;">Grafiek niet beschikbaar in preview</p>';
+                return;
+            }
+            
             const monthlyData = {};
             
             mdnData.betalingen.forEach(b => {
@@ -1297,10 +1318,27 @@
 
         // Initialize everything
         document.addEventListener('DOMContentLoaded', function() {
-            initKPIs();
-            createProblemAnalysis();
-            createTimeline();
-            createMonthlyChart();
+            try {
+                console.log('Starting initialization...');
+                console.log('Data check - Betalingen:', mdnData.betalingen.length);
+                console.log('Data check - Facturen:', mdnData.facturen.length);
+                
+                initKPIs();
+                console.log('KPIs initialized');
+                
+                createProblemAnalysis();
+                console.log('Problem analysis created');
+                
+                createTimeline();
+                console.log('Timeline created');
+                
+                createMonthlyChart();
+                console.log('Chart created');
+                
+            } catch (error) {
+                console.error('Error during initialization:', error);
+                alert('Er is een fout opgetreden: ' + error.message);
+            }
         });
 
         // Close modal on click outside
