@@ -5,6 +5,7 @@
     // Configuratie
     const navItems = [
         { href: 'index.html', text: 'Home' },
+        { href: 'mdnanalyse.html', text: 'Immo Beach & Co'},
         { href: 'bankafschriften.html', text: 'Bankafschriften' },
         { href: 'aankoopfacturen.html', text: 'Aankoopfacturen' },
         { href: 'wanbetalers.html', text: 'Wanbetalers' },
