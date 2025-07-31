@@ -691,32 +691,55 @@
             } catch (error) {
                 console.error('Error initializing dashboard:', error);
                 document.getElementById('kpiSection').innerHTML = 
-                    '<div class="alert alert-danger"><span>⚠️</span><span>Er is een fout opgetreden bij het laden van de data.</span></div>';
+                    `<div class="alert alert-danger">
+                        <span>⚠️</span>
+                        <span>
+                            <strong>Er is een fout opgetreden bij het laden van de data.</strong><br>
+                            ${error.message}<br><br>
+                            <strong>Mogelijke oorzaken:</strong><br>
+                            1. U opent het bestand direct (gebruik een webserver)<br>
+                            2. Het CSV bestand heet niet exact 'BANKAFSCHRIFTEN_DATA_ENRICHED.csv'<br>
+                            3. Het CSV bestand staat niet in dezelfde map als dit HTML bestand<br><br>
+                            <strong>Oplossing:</strong> Start een webserver met: <code>python -m http.server 8000</code>
+                        </span>
+                    </div>`;
             }
         });
         
         // Load and parse CSV data
         async function loadData() {
-            const response = await fetch('BANKAFSCHRIFTEN_DATA_ENRICHED.csv');
-            const csvText = await response.text();
-            
-            const result = Papa.parse(csvText, {
-                header: true,
-                dynamicTyping: true,
-                skipEmptyLines: true,
-                transformHeader: (header) => header.trim()
-            });
-            
-            allData = result.data;
-            
-            // Sort by date
-            allData.sort((a, b) => {
-                const dateA = parseDate(a['Transactie Datum']);
-                const dateB = parseDate(b['Transactie Datum']);
-                return dateA - dateB;
-            });
-            
-            console.log('Data loaded:', allData.length, 'transactions');
+            try {
+                console.log('Attempting to load CSV file...');
+                const response = await fetch('BANKAFSCHRIFTEN_DATA_ENRICHED.csv');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const csvText = await response.text();
+                console.log('CSV loaded successfully, parsing...');
+                
+                const result = Papa.parse(csvText, {
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    transformHeader: (header) => header.trim()
+                });
+                
+                allData = result.data;
+                
+                // Sort by date
+                allData.sort((a, b) => {
+                    const dateA = parseDate(a['Transactie Datum']);
+                    const dateB = parseDate(b['Transactie Datum']);
+                    return dateA - dateB;
+                });
+                
+                console.log('Data loaded:', allData.length, 'transactions');
+            } catch (error) {
+                console.error('Error loading CSV:', error);
+                throw error;
+            }
         }
         
         // Parse date from DD/MM/YYYY format
@@ -732,7 +755,17 @@
             let currentNegativePeriod = null;
             
             allData.forEach((row, index) => {
-                const balance = parseFloat(row['Saldo na Transactie'].replace(',', '.'));
+                // Handle different formats for balance
+                let balance = row['Saldo na Transactie'];
+                if (typeof balance === 'string') {
+                    balance = parseFloat(balance.replace(',', '.'));
+                } else if (typeof balance === 'number') {
+                    // Already a number, use as is
+                } else {
+                    console.warn('Invalid balance value:', balance, 'in row:', row);
+                    return; // Skip this row
+                }
+                
                 const date = row['Transactie Datum'];
                 
                 if (balance < 0) {
@@ -800,7 +833,17 @@
         
         // Calculate statistics
         function calculateStatistics(negativePeriods) {
-            const balances = allData.map(row => parseFloat(row['Saldo na Transactie'].replace(',', '.')));
+            const balances = allData.map(row => {
+                let balance = row['Saldo na Transactie'];
+                if (typeof balance === 'string') {
+                    return parseFloat(balance.replace(',', '.'));
+                } else if (typeof balance === 'number') {
+                    return balance;
+                } else {
+                    return 0; // Default value for invalid data
+                }
+            }).filter(b => !isNaN(b)); // Filter out NaN values
+            
             const currentBalance = balances[balances.length - 1];
             const minBalance = Math.min(...balances);
             const maxBalance = Math.max(...balances);
@@ -942,7 +985,16 @@
             const ctx = document.getElementById('balanceChart').getContext('2d');
             
             const dates = allData.map(row => row['Transactie Datum']);
-            const balances = allData.map(row => parseFloat(row['Saldo na Transactie'].replace(',', '.')));
+            const balances = allData.map(row => {
+                let balance = row['Saldo na Transactie'];
+                if (typeof balance === 'string') {
+                    return parseFloat(balance.replace(',', '.'));
+                } else if (typeof balance === 'number') {
+                    return balance;
+                } else {
+                    return 0;
+                }
+            });
             
             // Create gradient
             const gradient = ctx.createLinearGradient(0, 0, 0, 400);
@@ -1050,7 +1102,14 @@
             
             allData.forEach(row => {
                 const month = row['Transactie Maand'];
-                const balance = parseFloat(row['Saldo na Transactie'].replace(',', '.'));
+                let balance = row['Saldo na Transactie'];
+                
+                // Convert balance to number
+                if (typeof balance === 'string') {
+                    balance = parseFloat(balance.replace(',', '.'));
+                } else if (typeof balance !== 'number') {
+                    return; // Skip invalid data
+                }
                 
                 if (!monthlyData[month]) {
                     monthlyData[month] = {
@@ -1179,16 +1238,31 @@
             let tableHTML = '';
             
             // Get all transactions with negative balance
-            const negativeTransactions = allData.filter(row => 
-                parseFloat(row['Saldo na Transactie'].replace(',', '.')) < 0
-            ).sort((a, b) => 
-                parseFloat(a['Saldo na Transactie'].replace(',', '.')) - 
-                parseFloat(b['Saldo na Transactie'].replace(',', '.'))
-            ).slice(0, 10);
+            const negativeTransactions = allData.filter(row => {
+                let balance = row['Saldo na Transactie'];
+                if (typeof balance === 'string') {
+                    balance = parseFloat(balance.replace(',', '.'));
+                } else if (typeof balance !== 'number') {
+                    return false;
+                }
+                return balance < 0;
+            }).sort((a, b) => {
+                let balanceA = a['Saldo na Transactie'];
+                let balanceB = b['Saldo na Transactie'];
+                
+                if (typeof balanceA === 'string') balanceA = parseFloat(balanceA.replace(',', '.'));
+                if (typeof balanceB === 'string') balanceB = parseFloat(balanceB.replace(',', '.'));
+                
+                return balanceA - balanceB;
+            }).slice(0, 10);
             
             negativeTransactions.forEach(transaction => {
-                const balance = parseFloat(transaction['Saldo na Transactie'].replace(',', '.'));
-                const transactionAmount = parseFloat(transaction['Transactie Bedrag']);
+                let balance = transaction['Saldo na Transactie'];
+                if (typeof balance === 'string') {
+                    balance = parseFloat(balance.replace(',', '.'));
+                }
+                
+                const transactionAmount = parseFloat(transaction['Transactie Bedrag']) || 0;
                 
                 // Find which negative period this belongs to
                 let daysNegative = '-';
