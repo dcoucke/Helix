@@ -835,7 +835,14 @@
         // Parse date
         function parseDate(dateStr) {
             const parts = dateStr.split('/');
-            return new Date(parts[2], parts[1] - 1, parts[0]);
+            // Zorg ervoor dat we een geldig Date object krijgen
+            const date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            // Check of de datum geldig is
+            if (isNaN(date.getTime())) {
+                console.error('Invalid date:', dateStr);
+                return new Date(); // Return huidige datum als fallback
+            }
+            return date;
         }
 
         // Initialize KPIs
