@@ -940,20 +940,20 @@
             // Add all items to timeline
             mdnData.betalingen.forEach(b => {
                 timeline.push({
+                    ...b,
                     type: 'betaling',
                     datum: parseDate(b.datum),
-                    datumStr: b.datum,
-                    ...b
+                    datumStr: b.datum
                 });
             });
 
             mdnData.facturen.forEach(f => {
                 timeline.push({
+                    ...f,
                     type: 'factuur',
                     datum: parseDate(f.datum),
                     datumStr: f.datum,
-                    openstaand: f.bedrag - f.betaald,
-                    ...f
+                    openstaand: f.bedrag - f.betaald
                 });
             });
 
@@ -968,6 +968,12 @@
             let animationDelay = 0;
 
             timeline.forEach((item, index) => {
+                // Debug check
+                if (!item.datum || typeof item.datum.getTime !== 'function') {
+                    console.error('Invalid date for item:', item);
+                    return; // Skip this item
+                }
+                
                 // Add month marker if new month
                 const itemMonth = item.datum.toLocaleDateString('nl-BE', { month: 'long', year: 'numeric' });
                 if (itemMonth !== currentMonth) {
