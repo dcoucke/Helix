@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reconciliatie Dashboard - Helix Residentie</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f0f4f8;
+            color: #2d3748;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .summary-label {
+            font-size: 0.875rem;
+            color: #718096;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .summary-subtext {
+            font-size: 0.875rem;
+            color: #a0aec0;
+        }
+
+        /* Filters */
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        /* Supplier Bubbles */
+        .supplier-bubbles {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .supplier-bubble {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #edf2f7;
+            border: 2px solid transparent;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .supplier-bubble:hover {
+            background: #e2e8f0;
+            transform: scale(1.05);
+        }
+
+        .supplier-bubble.active {
+            background: #667eea;
+            color: white;
+            border-color: #5a67d8;
+        }
+
+        .supplier-count {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            background: #edf2f7;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #4a5568;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Content Panels */
+        .content-panel {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .content-panel.active {
+            display: block;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin: -30px;
+            padding: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        th {
+            background: #f7fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:hover {
+            background: #f7fafc;
+        }
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge-warning {
+            background: #fefcbf;
+            color: #744210;
+        }
+
+        .badge-danger {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .badge-info {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        /* Match details */
+        .match-details {
+            margin-top: 8px;
+            padding: 8px;
+            background: #f7fafc;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .match-score {
+            display: inline-block;
+            width: 60px;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .match-score-fill {
+            height: 100%;
+            background: #48bb78;
+            transition: width 0.3s;
+        }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #718096;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #718096;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filter-row {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+
+            .table-container {
+                margin: -20px;
+                padding: 20px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Reconciliatie Dashboard</h1>
+            <p class="subtitle">Bankbetalingen vs Aankoopfacturen - Residentie Helix</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Summary Cards -->
+        <div class="summary-grid" id="summaryGrid">
+            <div class="summary-card">
+                <div class="summary-label">Totaal Betalingen</div>
+                <div class="summary-value" id="totalPayments">-</div>
+                <div class="summary-subtext" id="paymentCount">- transacties</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Totaal Facturen</div>
+                <div class="summary-value" id="totalInvoices">-</div>
+                <div class="summary-subtext" id="invoiceCount">- facturen</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Gematched</div>
+                <div class="summary-value" id="matchedAmount">-</div>
+                <div class="summary-subtext" id="matchedCount">- matches</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Onverklaard</div>
+                <div class="summary-value" id="unmatchedAmount">-</div>
+                <div class="summary-subtext" id="unmatchedCount">- items</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">Periode van</label>
+                    <input type="date" class="filter-input" id="dateFrom">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Periode tot</label>
+                    <input type="date" class="filter-input" id="dateTo">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Min. bedrag</label>
+                    <input type="number" class="filter-input" id="minAmount" placeholder="0">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Zoek leverancier</label>
+                    <input type="text" class="filter-input" id="searchSupplier" placeholder="Naam leverancier...">
+                </div>
+                <button class="btn-primary" onclick="applyFilters()">Filter toepassen</button>
+            </div>
+        </div>
+
+        <!-- Supplier Bubbles -->
+        <div class="supplier-bubbles" id="supplierBubbles">
+            <!-- Dynamically populated -->
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('overview')">Overzicht</button>
+            <button class="tab" onclick="switchTab('unmatched')">Onverklaard</button>
+            <button class="tab" onclick="switchTab('duplicates')">Mogelijke Duplicaten</button>
+            <button class="tab" onclick="switchTab('all')">Alle Transacties</button>
+        </div>
+
+        <!-- Content Panels -->
+        <div class="content-panel active" id="overview-panel">
+            <h2 style="margin-bottom: 20px;">Reconciliatie Overzicht</h2>
+            <div id="overviewContent" class="loading">
+                <div class="spinner"></div>
+                <p>Data wordt geladen...</p>
+            </div>
+        </div>
+
+        <div class="content-panel" id="unmatched-panel">
+            <h2 style="margin-bottom: 20px;">Onverklaarde Betalingen</h2>
+            <div id="unmatchedContent"></div>
+        </div>
+
+        <div class="content-panel" id="duplicates-panel">
+            <h2 style="margin-bottom: 20px;">Mogelijke Dubbele Betalingen</h2>
+            <div id="duplicatesContent"></div>
+        </div>
+
+        <div class="content-panel" id="all-panel">
+            <h2 style="margin-bottom: 20px;">Alle Transacties</h2>
+            <div id="allContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global data storage
+        let bankData = [];
+        let invoiceData = [];
+        let reconciliationResults = [];
+        let currentFilter = null;
+        let selectedSupplier = null;
+
+        // Utility functions
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('nl-BE', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(amount || 0);
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                return `${parts[0]}/${parts[1]}/${parts[2]}`;
+            }
+            return dateStr;
+        }
+
+        function parseDate(dateStr) {
+            if (!dateStr) return null;
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                return new Date(parts[2], parts[1] - 1, parts[0]);
+            }
+            return null;
+        }
+
+        // Fuzzy matching functions
+        function normalizeName(name) {
+            if (!name) return '';
+            return name.toString()
+                .toUpperCase()
+                .replace(/\s+/g, ' ')
+                .replace(/\b(BV|NV|BVBA|VZW|CVBA|COMM\.V|COMM\. V)\b/g, '')
+                .replace(/CLAE/g, 'CLEA')
+                .replace(/[.,\-'"]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function calculateSimilarity(str1, str2) {
+            const norm1 = normalizeName(str1);
+            const norm2 = normalizeName(str2);
+            
+            if (norm1 === norm2) return 1;
+            if (norm1.includes(norm2) || norm2.includes(norm1)) return 0.9;
+            
+            // Calculate Levenshtein distance
+            const matrix = [];
+            const len1 = norm1.length;
+            const len2 = norm2.length;
+            
+            for (let i = 0; i <= len2; i++) {
+                matrix[i] = [i];
+            }
+            for (let j = 0; j <= len1; j++) {
+                matrix[0][j] = j;
+            }
+            
+            for (let i = 1; i <= len2; i++) {
+                for (let j = 1; j <= len1; j++) {
+                    if (norm2[i - 1] === norm1[j - 1]) {
+                        matrix[i][j] = matrix[i - 1][j - 1];
+                    } else {
+                        matrix[i][j] = Math.min(
+                            matrix[i - 1][j - 1] + 1,
+                            matrix[i][j - 1] + 1,
+                            matrix[i - 1][j] + 1
+                        );
+                    }
+                }
+            }
+            
+            const distance = matrix[len2][len1];
+            const maxLen = Math.max(len1, len2);
+            return maxLen === 0 ? 0 : (maxLen - distance) / maxLen;
+        }
+
+        // Data loading and processing with performance optimization
+        async function loadData() {
+            try {
+                const startTime = performance.now();
+                
+                // Show loading state
+                document.getElementById('overviewContent').innerHTML = 
+                    '<div class="loading"><div class="spinner"></div><p>Data wordt geladen...</p></div>';
+                
+                // Load bank data
+                const bankResponse = await window.fs.readFile('BANKAFSCHRIFTEN_DATA_ENRICHED.csv', { encoding: 'utf8' });
+                const bankParsed = Papa.parse(bankResponse, {
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true
+                });
+                
+                console.log('Total bank records:', bankParsed.data.length);
+                
+                // Filter uitgaande betalingen - aangepast filter!
+                bankData = bankParsed.data.filter(row => {
+                    // Check for outgoing payments
+                    const hasOutgoingAmount = row['Bedrag Uitgaand'] > 0;
+                    
+                    // Check boekhoudkundig type - meer flexibel
+                    const boekhType = row['Boekhoudkunidg Type'] || '';
+                    const isOperational = boekhType.includes('OPERATIONELE') || 
+                                        boekhType.includes('UITGAVEN') ||
+                                        boekhType.includes('LEVERANCIER') ||
+                                        boekhType.includes('DIENSTEN');
+                    
+                    // Exclude specific types
+                    const isExcluded = boekhType.includes('VOORSCHOT') || 
+                                     boekhType.includes('EIGENAAR') ||
+                                     boekhType.includes('TERUGBETALING');
+                    
+                    return hasOutgoingAmount && (isOperational || boekhType === '') && !isExcluded;
+                });
+                
+                console.log('Filtered payments:', bankData.length);
+
+                // Load invoice data
+                const invoiceResponse = await window.fs.readFile('aankoopfacturen.csv', { encoding: 'utf8' });
+                const invoiceParsed = Papa.parse(invoiceResponse, {
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true
+                });
+                
+                invoiceData = invoiceParsed.data;
+                console.log('Total invoices:', invoiceData.length);
+
+                // Create lookup maps for performance
+                createLookupMaps();
+                
+                // Perform reconciliation with progress updates
+                const loadTime = performance.now() - startTime;
+                document.getElementById('overviewContent').innerHTML = 
+                    `<div class="loading"><div class="spinner"></div><p>Data geladen in ${Math.round(loadTime)}ms<br>Reconciliatie wordt uitgevoerd...</p></div>`;
+                
+                // Use setTimeout to allow UI update
+                setTimeout(() => {
+                    const reconcileStart = performance.now();
+                    performReconciliation();
+                    const reconcileTime = performance.now() - reconcileStart;
+                    
+                    console.log(`Reconciliation completed in ${Math.round(reconcileTime)}ms`);
+                    console.log(`Total comparisons: ${bankData.length * invoiceData.length}`);
+                    
+                    // Update UI
+                    updateSummary();
+                    updateSupplierBubbles();
+                    updateOverview();
+                }, 50);
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('overviewContent').innerHTML = 
+                    '<div class="empty-state"><div class="empty-icon">⚠️</div><p>Fout bij het laden van de data: ' + error.message + '</p></div>';
+            }
+        }
+
+        // Create lookup maps for performance optimization
+        let supplierMap = {};
+        let amountMap = {};
+        
+        function createLookupMaps() {
+            // Reset maps
+            supplierMap = {};
+            amountMap = {};
+            
+            // Build supplier lookup map
+            invoiceData.forEach((invoice, index) => {
+                const normalizedSupplier = normalizeName(invoice['Leverancier']);
+                if (!supplierMap[normalizedSupplier]) {
+                    supplierMap[normalizedSupplier] = [];
+                }
+                supplierMap[normalizedSupplier].push(index);
+                
+                // Build amount lookup map (rounded to nearest euro)
+                const amount = Math.round(invoice['Betaald']);
+                if (!amountMap[amount]) {
+                    amountMap[amount] = [];
+                }
+                amountMap[amount].push(index);
+            });
+        }
+
+        function performReconciliation() {
+            reconciliationResults = [];
+            
+            // Use lookup maps for better performance
+            bankData.forEach(payment => {
+                const paymentSupplier = payment['Subcategorie (Levarancier/Ontvanger)'];
+                const paymentAmount = payment['Bedrag Uitgaand'];
+                const paymentDate = payment['Transactie Datum'];
+                const paymentDescription = payment['Transactie Omschrijving'] || '';
+                
+                // Find potential matches using optimized lookup
+                const potentialMatches = [];
+                const candidateIndices = new Set();
+                
+                // First, check exact amount matches
+                const roundedAmount = Math.round(paymentAmount);
+                if (amountMap[roundedAmount]) {
+                    amountMap[roundedAmount].forEach(idx => candidateIndices.add(idx));
+                }
+                // Also check amounts within 1 euro
+                if (amountMap[roundedAmount - 1]) {
+                    amountMap[roundedAmount - 1].forEach(idx => candidateIndices.add(idx));
+                }
+                if (amountMap[roundedAmount + 1]) {
+                    amountMap[roundedAmount + 1].forEach(idx => candidateIndices.add(idx));
+                }
+                
+                // Then check supplier name matches
+                const normalizedPaymentSupplier = normalizeName(paymentSupplier);
+                if (supplierMap[normalizedPaymentSupplier]) {
+                    supplierMap[normalizedPaymentSupplier].forEach(idx => candidateIndices.add(idx));
+                }
+                
+                // If no candidates found, do a broader search (but limited)
+                if (candidateIndices.size === 0) {
+                    // Only check first 50 invoices for performance
+                    for (let i = 0; i < Math.min(50, invoiceData.length); i++) {
+                        candidateIndices.add(i);
+                    }
+                }
+                
+                // Evaluate candidates
+                candidateIndices.forEach(idx => {
+                    const invoice = invoiceData[idx];
+                    const invoiceSupplier = invoice['Leverancier'];
+                    const invoiceAmount = invoice['Betaald'];
+                    const invoiceNumber = invoice['Factuur_Nummer'];
+                    
+                    // Calculate match scores
+                    const nameSimilarity = calculateSimilarity(paymentSupplier, invoiceSupplier);
+                    const amountMatch = Math.abs(paymentAmount - invoiceAmount) < 1;
+                    const invoiceNumberInDescription = invoiceNumber && paymentDescription.includes(invoiceNumber);
+                    
+                    // Calculate total score
+                    let score = 0;
+                    if (amountMatch) score += 0.4;
+                    if (nameSimilarity > 0.7) score += nameSimilarity * 0.5;
+                    if (invoiceNumberInDescription) score += 0.1;
+                    
+                    if (score > 0.3) {
+                        potentialMatches.push({
+                            invoice: invoice,
+                            nameSimilarity: nameSimilarity,
+                            amountMatch: amountMatch,
+                            invoiceNumberMatch: invoiceNumberInDescription,
+                            score: score
+                        });
+                    }
+                });
+                
+                // Sort by score and keep only top 3
+                potentialMatches.sort((a, b) => b.score - a.score);
+                
+                reconciliationResults.push({
+                    payment: payment,
+                    matches: potentialMatches.slice(0, 3),
+                    bestMatch: potentialMatches.length > 0 ? potentialMatches[0] : null
+                });
+            });
+        }
+
+        function updateSummary() {
+            const totalPaymentAmount = bankData.reduce((sum, p) => sum + p['Bedrag Uitgaand'], 0);
+            const totalInvoiceAmount = invoiceData.reduce((sum, i) => sum + i['Totaal'], 0);
+            
+            const matchedResults = reconciliationResults.filter(r => r.bestMatch && r.bestMatch.score > 0.7);
+            const matchedAmount = matchedResults.reduce((sum, r) => sum + r.payment['Bedrag Uitgaand'], 0);
+            
+            const unmatchedPayments = reconciliationResults.filter(r => !r.bestMatch || r.bestMatch.score <= 0.7);
+            const unmatchedAmount = unmatchedPayments.reduce((sum, r) => sum + r.payment['Bedrag Uitgaand'], 0);
+            
+            document.getElementById('totalPayments').textContent = formatCurrency(totalPaymentAmount);
+            document.getElementById('paymentCount').textContent = `${bankData.length} transacties`;
+            
+            document.getElementById('totalInvoices').textContent = formatCurrency(totalInvoiceAmount);
+            document.getElementById('invoiceCount').textContent = `${invoiceData.length} facturen`;
+            
+            document.getElementById('matchedAmount').textContent = formatCurrency(matchedAmount);
+            document.getElementById('matchedCount').textContent = `${matchedResults.length} matches`;
+            
+            document.getElementById('unmatchedAmount').textContent = formatCurrency(unmatchedAmount);
+            document.getElementById('unmatchedCount').textContent = `${unmatchedPayments.length} items`;
+        }
+
+        function updateSupplierBubbles() {
+            const suppliers = {};
+            
+            // Count payments per supplier
+            bankData.forEach(payment => {
+                const supplier = payment['Subcategorie (Levarancier/Ontvanger)'];
+                if (supplier) {
+                    suppliers[supplier] = (suppliers[supplier] || 0) + 1;
+                }
+            });
+            
+            // Sort by count
+            const sortedSuppliers = Object.entries(suppliers)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 20); // Top 20
+            
+            const bubblesHtml = sortedSuppliers.map(([supplier, count]) => `
+                <div class="supplier-bubble" onclick="selectSupplier('${supplier.replace(/'/g, "\\'")}')">
+                    ${supplier}
+                    <span class="supplier-count">${count}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('supplierBubbles').innerHTML = 
+                '<div class="supplier-bubble active" onclick="selectSupplier(null)">Alle leveranciers</div>' + 
+                bubblesHtml;
+        }
+
+        function selectSupplier(supplier) {
+            selectedSupplier = supplier;
+            
+            // Update bubble selection
+            document.querySelectorAll('.supplier-bubble').forEach(bubble => {
+                bubble.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update current view
+            const activeTab = document.querySelector('.tab.active').textContent.toLowerCase();
+            if (activeTab.includes('overzicht')) updateOverview();
+            else if (activeTab.includes('onverklaard')) updateUnmatched();
+            else if (activeTab.includes('duplicaten')) updateDuplicates();
+            else updateAllTransactions();
+        }
+
+        function updateOverview() {
+            let filteredResults = reconciliationResults;
+            
+            if (selectedSupplier) {
+                filteredResults = filteredResults.filter(r => 
+                    r.payment['Subcategorie (Levarancier/Ontvanger)'] === selectedSupplier
+                );
+            }
+            
+            if (filteredResults.length === 0) {
+                document.getElementById('overviewContent').innerHTML = 
+                    '<div class="empty-state"><div class="empty-icon">🔍</div><p>Geen transacties gevonden voor de geselecteerde criteria</p></div>';
+                return;
+            }
+            
+            const tableHtml = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Leverancier</th>
+                                <th>Bedrag</th>
+                                <th>Omschrijving</th>
+                                <th>Match Status</th>
+                                <th>Beste Match</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filteredResults.map(result => {
+                                const payment = result.payment;
+                                const bestMatch = result.bestMatch;
+                                
+                                let statusBadge = '<span class="badge badge-danger">Geen match</span>';
+                                let matchDetails = '-';
+                                
+                                if (bestMatch) {
+                                    if (bestMatch.score > 0.8) {
+                                        statusBadge = '<span class="badge badge-success">Goede match</span>';
+                                    } else if (bestMatch.score > 0.6) {
+                                        statusBadge = '<span class="badge badge-warning">Mogelijke match</span>';
+                                    } else {
+                                        statusBadge = '<span class="badge badge-info">Zwakke match</span>';
+                                    }
+                                    
+                                    matchDetails = `
+                                        <div>
+                                            <strong>${bestMatch.invoice['Leverancier']}</strong><br>
+                                            Factuur: ${bestMatch.invoice['Factuur_Nummer']}<br>
+                                            Bedrag: ${formatCurrency(bestMatch.invoice['Betaald'])}
+                                            <div class="match-score">
+                                                <div class="match-score-fill" style="width: ${bestMatch.score * 100}%"></div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }
+                                
+                                return `
+                                    <tr>
+                                        <td>${formatDate(payment['Transactie Datum'])}</td>
+                                        <td>${payment['Subcategorie (Levarancier/Ontvanger)']}</td>
+                                        <td>${formatCurrency(payment['Bedrag Uitgaand'])}</td>
+                                        <td>${payment['Transactie Omschrijving'] || '-'}</td>
+                                        <td>${statusBadge}</td>
+                                        <td>${matchDetails}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('overviewContent').innerHTML = tableHtml;
+        }
+
+        function updateUnmatched() {
+            const unmatchedPayments = reconciliationResults.filter(r => 
+                (!r.bestMatch || r.bestMatch.score < 0.5) &&
+                (!selectedSupplier || r.payment['Subcategorie (Levarancier/Ontvanger)'] === selectedSupplier)
+            );
+            
+            if (unmatchedPayments.length === 0) {
+                document.getElementById('unmatchedContent').innerHTML = 
+                    '<div class="empty-state"><div class="empty-icon">✅</div><p>Geen onverklaarde betalingen gevonden</p></div>';
+                return;
+            }
+            
+            const tableHtml = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Leverancier</th>
+                                <th>Bedrag</th>
+                                <th>Omschrijving</th>
+                                <th>Mogelijke Acties</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${unmatchedPayments.map(result => {
+                                const payment = result.payment;
+                                return `
+                                    <tr>
+                                        <td>${formatDate(payment['Transactie Datum'])}</td>
+                                        <td>${payment['Subcategorie (Levarancier/Ontvanger)']}</td>
+                                        <td>${formatCurrency(payment['Bedrag Uitgaand'])}</td>
+                                        <td>${payment['Transactie Omschrijving'] || '-'}</td>
+                                        <td>
+                                            <span class="badge badge-danger">Factuur ontbreekt</span>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('unmatchedContent').innerHTML = tableHtml;
+        }
+
+        function updateDuplicates() {
+            // Group payments by supplier and amount
+            const paymentGroups = {};
+            
+            reconciliationResults.forEach(result => {
+                if (selectedSupplier && result.payment['Subcategorie (Levarancier/Ontvanger)'] !== selectedSupplier) {
+                    return;
+                }
+                
+                const key = `${result.payment['Subcategorie (Levarancier/Ontvanger)']}_${result.payment['Bedrag Uitgaand']}`;
+                if (!paymentGroups[key]) {
+                    paymentGroups[key] = [];
+                }
+                paymentGroups[key].push(result);
+            });
+            
+            // Find potential duplicates
+            const duplicates = Object.values(paymentGroups).filter(group => group.length > 1);
+            
+            if (duplicates.length === 0) {
+                document.getElementById('duplicatesContent').innerHTML = 
+                    '<div class="empty-state"><div class="empty-icon">✅</div><p>Geen mogelijke duplicaten gevonden</p></div>';
+                return;
+            }
+            
+            const html = duplicates.map(group => {
+                const supplier = group[0].payment['Subcategorie (Levarancier/Ontvanger)'];
+                const amount = group[0].payment['Bedrag Uitgaand'];
+                
+                return `
+                    <div style="margin-bottom: 30px; padding: 20px; background: #fff5f5; border-radius: 8px;">
+                        <h3 style="margin-bottom: 15px; color: #e53e3e;">
+                            ${supplier} - ${formatCurrency(amount)} 
+                            <span class="badge badge-warning">${group.length} betalingen</span>
+                        </h3>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Datum</th>
+                                        <th>Omschrijving</th>
+                                        <th>Factuur Match</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${group.map(result => `
+                                        <tr>
+                                            <td>${formatDate(result.payment['Transactie Datum'])}</td>
+                                            <td>${result.payment['Transactie Omschrijving'] || '-'}</td>
+                                            <td>${result.bestMatch ? 
+                                                `Factuur ${result.bestMatch.invoice['Factuur_Nummer']}` : 
+                                                '<span class="badge badge-danger">Geen match</span>'
+                                            }</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('duplicatesContent').innerHTML = html;
+        }
+
+        function updateAllTransactions() {
+            let allTransactions = [];
+            
+            // Add all payments
+            reconciliationResults.forEach(result => {
+                if (!selectedSupplier || result.payment['Subcategorie (Levarancier/Ontvanger)'] === selectedSupplier) {
+                    allTransactions.push({
+                        type: 'payment',
+                        date: parseDate(result.payment['Transactie Datum']),
+                        dateStr: result.payment['Transactie Datum'],
+                        supplier: result.payment['Subcategorie (Levarancier/Ontvanger)'],
+                        amount: result.payment['Bedrag Uitgaand'],
+                        description: result.payment['Transactie Omschrijving'],
+                        match: result.bestMatch
+                    });
+                }
+            });
+            
+            // Add unmatched invoices
+            invoiceData.forEach(invoice => {
+                const isMatched = reconciliationResults.some(r => 
+                    r.bestMatch && r.bestMatch.invoice['Factuur_Nummer'] === invoice['Factuur_Nummer']
+                );
+                
+                if (!isMatched && (!selectedSupplier || invoice['Leverancier'] === selectedSupplier)) {
+                    allTransactions.push({
+                        type: 'invoice',
+                        date: parseDate(invoice['Factuur_Datum']),
+                        dateStr: invoice['Factuur_Datum'],
+                        supplier: invoice['Leverancier'],
+                        amount: invoice['Totaal'],
+                        description: `Factuur ${invoice['Factuur_Nummer']}`,
+                        paid: invoice['Betaald']
+                    });
+                }
+            });
+            
+            // Sort by date
+            allTransactions.sort((a, b) => b.date - a.date);
+            
+            const tableHtml = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Datum</th>
+                                <th>Leverancier</th>
+                                <th>Bedrag</th>
+                                <th>Omschrijving</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${allTransactions.map(trans => {
+                                let typeIcon = trans.type === 'payment' ? '💳' : '📄';
+                                let statusBadge = '';
+                                
+                                if (trans.type === 'payment') {
+                                    statusBadge = trans.match ? 
+                                        '<span class="badge badge-success">Gematched</span>' : 
+                                        '<span class="badge badge-danger">Geen factuur</span>';
+                                } else {
+                                    statusBadge = trans.paid > 0 ? 
+                                        '<span class="badge badge-info">Betaald: ' + formatCurrency(trans.paid) + '</span>' : 
+                                        '<span class="badge badge-warning">Openstaand</span>';
+                                }
+                                
+                                return `
+                                    <tr>
+                                        <td>${typeIcon} ${trans.type === 'payment' ? 'Betaling' : 'Factuur'}</td>
+                                        <td>${formatDate(trans.dateStr)}</td>
+                                        <td>${trans.supplier}</td>
+                                        <td>${formatCurrency(trans.amount)}</td>
+                                        <td>${trans.description || '-'}</td>
+                                        <td>${statusBadge}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('allContent').innerHTML = tableHtml;
+        }
+
+        function switchTab(tab) {
+            // Update tab selection
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update panel visibility
+            document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(tab + '-panel').classList.add('active');
+            
+            // Update content
+            switch(tab) {
+                case 'overview':
+                    updateOverview();
+                    break;
+                case 'unmatched':
+                    updateUnmatched();
+                    break;
+                case 'duplicates':
+                    updateDuplicates();
+                    break;
+                case 'all':
+                    updateAllTransactions();
+                    break;
+            }
+        }
+
+        function applyFilters() {
+            // TODO: Implement filtering logic
+            console.log('Filters applied');
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+        });
+    </script>
+</body>
+</html>
