@@ -732,6 +732,16 @@
                 
                 allData = result.data;
                 
+                // Debug: Check the first few rows
+                console.log('First row example:', allData[0]);
+                console.log('Available columns:', Object.keys(allData[0]));
+                
+                // Check balance format
+                if (allData.length > 0) {
+                    const sampleBalance = allData[0]['Saldo na Transactie'];
+                    console.log('Sample balance value:', sampleBalance, 'Type:', typeof sampleBalance);
+                }
+                
                 // Sort by date
                 allData.sort((a, b) => {
                     const dateA = parseDate(a['Transactie Datum']);
@@ -762,9 +772,18 @@
             
             console.log('Processing', allData.length, 'rows for negative periods...');
             
+            // Debug: Check balances
+            const balanceValues = [];
+            
             allData.forEach((row, index) => {
                 // Handle different formats for balance
                 let balance = row['Saldo na Transactie'];
+                
+                // Debug first few rows
+                if (index < 5) {
+                    console.log(`Row ${index} - Original balance:`, balance, 'Type:', typeof balance);
+                }
+                
                 if (typeof balance === 'string') {
                     balance = parseFloat(balance.replace(',', '.'));
                 } else if (typeof balance === 'number') {
@@ -772,6 +791,13 @@
                 } else {
                     console.warn('Invalid balance value:', balance, 'in row:', row);
                     return; // Skip this row
+                }
+                
+                balanceValues.push(balance);
+                
+                // Debug first few parsed values
+                if (index < 5) {
+                    console.log(`Row ${index} - Parsed balance:`, balance);
                 }
                 
                 const date = row['Transactie Datum'];
@@ -818,6 +844,8 @@
             }
             
             console.log('Found', negativePeriods.length, 'negative periods');
+            console.log('Balance range:', Math.min(...balanceValues), 'to', Math.max(...balanceValues));
+            console.log('Negative balances count:', balanceValues.filter(b => b < 0).length);
             
             // Calculate statistics
             console.log('Calculating statistics...');
