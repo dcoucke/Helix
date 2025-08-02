@@ -725,12 +725,28 @@
                 
                 const result = Papa.parse(csvText, {
                     header: true,
-                    dynamicTyping: true,
+                    dynamicTyping: false,  // Disabled to avoid DataCloneError
                     skipEmptyLines: true,
                     transformHeader: (header) => header.trim()
                 });
                 
-                allData = result.data;
+                // Convert string values to numbers where needed
+                allData = result.data.map(row => {
+                    // Parse numeric fields
+                    if (row['Saldo na Transactie']) {
+                        row['Saldo na Transactie'] = row['Saldo na Transactie'].toString().replace(',', '.');
+                    }
+                    if (row['Transactie Bedrag']) {
+                        row['Transactie Bedrag'] = parseFloat(row['Transactie Bedrag'].toString().replace(',', '.')) || 0;
+                    }
+                    if (row['Bedrag Inkomend']) {
+                        row['Bedrag Inkomend'] = parseFloat(row['Bedrag Inkomend'].toString().replace(',', '.')) || 0;
+                    }
+                    if (row['Bedrag Uitgaand']) {
+                        row['Bedrag Uitgaand'] = parseFloat(row['Bedrag Uitgaand'].toString().replace(',', '.')) || 0;
+                    }
+                    return row;
+                });
                 
                 // Debug: Check the first few rows
                 console.log('First row example:', allData[0]);
@@ -871,6 +887,15 @@
                 console.log('Rendering Negative Table...');
                 renderNegativeTable(negativePeriods);
                 console.log('All rendering complete!');
+                
+                // Force visibility of all sections
+                document.getElementById('kpiSection').style.display = 'grid';
+                document.getElementById('thermometerSection').style.display = 'block';
+                document.querySelector('.chart-container.full-width').style.display = 'block';
+                document.getElementById('timelineSection').style.display = 'block';
+                document.querySelector('.chart-grid').style.display = 'grid';
+                document.querySelector('.table-container').style.display = 'block';
+                
             } catch (renderError) {
                 console.error('Error during rendering:', renderError);
                 console.error('Stack trace:', renderError.stack);
