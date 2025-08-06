@@ -415,10 +415,38 @@
                 allData = result.data;
                 console.log(`Loaded ${allData.length} transactions`);
 
-                // Debug: Check first few date entries
+                // Debug: Check date entries at various points
                 console.log('Sample dates from data:');
+                console.log(`First 5 rows:`);
                 for (let i = 0; i < Math.min(5, allData.length); i++) {
-                    console.log(`Row ${i}: "${allData[i]['Transactie Datum']}"`);
+                    console.log(`  Row ${i}: "${allData[i]['Transactie Datum']}"`);
+                }
+                
+                console.log(`Middle rows (around row 590):`);
+                for (let i = 590; i < Math.min(595, allData.length); i++) {
+                    console.log(`  Row ${i}: "${allData[i]['Transactie Datum']}"`);
+                }
+                
+                console.log(`Last 5 rows:`);
+                for (let i = Math.max(0, allData.length - 5); i < allData.length; i++) {
+                    console.log(`  Row ${i}: "${allData[i]['Transactie Datum']}"`);
+                }
+                
+                // Check for non-date values
+                const nonDatePattern = /^\d{1,2}\/\d{1,2}\/\d{4}$/;
+                const invalidDateRows = [];
+                allData.forEach((row, index) => {
+                    const dateStr = row['Transactie Datum'];
+                    if (!dateStr || !nonDatePattern.test(dateStr.trim())) {
+                        invalidDateRows.push({ index, dateStr, description: row['Transactie Omschrijving'] });
+                    }
+                });
+                
+                if (invalidDateRows.length > 0) {
+                    console.warn(`Found ${invalidDateRows.length} rows with invalid date format:`);
+                    invalidDateRows.slice(0, 10).forEach(row => {
+                        console.log(`  Row ${row.index}: Date="${row.dateStr}", Description="${row.description}"`);
+                    });
                 }
 
                 // Sort by date
@@ -547,16 +575,23 @@
             // Filter out invalid entries
             const validBalances = allBalances.filter(b => b.isValid);
             
-            // Log filtering results
+            // Debug filtering results
             const invalidCount = allBalances.length - validBalances.length;
             if (invalidCount > 0) {
                 console.warn(`Filtered out ${invalidCount} entries with invalid dates or balances`);
                 
-                // Show some examples of invalid entries
-                const invalidEntries = allBalances.filter(b => !b.isValid).slice(0, 5);
-                console.log('Examples of invalid entries:');
-                invalidEntries.forEach((entry, i) => {
-                    console.log(`  ${i+1}. Date: "${entry.dateStr}", Balance: ${entry.balance}, Description: "${entry.description}"`);
+                // Show all invalid entries grouped by date string
+                const invalidEntries = allBalances.filter(b => !b.isValid);
+                const invalidByDate = _.groupBy(invalidEntries, 'dateStr');
+                
+                console.log('Invalid entries grouped by date value:');
+                Object.entries(invalidByDate).forEach(([dateStr, entries]) => {
+                    console.log(`  "${dateStr}": ${entries.length} entries`);
+                    if (entries.length <= 3) {
+                        entries.forEach(entry => {
+                            console.log(`    - Description: "${entry.description}"`);
+                        });
+                    }
                 });
             }
 
@@ -575,6 +610,13 @@
 
             // Sort by date
             validBalances.sort((a, b) => a.date - b.date);
+            
+            // Check if we need to reverse the order
+            if (validBalances.length > 1) {
+                const firstDate = validBalances[0].date;
+                const lastDate = validBalances[validBalances.length - 1].date;
+                console.log(`Date range after sorting: ${formatDateFull(firstDate)} to ${formatDateFull(lastDate)}`);
+            }
 
             // Calculate statistics
             const currentBalance = validBalances[validBalances.length - 1].balance;
