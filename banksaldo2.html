@@ -441,7 +441,7 @@
         function parseDate(dateStr) {
             if (!dateStr) {
                 console.warn('Empty date string encountered');
-                return new Date();
+                return null; // Return null instead of invalid date
             }
             
             // Trim any whitespace
@@ -451,7 +451,7 @@
             const parts = dateStr.split('/');
             if (parts.length !== 3) {
                 console.warn(`Invalid date format: "${dateStr}"`);
-                return new Date();
+                return null; // Return null for invalid format
             }
             
             const day = parseInt(parts[0], 10);
@@ -461,7 +461,13 @@
             // Validate the parsed values
             if (isNaN(day) || isNaN(month) || isNaN(year)) {
                 console.warn(`Invalid date parts: day=${day}, month=${month+1}, year=${year} from "${dateStr}"`);
-                return new Date();
+                return null;
+            }
+            
+            // Additional validation
+            if (day < 1 || day > 31 || month < 0 || month > 11 || year < 1900 || year > 2100) {
+                console.warn(`Date values out of range: day=${day}, month=${month+1}, year=${year} from "${dateStr}"`);
+                return null;
             }
             
             // Create date object and validate it
@@ -470,7 +476,13 @@
             // Check if the date is valid
             if (isNaN(date.getTime())) {
                 console.warn(`Invalid date created from: "${dateStr}"`);
-                return new Date();
+                return null;
+            }
+            
+            // Double-check the date wasn't adjusted (e.g., Feb 31 -> March 3)
+            if (date.getDate() !== day || date.getMonth() !== month || date.getFullYear() !== year) {
+                console.warn(`Date adjustment detected: "${dateStr}" became ${date.toLocaleDateString()}`);
+                return null;
             }
             
             return date;
@@ -510,32 +522,59 @@
 
         // Analyze data
         function analyzeData() {
-            // Extract balances
-            const balances = allData.map((row, index) => {
-                const date = parseDate(row['Transactie Datum']);
+            // Extract balances and filter invalid entries
+            const allBalances = allData.map((row, index) => {
+                const dateStr = row['Transactie Datum'];
+                const date = parseDate(dateStr);
                 const balance = parseBalance(row['Saldo na Transactie']);
                 
-                // Debug first few entries
-                if (index < 3) {
-                    console.log(`Balance ${index}: Date="${row['Transactie Datum']}" -> ${date.toLocaleDateString('nl-BE')}, Balance=${balance}`);
+                // Log problematic entries
+                if (!date && index < 10) {
+                    console.warn(`Invalid entry at row ${index}: Date="${dateStr}", Balance="${row['Saldo na Transactie']}"`);
                 }
                 
                 return {
                     date: date,
-                    dateStr: row['Transactie Datum'],
+                    dateStr: dateStr,
                     balance: balance,
                     description: row['Transactie Omschrijving'] || '',
                     amount: parseBalance(row['Transactie Bedrag']),
-                    row: row
+                    row: row,
+                    isValid: date !== null && !isNaN(balance)
                 };
             });
 
-            // Filter out any invalid dates
-            const validBalances = balances.filter(b => !isNaN(b.date.getTime()));
+            // Filter out invalid entries
+            const validBalances = allBalances.filter(b => b.isValid);
             
-            if (validBalances.length < balances.length) {
-                console.warn(`Filtered out ${balances.length - validBalances.length} entries with invalid dates`);
+            // Log filtering results
+            const invalidCount = allBalances.length - validBalances.length;
+            if (invalidCount > 0) {
+                console.warn(`Filtered out ${invalidCount} entries with invalid dates or balances`);
+                
+                // Show some examples of invalid entries
+                const invalidEntries = allBalances.filter(b => !b.isValid).slice(0, 5);
+                console.log('Examples of invalid entries:');
+                invalidEntries.forEach((entry, i) => {
+                    console.log(`  ${i+1}. Date: "${entry.dateStr}", Balance: ${entry.balance}, Description: "${entry.description}"`);
+                });
             }
+
+            if (validBalances.length === 0) {
+                document.getElementById('statsGrid').innerHTML = `
+                    <div class="alert alert-danger" style="grid-column: 1 / -1;">
+                        <div class="alert-icon">⚠️</div>
+                        <div>
+                            <strong>Geen geldige data gevonden</strong><br>
+                            Controleer of de CSV-data correct is geformatteerd met datums in DD/MM/YYYY formaat.
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by date
+            validBalances.sort((a, b) => a.date - b.date);
 
             // Calculate statistics
             const currentBalance = validBalances[validBalances.length - 1].balance;
@@ -557,6 +596,7 @@
                 <strong>Debug Info:</strong><br>
                 Total records: ${allData.length}<br>
                 Valid records: ${validBalances.length}<br>
+                Invalid records: ${invalidCount}<br>
                 Date range: ${formatDateFull(validBalances[0].date)} - ${formatDateFull(validBalances[validBalances.length - 1].date)}<br>
                 First date in data: "${validBalances[0].dateStr}" → ${validBalances[0].date.toLocaleDateString('nl-BE')}<br>
                 Last date in data: "${validBalances[validBalances.length - 1].dateStr}" → ${validBalances[validBalances.length - 1].date.toLocaleDateString('nl-BE')}
